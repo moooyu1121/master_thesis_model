@@ -6,27 +6,28 @@ import numpy as np
 
 
 class Visualize:
-    def __init__(self) -> None:
-        self.grid_price_df = pd.read_csv('output/price.csv', index_col=0)
-        self.microgrid_price_df = pd.read_csv('output/price_record.csv', index_col=0)
-        self.battery_soc_df = pd.read_csv('output/battery_soc_record.csv', index_col=0)
-        self.ev_battery_soc_df = pd.read_csv('output/ev_battery_soc_record.csv', index_col=0)
+    def __init__(self, folder_path) -> None:
+        self.folder_path = folder_path
+        self.grid_price_df = pd.read_csv(folder_path + '/price.csv', index_col=0)
+        self.microgrid_price_df = pd.read_csv(folder_path + '/price_record.csv', index_col=0)
+        self.battery_soc_df = pd.read_csv(folder_path + '/battery_soc_record.csv', index_col=0)
+        self.ev_battery_soc_df = pd.read_csv(folder_path + '/ev_battery_soc_record.csv', index_col=0)
 
-        self.buy_inelastic_df = pd.read_csv('output/buy_inelastic_record.csv', index_col=0)
-        self.buy_elastic_df = pd.read_csv('output/buy_elastic_record.csv', index_col=0)
-        self.buy_shifted_df = pd.read_csv('output/buy_shifted_record.csv', index_col=0)
-        self.sell_pv_df = pd.read_csv('output/sell_record.csv', index_col=0)
+        self.buy_inelastic_df = pd.read_csv(folder_path + '/buy_inelastic_record.csv', index_col=0)
+        self.buy_elastic_df = pd.read_csv(folder_path + '/buy_elastic_record.csv', index_col=0)
+        self.buy_shifted_df = pd.read_csv(folder_path + '/buy_shifted_record.csv', index_col=0)
+        self.sell_pv_df = pd.read_csv(folder_path + '/sell_record.csv', index_col=0)
 
-        self.buy_battery_df = pd.read_csv('output/buy_battery_record.csv', index_col=0)
-        self.buy_ev_battery_df = pd.read_csv('output/buy_ev_battery_record.csv', index_col=0)
-        self.sell_battery_df = pd.read_csv('output/sell_battery_record.csv', index_col=0)
-        self.sell_ev_battery_df = pd.read_csv('output/sell_ev_battery_record.csv', index_col=0)
+        self.buy_battery_df = pd.read_csv(folder_path + '/buy_battery_record.csv', index_col=0)
+        self.buy_ev_battery_df = pd.read_csv(folder_path + '/buy_ev_battery_record.csv', index_col=0)
+        self.sell_battery_df = pd.read_csv(folder_path + '/sell_battery_record.csv', index_col=0)
+        self.sell_ev_battery_df = pd.read_csv(folder_path + '/sell_ev_battery_record.csv', index_col=0)
 
         timestamp_df = pd.read_csv('data/demand.csv')
         timestamp_df['timestamp'] = pd.to_datetime(timestamp_df['timestamp'])
         self.timestamps = timestamp_df['timestamp']
-        self.original_demand_df = pd.read_csv('output/demand.csv', index_col=0)
-        self.original_pv_supply_df = pd.read_csv('output/supply.csv', index_col=0)
+        self.original_demand_df = pd.read_csv(folder_path + '/demand.csv', index_col=0)
+        self.original_pv_supply_df = pd.read_csv(folder_path + '/supply.csv', index_col=0)
 
     def plot_consumption(self):
         # fig = go.Figure()
@@ -260,9 +261,9 @@ class Visualize:
             ]
         )
         # HTMLファイルとして保存
-        fig.write_html("output/consumption_generation_plot.html")
+        fig.write_html(self.folder_path + "/consumption_generation_plot.html")
                       
 
 if __name__ == '__main__':
-    Visualize().plot_consumption()
-    print(pd.read_csv('output/buy_inelastic_record.csv', index_col=0))
+    Visualize(folder_path='output/避難').plot_consumption()
+    # print(pd.read_csv('output/buy_inelastic_record.csv', index_col=0))

@@ -90,7 +90,10 @@ def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict)
     pymarketにはuniform price mechanismが実装されていないので、自前で実装する
     """
     trans = pm.TransactionManager()
-
+    
+    # Add some noise to the prices to find the intersection point
+    bids['price'] = bids['price'] + np.random.uniform(-0.000001, 0.000001, bids.shape[0])
+    
     buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
     sell, _ = pm.bids.supply_curve_from_bids(bids) # type: ignore # Creates supply curve from bids
 
@@ -100,9 +103,8 @@ def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict)
     # s_ is the index of the seller in that position
     q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
     while b_ is None or s_ is None:
-        logger.warning('intersection not found, adding noise to the prices and trying again.')
-        # Add some noise to the prices to find the intersection point
-        bids['price'] = bids['price'] + np.random.uniform(-0.0001, 0.0001, bids.shape[0])
+        logger.warning('intersection not found, adding bigger noise to the prices and trying again.')
+        bids['price'] = bids['price'] + np.random.uniform(-0.00001, 0.00001, bids.shape[0])
         buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
         sell, _ = pm.bids.supply_curve_from_bids(bids) # type: ignore # Creates supply curve from bids
         q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
@@ -204,12 +206,12 @@ class Market:
         bids = self.market.bm.get_df()
         return transactions_df, extras
     
-    def plot(self, title, number, ax=None):
+    def plot(self, title, episode, number, ax=None):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax = self.market.plot(ax=ax)
         ax.set_title(title)
-        os.makedirs("output/bid_image", exist_ok=True)
-        fig.savefig(f"output/bid_image/{number}.png")
+        os.makedirs('output/episode' + str(episode) + '/bid_image', exist_ok=True)
+        fig.savefig(f"output/episode{episode}/bid_image/{number}.png")
         plt.close(fig)
         plt.clf()
 

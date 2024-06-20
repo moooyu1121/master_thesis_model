@@ -9,15 +9,13 @@ def bins(clip_min, clip_max, num):
 
 
 class Q:
-    def __init__(self, params, agents_params_df, num_dizitized_pv_ratio, num_dizitized_soc):
-        self.agents_params_df = agents_params_df
-        self.agent_num = agents_params_df.shape[0]
+    def __init__(self, params, agent_num, num_dizitized_pv_ratio, num_dizitized_soc):
+        self.agent_num = agent_num
         self.possible_params = Agent(self.agent_num).generate_params()
         self.params = params
         self.num_dizitized_pv_ratio = num_dizitized_pv_ratio
         self.num_dizitized_soc = num_dizitized_soc
 
-    def reset_qtb(self):
         dr_buy_rows = self.num_dizitized_pv_ratio * len(self.possible_params['elastic_ratio_list']) * \
                 len(self.possible_params['dr_price_threshold_list']) * \
                 len(self.possible_params['alpha_list']) * \
@@ -44,6 +42,9 @@ class Q:
         self.battery_sell_qtb = np.full((battery_sell_rows, cols), 1000.0)
         self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 1000.0)
         self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 1000.0)
+
+    def set_agent_params(self, agent_params_df):
+        self.agents_params_df = agent_params_df
 
     @property
     def get_qtbs_(self):
@@ -144,6 +145,10 @@ class Q:
     
     @property
     def get_actions(self):
+        """
+        エージェントiの行動がi行目
+        カラムにはdr_buy, battery_buy, battery_sell, ev_battery_buy, ev_battery_sellの順で格納されている
+        """
         return self.next_actions
     
     def update_q_table(self, states, actions, rewards, next_states):
@@ -153,17 +158,36 @@ class Q:
         """
         gamma = 0.999
         alpha = 0.1
-        dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb[next_states[0], :]) - self.dr_buy_qtb[states[0], actions[0]]
-        battery_buy_td_error = rewards[1] + gamma * np.max(self.battery_buy_qtb[next_states[1], :]) - self.battery_buy_qtb[states[1], actions[1]]
-        battery_sell_td_error = rewards[2] + gamma * np.max(self.battery_sell_qtb[next_states[2], :]) - self.battery_sell_qtb[states[2], actions[2]]
-        ev_battery_buy_td_error = rewards[3] + gamma * np.max(self.ev_battery_buy_qtb[next_states[3], :]) - self.ev_battery_buy_qtb[states[3], actions[3]]
-        ev_battery_sell_td_error = rewards[4] + gamma * np.max(self.ev_battery_sell_qtb[next_states[4], :]) - self.ev_battery_sell_qtb[states[4], actions[4]]
-        
-        self.dr_buy_qtb[states[0], actions[0] - int(self.params['price_min'])] += alpha * dr_buy_td_error
-        self.battery_buy_qtb[states[1], actions[1] - int(self.params['price_min'])] += alpha * battery_buy_td_error
-        self.battery_sell_qtb[states[2], actions[2] - int(self.params['price_min'])] += alpha * battery_sell_td_error
-        self.ev_battery_buy_qtb[states[3], actions[3] - int(self.params['price_min'])] += alpha * ev_battery_buy_td_error
-        self.ev_battery_sell_qtb[states[4], actions[4] - int(self.params['price_min'])] += alpha * ev_battery_sell_td_error
+        dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb[next_states[0], :]) - self.dr_buy_qtb[states[0], 
+                                                                                                            int(actions[0]-self.params['price_min'])]
+        battery_buy_td_error = rewards[1] + gamma * np.max(self.battery_buy_qtb[next_states[1], :]) - self.battery_buy_qtb[states[1], 
+                                                                                                                           int(actions[1]-self.params['price_min'])]
+        battery_sell_td_error = rewards[2] + gamma * np.max(self.battery_sell_qtb[next_states[2], :]) - self.battery_sell_qtb[states[2], 
+                                                                                                                              int(actions[2]-self.params['price_min'])]
+        ev_battery_buy_td_error = rewards[3] + gamma * np.max(self.ev_battery_buy_qtb[next_states[3], :]) - self.ev_battery_buy_qtb[states[3], 
+                                                                                                                                    int(actions[3]-self.params['price_min'])]
+        ev_battery_sell_td_error = rewards[4] + gamma * np.max(self.ev_battery_sell_qtb[next_states[4], :]) - self.ev_battery_sell_qtb[states[4], 
+                                                                                                                                       int(actions[4]-self.params['price_min'])]
+
+        self.dr_buy_qtb[states[0], int(actions[0] - self.params['price_min'])] += alpha * dr_buy_td_error
+        self.battery_buy_qtb[states[1], int(actions[1] - self.params['price_min'])] += alpha * battery_buy_td_error
+        self.battery_sell_qtb[states[2], int(actions[2] - self.params['price_min'])] += alpha * battery_sell_td_error
+        self.ev_battery_buy_qtb[states[3], int(actions[3] - self.params['price_min'])] += alpha * ev_battery_buy_td_error
+        self.ev_battery_sell_qtb[states[4], int(actions[4] - self.params['price_min'])] += alpha * ev_battery_sell_td_error
+
+    def save_q_table(self, folder_path):
+        np.save(folder_path + '/dr_buy_qtb.npy', self.dr_buy_qtb)
+        np.save(folder_path + '/battery_buy_qtb.npy', self.battery_buy_qtb)
+        np.save(folder_path + '/battery_sell_qtb.npy', self.battery_sell_qtb)
+        np.save(folder_path + '/ev_battery_buy_qtb.npy', self.ev_battery_buy_qtb)
+        np.save(folder_path + '/ev_battery_sell_qtb.npy', self.ev_battery_sell_qtb)
+
+    def load_q_table(self, folder_path):
+        self.dr_buy_qtb = np.load(folder_path + '/dr_buy_qtb.npy')
+        self.battery_buy_qtb = np.load(folder_path + '/battery_buy_qtb.npy')
+        self.battery_sell_qtb = np.load(folder_path + '/battery_sell_qtb.npy')
+        self.ev_battery_buy_qtb = np.load(folder_path + '/ev_battery_buy_qtb.npy')
+        self.ev_battery_sell_qtb = np.load(folder_path + '/ev_battery_sell_qtb.npy')
     
 
 if __name__ == '__main__':
@@ -176,12 +200,13 @@ if __name__ == '__main__':
               'ev_charge_efficiency': 0.9,
               'ev_discharge_efficiency': 0.9,
     }
-    q = Q(params, agents_params_df, num_dizitized_pv_ratio=20, num_dizitized_soc=20)
-    q.reset_qtb()
+    q = Q(params, agent_num=10, num_dizitized_pv_ratio=20, num_dizitized_soc=20)
     dr_buy_qtb, battery_buy_qtb, battery_sell_qtb, ev_battery_buy_qtb, ev_battery_sell_qtb = q.get_qtbs_
+    q.set_agent_params(agents_params_df)
     q.reset_all_digitized_states()
-    for n in range(agents_params_df.shape[0]):
-        q.set_digitized_states(agent_id=n, pv_ratio=0.21, battery_soc=0.43, ev_battery_soc=0.67)
+    # for n in range(agents_params_df.shape[0]):
+    #     q.set_digitized_states(agent_id=n, pv_ratio=0.21, battery_soc=0.43, ev_battery_soc=0.67)
+    q.set_digitized_states(agent_id=0, pv_ratio=0.21, battery_soc=0.43, ev_battery_soc=0.67)
     dr_states, battery_states, ev_battery_states = q.get_states
     print(dr_states)
 
@@ -193,3 +218,6 @@ if __name__ == '__main__':
     q.reset_all_actions()
     q.set_actions(agent_id=0, episode=1)
     print(q.get_actions)
+    print(q.get_actions[0][0])
+
+    print(np.full(10, np.nan))

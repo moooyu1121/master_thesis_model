@@ -55,10 +55,10 @@ class Preprocess:
         self.price_df.reset_index(inplace=True, drop=True)
         return self.demand_df, self.supply_df, self.price_df
     
-    def save(self, path):
-        self.demand_df.to_csv(f'{path}/demand.csv', index=True)
-        self.supply_df.to_csv(f'{path}/supply.csv', index=True)
-        self.price_df.to_csv(f'{path}/price.csv', index=True)
+    def save(self, folder_path):
+        self.demand_df.to_csv(f'{folder_path}/demand.csv', index=True)
+        self.supply_df.to_csv(f'{folder_path}/supply.csv', index=True)
+        self.price_df.to_csv(f'{folder_path}/price.csv', index=True)
 
 
 # ランダムな整数を生成する関数

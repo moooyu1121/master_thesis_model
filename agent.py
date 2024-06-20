@@ -6,6 +6,10 @@ class Agent:
     def __init__(self, num_agent):
         self.num_agent = num_agent
         self.agent_params_df = pd.DataFrame(0.0, index=np.arange(num_agent), columns=['shift_limit', 
+                                                                                      'max_battery_charge_speed',
+                                                                                      'max_battery_discharge_speed',
+                                                                                      'max_ev_charge_speed',
+                                                                                      'max_ev_discharge_speed',
                                                                                       'elastic_ratio', 
                                                                                       'dr_price_threshold', 
                                                                                       'battery_capacity', 
@@ -19,13 +23,17 @@ class Agent:
         
         
     def __getitem__(self, index):
-        if 0 <= index < self.num_agent:
+        if 0 <= index and index < self.num_agent:
             return self.agent_params_df.loc[index]
         else:
             raise IndexError("Agent index out of range")
 
     def set_uniform(self, **kwargs):
         self.agent_params_df['shift_limit'] = kwargs['shift_limit']
+        self.agent_params_df['max_battery_charge_speed'] = kwargs['max_battery_charge_speed']
+        self.agent_params_df['max_battery_discharge_speed'] = kwargs['max_battery_discharge_speed']
+        self.agent_params_df['max_ev_charge_speed'] = kwargs['max_ev_charge_speed']
+        self.agent_params_df['max_ev_discharge_speed'] = kwargs['max_ev_discharge_speed']
         self.agent_params_df['elastic_ratio'] = kwargs['elastic_ratio']
         self.agent_params_df['dr_price_threshold'] = kwargs['dr_price_threshold']
         self.agent_params_df['battery_capacity'] = kwargs['battery_capacity']
@@ -39,6 +47,10 @@ class Agent:
 
     def set_one_agent(self, agent_id, **kwargs):
         self.agent_params_df.at[agent_id, 'shift_limit'] = kwargs['shift_limit']
+        self.agent_params_df.at[agent_id, 'max_battery_charge_speed'] = kwargs['max_battery_charge_speed']
+        self.agent_params_df.at[agent_id, 'max_battery_discharge_speed'] = kwargs['max_battery_discharge_speed']
+        self.agent_params_df.at[agent_id, 'max_ev_charge_speed'] = kwargs['max_ev_charge_speed']
+        self.agent_params_df.at[agent_id, 'max_ev_discharge_speed'] = kwargs['max_ev_discharge_speed']
         self.agent_params_df.at[agent_id, 'elastic_ratio'] = kwargs['elastic_ratio']
         self.agent_params_df.at[agent_id, 'dr_price_threshold'] = kwargs['dr_price_threshold']
         self.agent_params_df.at[agent_id, 'battery_capacity'] = kwargs['battery_capacity']
@@ -51,11 +63,15 @@ class Agent:
         self.agent_params_df.at[agent_id, 'omega'] = kwargs['omega']
 
     def generate_params(self, **kwargs):
-        params = {'shift_limit_list': [6.0, 12.0, 18.0, 24.0],
+        params = {'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
+                  'max_battery_charge_speed': [3.0],  # kW
+                  'max_battery_discharge_speed': [3.0],  # kW
+                  'max_ev_charge_speed': [6.0],  # kW
+                  'max_ev_discharge_speed': [3.0],  # kW
                   'elastic_ratio_list': [0.3, 0.4, 0.5],
-                  'dr_price_threshold_list': [20, 25, 30, 35, 40], 
-                  'battery_capacity_list': [10, 15, 20],
-                  'ev_capacity_list': [20, 40, 60, 80],
+                  'dr_price_threshold_list': [20, 25, 30, 35, 40],  # cents/kWh
+                  'battery_capacity_list': [10, 15, 20],    # kWh
+                  'ev_capacity_list': [20, 40, 60, 80],     # kWh
                   'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                   'beta_list': [1],
                   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
@@ -64,6 +80,10 @@ class Agent:
                   'omega_list': [1],}
         params.update(kwargs)
         shift_limit_list = params['shift_limit_list']
+        max_battery_charge_speed = params['max_battery_charge_speed']
+        max_battery_discharge_speed = params['max_battery_discharge_speed']
+        max_ev_charge_speed = params['max_ev_charge_speed']
+        max_ev_discharge_speed = params['max_ev_discharge_speed']
         elastic_ratio_list = params['elastic_ratio_list']
         dr_price_threshold_list = params['dr_price_threshold_list']
         battery_capacity_list = params['battery_capacity_list']
@@ -77,6 +97,14 @@ class Agent:
 
         self.agent_params_df['shift_limit'] = self.agent_params_df.apply(
             lambda row: shift_limit_list[np.random.randint(0, len(shift_limit_list))], axis=1)
+        self.agent_params_df['max_battery_charge_speed'] = self.agent_params_df.apply(
+            lambda row: max_battery_charge_speed[np.random.randint(0, len(max_battery_charge_speed))], axis=1)
+        self.agent_params_df['max_battery_discharge_speed'] = self.agent_params_df.apply(
+            lambda row: max_battery_discharge_speed[np.random.randint(0, len(max_battery_discharge_speed))], axis=1)
+        self.agent_params_df['max_ev_charge_speed'] = self.agent_params_df.apply(
+            lambda row: max_ev_charge_speed[np.random.randint(0, len(max_ev_charge_speed))], axis=1)
+        self.agent_params_df['max_ev_discharge_speed'] = self.agent_params_df.apply(
+            lambda row: max_ev_discharge_speed[np.random.randint(0, len(max_ev_discharge_speed))], axis=1)
         self.agent_params_df['elastic_ratio'] = self.agent_params_df.apply(
             lambda row: elastic_ratio_list[np.random.randint(0, len(elastic_ratio_list))], axis=1)
         self.agent_params_df['dr_price_threshold'] = self.agent_params_df.apply(
