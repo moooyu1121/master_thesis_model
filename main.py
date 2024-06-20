@@ -210,6 +210,6 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, BID_SAVE=False, price_min=5)
+    main(num_agent=10, BID_SAVE=True, price_min=5)
     vis = visualize.Visualize()
     vis.plot_consumption()
