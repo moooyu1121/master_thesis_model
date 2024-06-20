@@ -1,15 +1,38 @@
 import numpy as np 
 import pandas as pd 
 import pymarket as pm
+from pymarket.plot import plot_demand_curves
 import matplotlib.pyplot as plt
 import os
+import logging
+logger = logging.getLogger('Logging')
+logger.setLevel(10)
+fh = logging.FileHandler('market.log')
+logger.addHandler(fh)
+formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(message)s')
+fh.setFormatter(formatter)
+
+
+class ModifiedPyMarket(pm.Market):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def plot(self, ax=None):
+        """
+        Plots the demand and supply curves.
+        """
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        df = self.bm.get_df()
+        ax = plot_demand_curves(df, ax=ax)
+        return ax
 
 
 def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict): # type: ignore
     """
     pymarketにはuniform price mechanismが実装されていないので、自前で実装する
     """
-
     trans = pm.TransactionManager()
 
     buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
@@ -20,6 +43,13 @@ def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict)
     # b_ is the index of the buyer in that position
     # s_ is the index of the seller in that position
     q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
+    while b_ is None or s_ is None:
+        logger.warning('intersection not found, adding noise to the prices and trying again.')
+        # Add some noise to the prices to find the intersection point
+        bids['price'] = bids['price'] + np.random.uniform(-0.0001, 0.0001, bids.shape[0])
+        buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
+        sell, _ = pm.bids.supply_curve_from_bids(bids) # type: ignore # Creates supply curve from bids
+        q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
 
     buying_bids  = bids.loc[bids['buying']].sort_values('price', ascending=False)
     selling_bids = bids.loc[~bids['buying']].sort_values('price', ascending=True)
@@ -93,7 +123,8 @@ class Market:
         self.demand_list = demand_list
         self.supply_list = supply_list
         self.whoelsale_price = wholesale_price
-        self.market = pm.Market()
+        # self.market = pm.Market()
+        self.market = ModifiedPyMarket()
         self.BID_SAVE = BID_SAVE
 
     def bid(self):
@@ -120,7 +151,7 @@ class Market:
     def plot(self, title, number, ax=None):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax = self.market.plot(ax=ax)
-        ax.set_title(title)
+        # ax.set_title(title)
         os.makedirs("output/bid_image", exist_ok=True)
         fig.savefig(f"output/bid_image/{number}.png")
         plt.close(fig)
@@ -132,7 +163,7 @@ if __name__ == "__main__":
     # Adding the new mechanism to the list of available mechanism of the market
     pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
 
-    mar = pm.Market() # Creates a new market
+    mar = ModifiedPyMarket() # Creates a new market
     # mar.accept_bid(quantity, price, user, buying)
     buyers_names=['CleanRetail','El4You','EVcharge','QualiWatt','IntelliWatt']
     mar.accept_bid(250,200,0,True) # CleanRetail 0 
@@ -174,9 +205,9 @@ if __name__ == "__main__":
     # pprint.pprint(extras)
     # stats=mar.statistics()
     # # pprint.pprint(statistics)
-    # fig, ax = plt.subplots(figsize=(8, 6))
-    # ax = mar.plot(ax=ax)
-    # fig.savefig("graph.png")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax = mar.plot(ax=ax)
+    fig.savefig("graph.png")
     # fig, ax = plt.subplots(figsize=(8, 6))
     # ax = mar.plot_method('huang', ax=ax)
     # fig.savefig("graph_huang.png")

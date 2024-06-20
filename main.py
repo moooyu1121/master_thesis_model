@@ -10,6 +10,13 @@ import visualize
 from preprocess import Preprocess
 from market import Market
 from agent import Agent
+import logging
+logger = logging.getLogger('Logging')
+logger.setLevel(10)
+fh = logging.FileHandler('main.log')
+logger.addHandler(fh)
+formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(message)s')
+fh.setFormatter(formatter)
 
 
 def main(num_agent, BID_SAVE = False, **kwargs):
@@ -47,6 +54,13 @@ def main(num_agent, BID_SAVE = False, **kwargs):
     agents = Agent(num_agent)
     agents.generate_params()
     agents.save('output')
+
+    # get average pv production ratio to get state in Q table
+    # data is stored as kWh/kW, which means, the values are within 0~1
+    pv_ratio_df = pd.read_csv('data/supply.csv', index_col=0)
+    pv_ratio_df['mean'] = pv_ratio_df.mean(axis=1)
+    pv_ratio_df.reset_index(inplace=True, drop=True)
+    print(pv_ratio_df.at[10,'mean'])
 
     # Initialize record dataframes
     microgrid_price_record_df = pd.DataFrame(999.0, index=price_df.index, columns=['Price'])
@@ -94,7 +108,7 @@ def main(num_agent, BID_SAVE = False, **kwargs):
                 price_elas = price_max
                 d_elas = d_elas_max * (agents[i]['dr_price_threshold']-price_elas)/(agents[i]['dr_price_threshold']-price_min)
             elif price_elas < price_min:
-                price_elas = price_min + 0.01
+                price_elas = price_min + 0.000001
                 # price_elas = price_min
                 d_elas = d_elas_max * (agents[i]['dr_price_threshold']-price_elas)/(agents[i]['dr_price_threshold']-price_min)
             else:
@@ -196,6 +210,6 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, BID_SAVE=True, price_min=5)
+    main(num_agent=10, BID_SAVE=False, price_min=5)
     vis = visualize.Visualize()
     vis.plot_consumption()

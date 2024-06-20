@@ -97,6 +97,7 @@ class Agent:
             lambda row: psi_list[np.random.randint(0, len(psi_list))], axis=1)
         self.agent_params_df['omega'] = self.agent_params_df.apply(
             lambda row: omega_list[np.random.randint(0, len(omega_list))], axis=1)
+        return params
     
     def get_agent_params(self, agent_id):
         return self.agent_params_df.loc[agent_id]

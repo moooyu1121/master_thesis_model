@@ -23,6 +23,10 @@ class Preprocess:
     def get_dfs_(self):
         return self.demand_df, self.supply_df, self.price_df
     
+    @property
+    def get_nparrays_(self):
+        return self.demand_df.to_numpy(), self.supply_df.to_numpy(), self.price_df.to_numpy()
+    
     def generate_demand(self, n):
         num_columns = self.demand_df.shape[1]
         columns = generate_unique_random_integers(num_columns, n)
