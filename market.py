@@ -2,12 +2,138 @@ import numpy as np
 import pandas as pd 
 import pymarket as pm
 import matplotlib.pyplot as plt
-import pprint
+import os
+
+
+def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict): # type: ignore
+    """
+    pymarketにはuniform price mechanismが実装されていないので、自前で実装する
+    """
+
+    trans = pm.TransactionManager()
+
+    buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
+    sell, _ = pm.bids.supply_curve_from_bids(bids) # type: ignore # Creates supply curve from bids
+
+    # q_ is the quantity at which supply and demand meet
+    # price is the price at which that happens
+    # b_ is the index of the buyer in that position
+    # s_ is the index of the seller in that position
+    q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
+
+    buying_bids  = bids.loc[bids['buying']].sort_values('price', ascending=False)
+    selling_bids = bids.loc[~bids['buying']].sort_values('price', ascending=True)
+
+    ## Filter only the trading bids.
+    buying_bids = buying_bids.iloc[: b_ + 1, :]
+    selling_bids = selling_bids.iloc[: s_ + 1, :]
+
+    # Find the long side of the market
+    buying_quantity = buying_bids.quantity.sum()
+    selling_quantity = selling_bids.quantity.sum()
+
+
+    if buying_quantity > selling_quantity:
+        long_side = buying_bids
+        short_side = selling_bids
+    else:
+        long_side = selling_bids
+        short_side = buying_bids
+
+    traded_quantity = short_side.quantity.sum()
+
+    ## All the short side will trade at `price`
+    ## The -1 is there because there is no clear 1 to 1 trade.
+    for i, x in short_side.iterrows():
+        t = (i, x.quantity, price, -1, False)
+        trans.add_transaction(*t)
+
+    ## The long side has to trade only up to the short side
+    quantity_added = 0
+    for i, x in long_side.iterrows():
+
+        if x.quantity + quantity_added <= traded_quantity:
+            x_quantity = x.quantity
+        else:
+            x_quantity = traded_quantity - quantity_added
+        t = (i, x_quantity, price, -1, False)
+        trans.add_transaction(*t)
+        quantity_added += x.quantity
+
+    extra = {
+        'clearing quantity': q_,
+        'clearing price': price
+    }
+
+    return trans, extra
+
+
+class UniformPrice(pm.Mechanism):
+    """
+    Interface for our new uniform price mechanism.
+
+    Parameters
+    -----------
+    bids
+        Collection of bids to run the mechanism
+        with.
+    """
+
+    def __init__(self, bids, *args, **kwargs):
+        """TODO: to be defined1. """
+        pm.Mechanism.__init__(self, uniform_price_mechanism, bids, *args, **kwargs)
+
+
+class Market:
+    def __init__(self, demand_list, supply_list, wholesale_price, BID_SAVE=False) -> None:
+        """
+        [[quantity1, price1, user1, buying], [quantity2, price2, user2, buying]...]
+        の形式で需要と供給をリストで受け取る
+        """
+        self.demand_list = demand_list
+        self.supply_list = supply_list
+        self.whoelsale_price = wholesale_price
+        self.market = pm.Market()
+        self.BID_SAVE = BID_SAVE
+
+    def bid(self):
+        for i in range(len(self.demand_list)):
+            if self.demand_list[i][0] > 0:
+                self.market.accept_bid(self.demand_list[i][0], self.demand_list[i][1], self.demand_list[i][2], True)
+        for i in range(len(self.supply_list)):
+            if self.supply_list[i][0] > 0:
+                self.market.accept_bid(self.supply_list[i][0], self.supply_list[i][1], self.supply_list[i][2], False)
+        # import from grid and export to grid
+        if self.BID_SAVE:
+            self.market.accept_bid(0.2*len(self.demand_list), self.whoelsale_price, 99999, False)
+            self.market.accept_bid(0.1*len(self.supply_list), 0.01, 99999, True)
+        else:
+            self.market.accept_bid(1*len(self.demand_list), self.whoelsale_price, 99999, False)
+            self.market.accept_bid(1*len(self.supply_list), 0.01, 99999, True)
+
+    def run(self, mechanism='uniform'):
+        transactions, extras = self.market.run(mechanism)
+        transactions_df = transactions.get_df()
+        bids = self.market.bm.get_df()
+        return transactions_df, extras
+    
+    def plot(self, title, number, ax=None):
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax = self.market.plot(ax=ax)
+        ax.set_title(title)
+        os.makedirs("output/bid_image", exist_ok=True)
+        fig.savefig(f"output/bid_image/{number}.png")
+        plt.close(fig)
+        plt.clf()
+
 
 
 if __name__ == "__main__":
-    mar = pm.Market() # Creates a new market
+    # Adding the new mechanism to the list of available mechanism of the market
+    pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
 
+    mar = pm.Market() # Creates a new market
+    # mar.accept_bid(quantity, price, user, buying)
     buyers_names=['CleanRetail','El4You','EVcharge','QualiWatt','IntelliWatt']
     mar.accept_bid(250,200,0,True) # CleanRetail 0 
     mar.accept_bid(300,110,1,True) #El4You 1 
@@ -42,13 +168,17 @@ if __name__ == "__main__":
     bids = mar.bm.get_df()
     print(bids)
 
-    transactions, extras = mar.run('huang') # run the huang mechanism
+    transactions, extras = mar.run('uniform') # run the uniform mechanism
     transactions_df = transactions.get_df()
     print(transactions_df)
-    pprint.pprint(extras)
-    stats=mar.statistics()
+    # pprint.pprint(extras)
+    # stats=mar.statistics()
     # # pprint.pprint(statistics)
-    # mar.plot()
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax = mar.plot_method('huang', ax=ax)
-    fig.savefig("graph")
+    # fig, ax = plt.subplots(figsize=(8, 6))
+    # ax = mar.plot(ax=ax)
+    # fig.savefig("graph.png")
+    # fig, ax = plt.subplots(figsize=(8, 6))
+    # ax = mar.plot_method('huang', ax=ax)
+    # fig.savefig("graph_huang.png")
+
+    
