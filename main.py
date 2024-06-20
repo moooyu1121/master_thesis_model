@@ -328,12 +328,14 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
         reward_df.to_csv('output/episode' + str(episode) + '/reward.csv', index=True)
         q.save_q_table(folder_path = 'output/episode'+str(episode))
 
+        vis = visualize.Visualize(folder_path='output/episode' + str(episode))
+        vis.plot_consumption()
+
 
 if __name__ == "__main__":
     # Adding the new mechanism to the list of available mechanism of the market
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, num_episode=100, BID_SAVE=True)
-    vis = visualize.Visualize(folder_path='output/episode0')
-    vis.plot_consumption()
+    main(num_agent=10, num_episode=100, BID_SAVE=False)
+    
