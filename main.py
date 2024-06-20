@@ -197,9 +197,10 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             market.bid()
             bids_df = market.market.bm.get_df()
             # print(bids_df)
-            if BID_SAVE:
-                timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
-                market.plot(title=timestamp, episode=episode, number=t)
+            if episode == 0 or episode == num_episode-1:
+                if BID_SAVE:
+                    timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
+                    market.plot(title=timestamp, episode=episode, number=t)
             transactions_df, _ = market.run(mechanism='uniform')
             
             
@@ -333,6 +334,6 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, num_episode=10, BID_SAVE=False)
+    main(num_agent=10, num_episode=100, BID_SAVE=True)
     vis = visualize.Visualize(folder_path='output/episode0')
     vis.plot_consumption()
