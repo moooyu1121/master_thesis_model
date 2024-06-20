@@ -235,8 +235,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             battery_soc_record_df.at[t+1, f'{user}'] = battery_record_df.at[t+1, f'{user}'] / agents[user]['battery_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] - value) * 
-                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
+                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_df.at[t, f'{user}']))))
 
                     elif item == 3:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
@@ -246,8 +246,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             battery_soc_record_df.at[t+1, f'{user}'] = battery_record_df.at[t+1, f'{user}'] / agents[user]['battery_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] + value) * 
-                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
+                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_df.at[t, f'{user}']))))
 
                     elif item == 4:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
@@ -257,8 +257,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             ev_battery_soc_record_df.at[t+1, f'{user}'] = ev_battery_record_df.at[t+1, f'{user}'] / agents[user]['ev_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] - value) *
-                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
+                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
 
                     elif item == 5:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
@@ -268,8 +268,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             ev_battery_soc_record_df.at[t+1, f'{user}'] = ev_battery_record_df.at[t+1, f'{user}'] / agents[user]['ev_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] + value) *
-                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
+                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
 
                     elif item == 6:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
@@ -337,5 +337,5 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, num_episode=100, BID_SAVE=False)
+    main(num_agent=10, num_episode=100, BID_SAVE=True)
     
