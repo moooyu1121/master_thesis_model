@@ -197,7 +197,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             market.bid()
             bids_df = market.market.bm.get_df()
             # print(bids_df)
-            if episode == 0 or episode == num_episode-1:
+            if episode == 0 or episode == num_episode-1 or episode%10 == 0:
                 if BID_SAVE:
                     timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
                     market.plot(title=timestamp, episode=episode, number=t)
