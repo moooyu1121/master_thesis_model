@@ -78,7 +78,7 @@ class Agent:
                   'beta_list': [1],
                   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                   'epsilon_list': [1],
-                  'psi_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                  'psi_list': [3, 3.5, 4, 4.5, 5, 5.5, 6],
                   'omega_list': [1],}
         params.update(kwargs)
         shift_limit_list = params['shift_limit_list']

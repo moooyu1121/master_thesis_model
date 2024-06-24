@@ -200,10 +200,10 @@ class Market:
         # import from grid and export to grid
         if self.BID_SAVE:
             self.market.accept_bid(0.2*len(self.demand_list), self.whoelsale_price, 99999, False)
-            self.market.accept_bid(0.1*len(self.supply_list), 0.01, 99999, True)
+            # self.market.accept_bid(0.1*len(self.supply_list), 0.01, 99999, True)
         else:
             self.market.accept_bid(1*len(self.demand_list), self.whoelsale_price, 99999, False)
-            self.market.accept_bid(1*len(self.supply_list), 0.01, 99999, True)
+            # self.market.accept_bid(1*len(self.supply_list), 0.01, 99999, True)
 
     def run(self, mechanism='uniform'):
         transactions, extras = self.market.run(mechanism)

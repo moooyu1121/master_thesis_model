@@ -37,11 +37,11 @@ class Q:
                 len(self.possible_params['psi_list']) * \
                 len(self.possible_params['omega_list'])
         cols = int(self.params['price_max']) - int(self.params['price_min']) + 1
-        self.dr_buy_qtb = np.full((dr_buy_rows, cols), 10000.0)
-        self.battery_buy_qtb = np.full((battery_buy_rows, cols), 10000.0)
-        self.battery_sell_qtb = np.full((battery_sell_rows, cols), 10000.0)
-        self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 10000.0)
-        self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 10000.0)
+        self.dr_buy_qtb = np.full((dr_buy_rows, cols), 1000.0)
+        self.battery_buy_qtb = np.full((battery_buy_rows, cols), 1000.0)
+        self.battery_sell_qtb = np.full((battery_sell_rows, cols), 1000.0)
+        self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 1000.0)
+        self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 1000.0)
 
     def set_agent_params(self, agent_params_df):
         self.agents_params_df = agent_params_df

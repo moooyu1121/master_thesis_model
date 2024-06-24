@@ -8,6 +8,7 @@ import numpy as np
 class Visualize:
     def __init__(self, folder_path) -> None:
         self.folder_path = folder_path
+        self.grid_import_df = pd.read_csv(folder_path + '/grid_import_record.csv', index_col=0)
         self.grid_price_df = pd.read_csv(folder_path + '/price.csv', index_col=0)
         self.microgrid_price_df = pd.read_csv(folder_path + '/price_record.csv', index_col=0)
         self.battery_soc_df = pd.read_csv(folder_path + '/battery_soc_record.csv', index_col=0)
@@ -32,7 +33,7 @@ class Visualize:
     def plot_consumption(self):
         # fig = go.Figure()
         # Figureオブジェクトを作成し、2行1列のサブプロットを設定
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.2)
+        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.2)
 
         # Plot original demand line
         fig.add_trace(go.Scatter(
@@ -116,6 +117,20 @@ class Visualize:
         stackgroup='up',
         visible=True
         ), row=1, col=1)
+
+        fig.add_trace(go.Scatter(
+        x=self.timestamps, y=self.battery_soc_df.mean(axis=1)*100,
+        mode='lines',
+        name='Battery SoC average',
+        visible=True,
+        ), row=3, col=1)
+
+        fig.add_trace(go.Scatter(
+        x=self.timestamps, y=self.ev_battery_soc_df.mean(axis=1)*100,
+        mode='lines',
+        name='EV Battery SoC average',
+        visible=True,
+        ), row=3, col=1)
 
         for agent in self.buy_inelastic_df.columns:
             # Plot original demand line
@@ -201,6 +216,20 @@ class Visualize:
             visible=False
             ), row=1, col=1)
 
+            fig.add_trace(go.Scatter(
+            x=self.timestamps, y=self.battery_soc_df[agent]*100,
+            mode='lines',
+            name='Battery SoC',
+            visible=True,
+            ), row=3, col=1)
+
+            fig.add_trace(go.Scatter(
+            x=self.timestamps, y=self.ev_battery_soc_df[agent]*100,
+            mode='lines',
+            name='EV Battery SoC',
+            visible=True,
+            ), row=3, col=1)
+
         
         fig.add_trace(go.Scatter(
             x=self.timestamps, y=self.microgrid_price_df['Price'],
@@ -227,7 +256,7 @@ class Visualize:
                     method='update'
                 )
             )
-        for j in range(10):
+        for j in range(12):
             dropdown_buttons[-1]['args'][0]['visible'][j] = True
         dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
         dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
@@ -241,8 +270,8 @@ class Visualize:
                     method='update'
                 )
             )
-            for j in range(10):
-                dropdown_buttons[-1]['args'][0]['visible'][10*(i+1) + j] = True
+            for j in range(12):
+                dropdown_buttons[-1]['args'][0]['visible'][12*(i+1) + j] = True
             dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
             dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
         
@@ -275,7 +304,10 @@ class Visualize:
 
         fig.update_xaxes(title_text='Time', row=2, col=1)
         fig.update_yaxes(title_text='cents/kWh', row=2, col=1)
-        
+
+        fig.update_xaxes(title_text='Time', row=3, col=1)
+        fig.update_yaxes(title_text='SoC[%]', row=3, col=1)
+
         # HTMLファイルとして保存
         fig.write_html(self.folder_path + "/consumption_generation_plot.html")
                       
