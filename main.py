@@ -19,7 +19,7 @@ fh = logging.FileHandler('main.log')
 logger.addHandler(fh)
 formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(message)s')
 fh.setFormatter(formatter)
-
+np.seterr(all='raise')  # これでエラー発生時に例外が発生する
 
 def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
     # Update market and uniform parameters
@@ -70,58 +70,64 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
         # data is stored as kWh/kW, which means, the values are within 0~1
         pv_ratio_df = pd.read_csv('data/supply.csv', index_col=0)
         pv_ratio_df['mean'] = pv_ratio_df.mean(axis=1)
-        pv_ratio_df.reset_index(inplace=True, drop=True)
+        pv_ratio_arr = pv_ratio_df['mean'].values
 
-        # Initialize record dataframes
-        microgrid_price_record_df = pd.DataFrame(999.0, index=price_df.index, columns=['Price'])
-        battery_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        ev_battery_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        battery_soc_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        ev_battery_soc_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        buy_inelastic_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        buy_elastic_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        buy_shifted_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        buy_battery_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        buy_ev_battery_record_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        sell_pv_record_df = pd.DataFrame(0.0, index=supply_df.index, columns=supply_df.columns)
-        sell_battery_record_df = pd.DataFrame(0.0, index=supply_df.index, columns=supply_df.columns)
-        sell_ev_battery_record_df = pd.DataFrame(0.0, index=supply_df.index, columns=supply_df.columns)
-        reward_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
+        # Initialize record arrays
+        microgrid_price_record_arr = np.full(len(price_df), 999.0)
+        battery_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        ev_battery_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        battery_soc_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        ev_battery_soc_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        buy_inelastic_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        buy_elastic_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        buy_shifted_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        buy_battery_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        buy_ev_battery_record_arr = np.full((len(demand_df), num_agent), 0.0)
+        sell_pv_record_arr = np.full((len(supply_df), num_agent), 0.0)
+        sell_battery_record_arr = np.full((len(supply_df), num_agent), 0.0)
+        sell_ev_battery_record_arr = np.full((len(supply_df), num_agent), 0.0)
+        reward_arr = np.full((len(demand_df), num_agent), 0.0)
+        electricity_cost_arr = np.full((len(demand_df), num_agent), 0.0)
         
         # Generate elastic and inelastic demand according to the elastic ratio of each agent
-        demand_elastic_df = demand_df.copy()
-        demand_inelastic_df = demand_df.copy()
+        demand_elastic_arr = demand_df.values.copy()
+        demand_inelastic_arr = demand_df.values.copy()
         for i in range(num_agent):
-            demand_elastic_df[f'{i}'] = demand_df[f'{i}'] * agents[i]['elastic_ratio']
-            demand_inelastic_df[f'{i}'] = demand_df[f'{i}'] * (1 - agents[i]['elastic_ratio'])
-        # Prepare dataframe to record shifted demand
-        shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
-        
+            demand_elastic_arr[:, i] = demand_df[f'{i}'] * agents[i]['elastic_ratio']
+            demand_inelastic_arr[:, i] = demand_df[f'{i}'] * (1 - agents[i]['elastic_ratio'])
 
-        for t in tqdm(range(len(demand_df))):
+        # Prepare dataframe to record shifted demand
+        # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
+        shift_arr = np.full((len(demand_df), num_agent), 0.0)
+        
+        for t in tqdm(range(100)):
+        # for t in tqdm(range(len(demand_df))):
             demand_list = []
             supply_list = []
             wholesale_price = price_df.at[t, 'Price'] + wheeling_charge
             q.reset_all_digitized_states()
             q.reset_all_actions()
-            reward = np.full(num_agent, 0.0)
             for i in range(num_agent):
-                q.set_digitized_states(agent_id=i, 
-                                    pv_ratio=pv_ratio_df.at[t, 'mean'], 
-                                    battery_soc=battery_soc_record_df.at[t, f'{i}'],
-                                    ev_battery_soc=ev_battery_soc_record_df.at[t, f'{i}'])
+                q.set_digitized_states(agent_id=i,
+                                    pv_ratio=pv_ratio_arr[t],
+                                    battery_soc=battery_soc_record_arr[t, i],
+                                    ev_battery_soc=ev_battery_soc_record_arr[t, i])
                 q.set_actions(agent_id=i, episode=episode)
+                # 時刻tでのバッテリー残量を時刻t+1にコピー、取引があった場合バッテリー残量をさらに更新
+                if t+1 != len(demand_df):
+                    battery_record_arr[t+1, i] = battery_record_arr[t, i]
+                    ev_battery_record_arr[t+1, i] = ev_battery_record_arr[t, i]
                 # ユーザIDはデマンドレスポンスによる移動を考慮して1エージェントごとに
                 # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間ステップ分の数IDを保有する
                 # シフトリミットが24時間なら，31個IDを保有する
                 # agentのIDは0～, 100～, 200～, 300～, ...として，101にagent1のinelas，102にagent1のelas...のように割り当てる
                 id_base = i * 100
                 # デマンドレスポンス不可の需要
-                d_inelas = demand_inelastic_df.at[t, f'{i}']
+                d_inelas = demand_inelastic_arr[t, i]
                 demand_list.append([d_inelas, price_max, id_base+0, True])
 
                 # デマンドレスポンス可能の需要
-                d_elas_max = demand_elastic_df.at[t, f'{i}']
+                d_elas_max = demand_elastic_arr[t, i]
                 price_elas = q.get_actions[i, 0]
                 d_elas = d_elas_max * max((agents[i]['dr_price_threshold'] - price_elas)/(agents[i]['dr_price_threshold'] - price_min), 0)
                 if price_elas == price_min:
@@ -134,7 +140,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                 price_buy_battery = q.get_actions[i, 1]
                 price_sell_battery = q.get_actions[i, 2]
                 # バッテリー充放電可能量の取得
-                battery_amount = battery_record_df.at[t, f'{i}']
+                battery_amount = battery_record_arr[t, i]
                 if (agents[i]['battery_capacity'] - battery_amount) < (agents[i]['max_battery_charge_speed'] * battery_charge_efficiency):
                     charge_amount = (agents[i]['battery_capacity'] - battery_amount) / battery_charge_efficiency
                 else:
@@ -154,7 +160,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                 price_buy_ev_battery = q.get_actions[i, 3]
                 price_sell_ev_battery = q.get_actions[i, 4]
                 # EV充放電可能量の取得
-                ev_battery_amount = ev_battery_record_df.at[t, f'{i}']
+                ev_battery_amount = ev_battery_record_arr[t, i]
                 if (agents[i]['ev_capacity'] - ev_battery_amount) < (agents[i]['max_ev_charge_speed'] * ev_charge_efficiency):
                     ev_charge_amount = (agents[i]['ev_capacity'] - ev_battery_amount) / ev_charge_efficiency
                 else:
@@ -177,12 +183,12 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
 
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
-                shift_df.at[t, f'{i}'] = d_elas_max
+                shift_arr[t, i] = d_elas_max
 
                 # 過去からシフトした需要の入札
                 for k in range(t-int(agents[i]['shift_limit']), t):
                     if k >= 0:
-                        d_shift = shift_df.at[k, f'{i}']
+                        d_shift = shift_arr[k, i]
                         # シフトした需要の価格は，最低価格からしきい価格までシフトリミット時間ステップ分で線形に変化
                         price_shift = price_min + (agents[i]['dr_price_threshold'] - price_min) * (t-k) / agents[i]['shift_limit']
                         if k == t-int(agents[i]['shift_limit']):
@@ -196,15 +202,19 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             market = Market(demand_list, supply_list, wholesale_price)
             market.bid()
             bids_df = market.market.bm.get_df()
-            # print(bids_df)
+            
             if episode == 0 or episode == num_episode-1 or episode%10 == 0:
                 if BID_SAVE:
                     timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
                     market.plot(title=timestamp, episode=episode, number=t)
             transactions_df, _ = market.run(mechanism='uniform')
-            
+            # print(bids_df)
+            # print(transactions_df)
+            # input()
             
             # マーケット取引の結果を記録、報酬を計算
+            reward = np.full(num_agent, 0.0)
+            cost = np.full(num_agent, 0.0)
             for bid_num in transactions_df['bid']:
                 id = bids_df.at[bid_num, 'user']
                 if id != 99999:
@@ -215,81 +225,112 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                     price = transactions_df[transactions_df['bid']==bid_num]['price'].values[0]
                     if item == 0:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        buy_inelastic_record_df.at[t, f'{user}'] = value
+                        buy_inelastic_record_arr[t, user] = value
                         reward[user] -= value * price
+                        cost = value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price)
+                            input()
 
                     elif item == 1:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        buy_elastic_record_df.at[t, f'{user}'] = value
+                        buy_elastic_record_arr[t, user] = value
                         # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
-                        shift_df.at[t, f'{user}'] -= value
+                        shift_arr[t, user] -= value
                         reward[user] -= value * price
-                        reward[user] -= (agents[int(user)]['alpha']/2 * (demand_elastic_df.at[t, f'{i}'] - value)**2 + 
-                                        agents[int(user)]['beta']*(demand_elastic_df.at[t, f'{i}'] - value))
+                        reward[user] -= (agents[int(user)]['alpha']/2 * (demand_elastic_arr[t, i] - value)**2 + 
+                                        agents[int(user)]['beta']*(demand_elastic_arr[t, i] - value))
+                        cost = value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price, demand_elastic_arr[t, i])
+                            input()
 
                     elif item == 2:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        buy_battery_record_df.at[t, f'{user}'] = value
-                        if t+1 !=len(demand_df):
-                            battery_record_df.at[t+1, f'{user}'] += value * battery_charge_efficiency
-                            battery_soc_record_df.at[t+1, f'{user}'] = battery_record_df.at[t+1, f'{user}'] / agents[user]['battery_capacity']
+                        buy_battery_record_arr[t, user] = value
+                        if t+1 != len(demand_df):
+                            battery_record_arr[t+1, user] += value * battery_charge_efficiency
+                            battery_soc_record_arr[t+1, user] = battery_record_arr[t+1, user] / agents[user]['battery_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] - value) * 
-                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
+                        cost = value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price, battery_soc_record_arr[t, user])
+                            input()
 
                     elif item == 3:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        sell_battery_record_df.at[t, f'{user}'] = value
+                        sell_battery_record_arr[t, user] = value
                         if t+1 !=len(demand_df):
-                            battery_record_df.at[t+1, f'{user}'] -= value / battery_discharge_efficiency
-                            battery_soc_record_df.at[t+1, f'{user}'] = battery_record_df.at[t+1, f'{user}'] / agents[user]['battery_capacity']
+                            battery_record_arr[t+1, user] -= value / battery_discharge_efficiency
+                            battery_soc_record_arr[t+1, user] = battery_record_arr[t+1, user] / agents[user]['battery_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] + value) * 
-                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
+                        cost = -value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price, battery_soc_record_arr[t, user])
+                            input()
 
                     elif item == 4:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        buy_ev_battery_record_df.at[t, f'{user}'] = value
+                        buy_ev_battery_record_arr[t, user] = value
                         if t+1 !=len(demand_df):
-                            ev_battery_record_df.at[t+1, f'{user}'] += value * ev_charge_efficiency
-                            ev_battery_soc_record_df.at[t+1, f'{user}'] = ev_battery_record_df.at[t+1, f'{user}'] / agents[user]['ev_capacity']
+                            ev_battery_record_arr[t+1, user] += value * ev_charge_efficiency
+                            ev_battery_soc_record_arr[t+1, user] = ev_battery_record_arr[t+1, user] / agents[user]['ev_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] - value) *
-                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
+                        cost = value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price, ev_battery_soc_record_arr[t, user])
+                            input()
 
                     elif item == 5:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        sell_ev_battery_record_df.at[t, f'{user}'] = value
+                        sell_ev_battery_record_arr[t, user] = value
                         if t+1 !=len(demand_df):
-                            ev_battery_record_df.at[t+1, f'{user}'] -= value / ev_discharge_efficiency
-                            ev_battery_soc_record_df.at[t+1, f'{user}'] = ev_battery_record_df.at[t+1, f'{user}'] / agents[user]['ev_capacity']
+                            ev_battery_record_arr[t+1, user] -= value / ev_discharge_efficiency
+                            ev_battery_soc_record_arr[t+1, user] = ev_battery_record_arr[t+1, user] / agents[user]['ev_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] + value) *
-                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))**2 + 
-                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_df.at[t, f'{user}']))))
+                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
+                        cost = -value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price, ev_battery_soc_record_arr[t, user])
+                            input()
 
                     elif item == 6:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        sell_pv_record_df.at[t, f'{user}'] = value
+                        sell_pv_record_arr[t, user] = value
                         reward[user] += value * price
+                        cost = -value * price
+                        if np.isnan(reward[user]):
+                            print(item, value, price)
+                            input()
 
                     else:
                         # buy_shifted_record_dfに足し上げながらshift_dfを更新
                         for k in range(7, 7+int(agents[user]['shift_limit'])):
                             if item == k:
-                                buy_shifted_record_df.at[t, f'{user}'] += transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
+                                value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
+                                buy_shifted_record_arr[t, user] += value
+                                reward[user] -= value * price
+                                cost += value * price
                                 if t-k+7-1>= 0:
-                                    shift_df.at[t-k+7-1, f'{user}'] -= transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-            microgrid_price_record_df.at[t, 'Price'] = transactions_df['price'].values[0]
+                                    shift_arr[t-k+7-1, user] -= value
+            microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
             # Q学習
             dr_states, battery_states, ev_battery_states = q.get_states
             actions_arr = q.get_actions
             for i in range(num_agent):
-                reward_df.at[t, f'{i}'] = reward[i]
+                reward_arr[t, i] = reward[i]
                 # バッテリー充放電とEVバッテリー充放電は同じstateで管理できるため重複している
                 states = [int(dr_states[i]), int(battery_states[i]), int(battery_states[i]), int(ev_battery_states[i]), int(ev_battery_states[i])]
                 actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4]]
@@ -306,26 +347,45 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                     previous_states = states
                     previous_actions = actions
                     previous_rewards = rewards
+            # print(reward_arr[t,:])
         # ====================================================================================================
+        timestamp = pd.read_csv('data/demand.csv').iloc[:, 0]
+        microgrid_price_record_df = pd.DataFrame(microgrid_price_record_arr, index=timestamp, columns=['Price'])
         microgrid_price_record_df.to_csv('output/episode' + str(episode) + '/price_record.csv', index=True)
+        battery_record_df = pd.DataFrame(battery_record_arr, index=timestamp, columns=demand_df.columns)
         battery_record_df.to_csv('output/episode' + str(episode) + '/battery_record.csv', index=True)
+        ev_battery_record_df = pd.DataFrame(ev_battery_record_arr, index=timestamp, columns=demand_df.columns)
         ev_battery_record_df.to_csv('output/episode' + str(episode) + '/ev_battery_record.csv', index=True)
+        battery_soc_record_df = pd.DataFrame(battery_soc_record_arr, index=timestamp, columns=demand_df.columns)
         battery_soc_record_df.to_csv('output/episode' + str(episode) + '/battery_soc_record.csv', index=True)
+        ev_battery_soc_record_df = pd.DataFrame(ev_battery_soc_record_arr, index=timestamp, columns=demand_df.columns)
         ev_battery_soc_record_df.to_csv('output/episode' + str(episode) + '/ev_battery_soc_record.csv', index=True)
 
+        buy_inelastic_record_df = pd.DataFrame(buy_inelastic_record_arr, index=timestamp, columns=demand_df.columns)
         buy_inelastic_record_df.to_csv('output/episode' + str(episode) + '/buy_inelastic_record.csv', index=True)
+        buy_elastic_record_df = pd.DataFrame(buy_elastic_record_arr, index=timestamp, columns=demand_df.columns)
         buy_elastic_record_df.to_csv('output/episode' + str(episode) + '/buy_elastic_record.csv', index=True)
+        buy_shifted_record_df = pd.DataFrame(buy_shifted_record_arr, index=timestamp, columns=demand_df.columns)
         buy_shifted_record_df.to_csv('output/episode' + str(episode) + '/buy_shifted_record.csv', index=True)
+        sell_pv_record_df = pd.DataFrame(sell_pv_record_arr, index=timestamp, columns=supply_df.columns)
         sell_pv_record_df.to_csv('output/episode' + str(episode) + '/sell_record.csv', index=True)
         
+        buy_battery_record_df = pd.DataFrame(buy_battery_record_arr, index=timestamp, columns=demand_df.columns)
         buy_battery_record_df.to_csv('output/episode' + str(episode) + '/buy_battery_record.csv', index=True)
+        buy_ev_battery_record_df = pd.DataFrame(buy_ev_battery_record_arr, index=timestamp, columns=demand_df.columns)
         buy_ev_battery_record_df.to_csv('output/episode' + str(episode) + '/buy_ev_battery_record.csv', index=True)
+        sell_battery_record_df = pd.DataFrame(sell_battery_record_arr, index=timestamp, columns=supply_df.columns)
         sell_battery_record_df.to_csv('output/episode' + str(episode) + '/sell_battery_record.csv', index=True)
+        sell_ev_battery_record_df = pd.DataFrame(sell_ev_battery_record_arr, index=timestamp, columns=supply_df.columns)
         sell_ev_battery_record_df.to_csv('output/episode' + str(episode) + '/sell_ev_battery_record.csv', index=True)
 
+        shift_df = pd.DataFrame(shift_arr, index=timestamp, columns=demand_df.columns)
         shift_df.to_csv('output/episode' + str(episode) + '/shift_record.csv', index=True)
 
+        reward_df = pd.DataFrame(reward_arr, index=timestamp, columns=demand_df.columns)
         reward_df.to_csv('output/episode' + str(episode) + '/reward.csv', index=True)
+        electricity_cost_df = pd.DataFrame(electricity_cost_arr, index=timestamp, columns=demand_df.columns)
+        electricity_cost_df.to_csv('output/episode' + str(episode) + '/electricity_cost.csv', index=True)
         q.save_q_table(folder_path = 'output/episode'+str(episode))
 
         vis = visualize.Visualize(folder_path='output/episode' + str(episode))
@@ -335,7 +395,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
 if __name__ == "__main__":
     # Adding the new mechanism to the list of available mechanism of the market
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
-    pd.set_option('display.max_rows', None)  # 全行表示
+    # pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, num_episode=100, BID_SAVE=True)
+    main(num_agent=10, num_episode=10, BID_SAVE=False)
     

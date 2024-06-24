@@ -208,6 +208,14 @@ class Visualize:
             name='Microgrid price',
             visible=True
             ), row=2, col=1)
+        
+        fig.add_trace(go.Scatter(
+            x=self.timestamps, y=self.grid_price_df['Price'],
+            mode='lines',
+            name='Grid price',
+            line=dict(dash='dash'),
+            visible=True
+            ), row=2, col=1)
 
 
         # ドロップダウンボタンの作成
@@ -221,7 +229,8 @@ class Visualize:
             )
         for j in range(10):
             dropdown_buttons[-1]['args'][0]['visible'][j] = True
-        dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show microgrid price
+        dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
+        dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
 
         
         for i, user in enumerate(self.buy_inelastic_df.columns):
@@ -234,7 +243,8 @@ class Visualize:
             )
             for j in range(10):
                 dropdown_buttons[-1]['args'][0]['visible'][10*(i+1) + j] = True
-            dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show microgrid price
+            dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
+            dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
         
 
         # レイアウトの設定
@@ -260,6 +270,12 @@ class Visualize:
                 )
             ]
         )
+        fig.update_xaxes(title_text='Time', row=1, col=1)
+        fig.update_yaxes(title_text='kWh', row=1, col=1)
+
+        fig.update_xaxes(title_text='Time', row=2, col=1)
+        fig.update_yaxes(title_text='cents/kWh', row=2, col=1)
+        
         # HTMLファイルとして保存
         fig.write_html(self.folder_path + "/consumption_generation_plot.html")
                       

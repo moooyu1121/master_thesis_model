@@ -102,12 +102,17 @@ def uniform_price_mechanism(bids: pd.DataFrame) -> (pm.TransactionManager, dict)
     # b_ is the index of the buyer in that position
     # s_ is the index of the seller in that position
     q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
+    count = 0
     while b_ is None or s_ is None:
         logger.warning('intersection not found, adding bigger noise to the prices and trying again.')
         bids['price'] = bids['price'] + np.random.uniform(-0.00001, 0.00001, bids.shape[0])
         buy, _ = pm.bids.demand_curve_from_bids(bids) # type: ignore # Creates demand curve from bids
         sell, _ = pm.bids.supply_curve_from_bids(bids) # type: ignore # Creates supply curve from bids
         q_, b_, s_, price = pm.bids.intersect_stepwise(buy, sell, k=0) # type: ignore
+        count += 1
+        if count > 10:
+            logger.error('intersection not found after 10 tries.')
+            raise ValueError('intersection not found after 10 tries.')
 
     buying_bids  = bids.loc[bids['buying']].sort_values('price', ascending=False)
     selling_bids = bids.loc[~bids['buying']].sort_values('price', ascending=True)

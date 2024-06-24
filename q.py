@@ -37,11 +37,11 @@ class Q:
                 len(self.possible_params['psi_list']) * \
                 len(self.possible_params['omega_list'])
         cols = int(self.params['price_max']) - int(self.params['price_min']) + 1
-        self.dr_buy_qtb = np.full((dr_buy_rows, cols), 1000.0)
-        self.battery_buy_qtb = np.full((battery_buy_rows, cols), 1000.0)
-        self.battery_sell_qtb = np.full((battery_sell_rows, cols), 1000.0)
-        self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 1000.0)
-        self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 1000.0)
+        self.dr_buy_qtb = np.full((dr_buy_rows, cols), 10000.0)
+        self.battery_buy_qtb = np.full((battery_buy_rows, cols), 10000.0)
+        self.battery_sell_qtb = np.full((battery_sell_rows, cols), 10000.0)
+        self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 10000.0)
+        self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 10000.0)
 
     def set_agent_params(self, agent_params_df):
         self.agents_params_df = agent_params_df
@@ -156,7 +156,7 @@ class Q:
         states, actions, rewards, next_statesは全てリスト
         それぞれのリストについて、0番目にdr_buy、1番目にbattery_buy、2番目にbattery_sell、3番目にev_battery_buy、4番目にev_battery_sellの情報が格納されている
         """
-        gamma = 0.999
+        gamma = 0.99
         alpha = 0.1
         dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb[next_states[0], :]) - self.dr_buy_qtb[states[0], 
                                                                                                             int(actions[0]-self.params['price_min'])]
@@ -174,6 +174,12 @@ class Q:
         self.battery_sell_qtb[states[2], int(actions[2] - self.params['price_min'])] += alpha * battery_sell_td_error
         self.ev_battery_buy_qtb[states[3], int(actions[3] - self.params['price_min'])] += alpha * ev_battery_buy_td_error
         self.ev_battery_sell_qtb[states[4], int(actions[4] - self.params['price_min'])] += alpha * ev_battery_sell_td_error
+        # print(self.dr_buy_qtb[states[0], int(actions[0] - self.params['price_min'])])
+        # print(self.battery_buy_qtb[states[1], int(actions[1] - self.params['price_min'])])
+        # print(self.battery_sell_qtb[states[2], int(actions[2] - self.params['price_min'])])
+        # print(self.ev_battery_buy_qtb[states[3], int(actions[3] - self.params['price_min'])])
+        # print(self.ev_battery_sell_qtb[states[4], int(actions[4] - self.params['price_min'])])
+        # input()
 
     def save_q_table(self, folder_path):
         np.save(folder_path + '/dr_buy_qtb.npy', self.dr_buy_qtb)
@@ -181,6 +187,16 @@ class Q:
         np.save(folder_path + '/battery_sell_qtb.npy', self.battery_sell_qtb)
         np.save(folder_path + '/ev_battery_buy_qtb.npy', self.ev_battery_buy_qtb)
         np.save(folder_path + '/ev_battery_sell_qtb.npy', self.ev_battery_sell_qtb)
+        df = pd.DataFrame(self.dr_buy_qtb)
+        df.to_csv(folder_path + '/dr_buy_qtb.csv')
+        df = pd.DataFrame(self.battery_buy_qtb)
+        df.to_csv(folder_path + '/battery_buy_qtb.csv')
+        df = pd.DataFrame(self.battery_sell_qtb)
+        df.to_csv(folder_path + '/battery_sell_qtb.csv')
+        df = pd.DataFrame(self.ev_battery_buy_qtb)
+        df.to_csv(folder_path + '/ev_battery_buy_qtb.csv')
+        df = pd.DataFrame(self.ev_battery_sell_qtb)
+        df.to_csv(folder_path + '/ev_battery_sell_qtb.csv')
 
     def load_q_table(self, folder_path):
         self.dr_buy_qtb = np.load(folder_path + '/dr_buy_qtb.npy')
