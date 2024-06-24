@@ -406,5 +406,5 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     # pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=50, num_episode=100, BID_SAVE=True)
+    main(num_agent=10, num_episode=100, BID_SAVE=False)
     

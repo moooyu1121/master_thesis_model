@@ -220,17 +220,17 @@ class Visualize:
             x=self.timestamps, y=self.battery_soc_df[agent]*100,
             mode='lines',
             name='Battery SoC',
-            visible=True,
+            visible=False,
             ), row=3, col=1)
 
             fig.add_trace(go.Scatter(
             x=self.timestamps, y=self.ev_battery_soc_df[agent]*100,
             mode='lines',
             name='EV Battery SoC',
-            visible=True,
+            visible=False,
             ), row=3, col=1)
 
-        
+        # Plot price
         fig.add_trace(go.Scatter(
             x=self.timestamps, y=self.microgrid_price_df['Price'],
             mode='lines',
@@ -239,7 +239,7 @@ class Visualize:
             ), row=2, col=1)
         
         fig.add_trace(go.Scatter(
-            x=self.timestamps, y=self.grid_price_df['Price'],
+            x=self.timestamps, y=self.grid_price_df['Price'] + 10,
             mode='lines',
             name='Grid price',
             line=dict(dash='dash'),
