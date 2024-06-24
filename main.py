@@ -12,6 +12,7 @@ from preprocess import Preprocess
 from market import Market
 from agent import Agent
 from q import Q
+from concurrent.futures import ProcessPoolExecutor
 import logging
 logger = logging.getLogger('Logging')
 logger.setLevel(10)
@@ -23,7 +24,8 @@ np.seterr(all='raise')  # これでエラー発生時に例外が発生する
 
 def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
     # Update market and uniform parameters
-    params = {'price_max': 120,
+    params = {'thread_num': -1,
+              'price_max': 120,
               'price_min': 5,
               'wheeling_charge': 10,
               'battery_charge_efficiency': 0.9,
@@ -32,6 +34,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
               'ev_discharge_efficiency': 0.9,
     }
     params.update(kwargs)
+    thread_num = params['thread_num']
     price_max = params['price_max']
     price_min = params['price_min']
     wheeling_charge = params['wheeling_charge']
@@ -45,7 +48,12 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
     
     # ====================================================================================================
     for episode in range(num_episode):
-        os.makedirs('output/episode' + str(episode) + '/', exist_ok=True)
+        if thread_num == -1:
+            os.makedirs('output/episode' + str(episode) + '/', exist_ok=True)
+            parent_dir = 'output/episode' + str(episode)
+        else:
+            os.makedirs('output/thread' + str(thread_num) + '/episode' + str(episode)  + '/', exist_ok=True)
+            parent_dir = 'output/thread' + str(thread_num) + '/episode' + str(episode)
         
         # Preprocess and generate demand, supply, and price data
         preprocess = Preprocess()
@@ -55,14 +63,14 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             pd.read_csv('data/price.csv')
         )
         preprocess.generate_d_s(num_agent)
-        preprocess.save('output/episode' + str(episode))
+        preprocess.save(parent_dir)
         preprocess.drop_index_  # drop timestamp index
         demand_df, supply_df, price_df = preprocess.get_dfs_
 
         # Generate agent parameters
         agents = Agent(num_agent)
         agents.generate_params()
-        agents.save('output/episode' + str(episode))
+        agents.save(parent_dir)
         agent_params_df = agents.get_agents_params_df_
         q.set_agent_params(agent_params_df)
 
@@ -101,7 +109,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
         shift_arr = np.full((len(demand_df), num_agent), 0.0)
         
-        # for t in tqdm(range(1000)):
+        # for t in tqdm(range(100)):
         for t in tqdm(range(len(demand_df))):
             demand_list = []
             supply_list = []
@@ -357,47 +365,49 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             # print(reward_arr[t,:])
         # ====================================================================================================
         timestamp = pd.read_csv('data/demand.csv').iloc[:, 0]
+        # parent_dir = 'output/episode' + str(episode)
+
         grid_import_record_df = pd.DataFrame(grid_import_record_arr, index=timestamp, columns=['Grid import'])
-        grid_import_record_df.to_csv('output/episode' + str(episode) + '/grid_import_record.csv', index=True)
+        grid_import_record_df.to_csv(parent_dir + '/grid_import_record.csv', index=True)
         microgrid_price_record_df = pd.DataFrame(microgrid_price_record_arr, index=timestamp, columns=['Price'])
-        microgrid_price_record_df.to_csv('output/episode' + str(episode) + '/price_record.csv', index=True)
+        microgrid_price_record_df.to_csv(parent_dir + '/price_record.csv', index=True)
         battery_record_df = pd.DataFrame(battery_record_arr, index=timestamp, columns=demand_df.columns)
-        battery_record_df.to_csv('output/episode' + str(episode) + '/battery_record.csv', index=True)
+        battery_record_df.to_csv(parent_dir + '/battery_record.csv', index=True)
         ev_battery_record_df = pd.DataFrame(ev_battery_record_arr, index=timestamp, columns=demand_df.columns)
-        ev_battery_record_df.to_csv('output/episode' + str(episode) + '/ev_battery_record.csv', index=True)
+        ev_battery_record_df.to_csv(parent_dir + '/ev_battery_record.csv', index=True)
         battery_soc_record_df = pd.DataFrame(battery_soc_record_arr, index=timestamp, columns=demand_df.columns)
-        battery_soc_record_df.to_csv('output/episode' + str(episode) + '/battery_soc_record.csv', index=True)
+        battery_soc_record_df.to_csv(parent_dir + '/battery_soc_record.csv', index=True)
         ev_battery_soc_record_df = pd.DataFrame(ev_battery_soc_record_arr, index=timestamp, columns=demand_df.columns)
-        ev_battery_soc_record_df.to_csv('output/episode' + str(episode) + '/ev_battery_soc_record.csv', index=True)
+        ev_battery_soc_record_df.to_csv(parent_dir + '/ev_battery_soc_record.csv', index=True)
 
         buy_inelastic_record_df = pd.DataFrame(buy_inelastic_record_arr, index=timestamp, columns=demand_df.columns)
-        buy_inelastic_record_df.to_csv('output/episode' + str(episode) + '/buy_inelastic_record.csv', index=True)
+        buy_inelastic_record_df.to_csv(parent_dir + '/buy_inelastic_record.csv', index=True)
         buy_elastic_record_df = pd.DataFrame(buy_elastic_record_arr, index=timestamp, columns=demand_df.columns)
-        buy_elastic_record_df.to_csv('output/episode' + str(episode) + '/buy_elastic_record.csv', index=True)
+        buy_elastic_record_df.to_csv(parent_dir + '/buy_elastic_record.csv', index=True)
         buy_shifted_record_df = pd.DataFrame(buy_shifted_record_arr, index=timestamp, columns=demand_df.columns)
-        buy_shifted_record_df.to_csv('output/episode' + str(episode) + '/buy_shifted_record.csv', index=True)
+        buy_shifted_record_df.to_csv(parent_dir + '/buy_shifted_record.csv', index=True)
         sell_pv_record_df = pd.DataFrame(sell_pv_record_arr, index=timestamp, columns=supply_df.columns)
-        sell_pv_record_df.to_csv('output/episode' + str(episode) + '/sell_record.csv', index=True)
+        sell_pv_record_df.to_csv(parent_dir + '/sell_record.csv', index=True)
         
         buy_battery_record_df = pd.DataFrame(buy_battery_record_arr, index=timestamp, columns=demand_df.columns)
-        buy_battery_record_df.to_csv('output/episode' + str(episode) + '/buy_battery_record.csv', index=True)
+        buy_battery_record_df.to_csv(parent_dir + '/buy_battery_record.csv', index=True)
         buy_ev_battery_record_df = pd.DataFrame(buy_ev_battery_record_arr, index=timestamp, columns=demand_df.columns)
-        buy_ev_battery_record_df.to_csv('output/episode' + str(episode) + '/buy_ev_battery_record.csv', index=True)
+        buy_ev_battery_record_df.to_csv(parent_dir + '/buy_ev_battery_record.csv', index=True)
         sell_battery_record_df = pd.DataFrame(sell_battery_record_arr, index=timestamp, columns=supply_df.columns)
-        sell_battery_record_df.to_csv('output/episode' + str(episode) + '/sell_battery_record.csv', index=True)
+        sell_battery_record_df.to_csv(parent_dir + '/sell_battery_record.csv', index=True)
         sell_ev_battery_record_df = pd.DataFrame(sell_ev_battery_record_arr, index=timestamp, columns=supply_df.columns)
-        sell_ev_battery_record_df.to_csv('output/episode' + str(episode) + '/sell_ev_battery_record.csv', index=True)
+        sell_ev_battery_record_df.to_csv(parent_dir + '/sell_ev_battery_record.csv', index=True)
 
         shift_df = pd.DataFrame(shift_arr, index=timestamp, columns=demand_df.columns)
-        shift_df.to_csv('output/episode' + str(episode) + '/shift_record.csv', index=True)
+        shift_df.to_csv(parent_dir + '/shift_record.csv', index=True)
 
         reward_df = pd.DataFrame(reward_arr, index=timestamp, columns=demand_df.columns)
-        reward_df.to_csv('output/episode' + str(episode) + '/reward.csv', index=True)
+        reward_df.to_csv(parent_dir + '/reward.csv', index=True)
         electricity_cost_df = pd.DataFrame(electricity_cost_arr, index=timestamp, columns=demand_df.columns)
-        electricity_cost_df.to_csv('output/episode' + str(episode) + '/electricity_cost.csv', index=True)
-        q.save_q_table(folder_path = 'output/episode'+str(episode))
+        electricity_cost_df.to_csv(parent_dir + '/electricity_cost.csv', index=True)
+        q.save_q_table(folder_path = parent_dir)
 
-        vis = visualize.Visualize(folder_path='output/episode' + str(episode))
+        vis = visualize.Visualize(folder_path=parent_dir)
         vis.plot_consumption()
 
 
@@ -406,5 +416,11 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     # pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=10, num_episode=100, BID_SAVE=False)
+    main(num_agent=50, num_episode=100, BID_SAVE=True)
     
+
+    # max_workers = os.cpu_count()
+    # max_workers = 8
+    # with ProcessPoolExecutor(max_workers=max_workers) as executor:
+    #     for thread in range(max_workers):
+    #         executor.submit(main, num_agent=50, num_episode=100, BID_SAVE=True, thread_num=thread)
