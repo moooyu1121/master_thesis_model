@@ -17,7 +17,7 @@ class Visualize:
         self.buy_inelastic_df = pd.read_csv(folder_path + '/buy_inelastic_record.csv', index_col=0)
         self.buy_elastic_df = pd.read_csv(folder_path + '/buy_elastic_record.csv', index_col=0)
         self.buy_shifted_df = pd.read_csv(folder_path + '/buy_shifted_record.csv', index_col=0)
-        self.sell_pv_df = pd.read_csv(folder_path + '/sell_record.csv', index_col=0)
+        self.sell_pv_df = pd.read_csv(folder_path + '/sell_pv_record.csv', index_col=0)
 
         self.buy_battery_df = pd.read_csv(folder_path + '/buy_battery_record.csv', index_col=0)
         self.buy_ev_battery_df = pd.read_csv(folder_path + '/buy_ev_battery_record.csv', index_col=0)
