@@ -140,12 +140,12 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                 # デマンドレスポンス可能の需要
                 d_elas_max = demand_elastic_arr[t, i]
                 price_elas = q.get_actions[i, 0]
-                d_elas = d_elas_max * max((agents[i]['dr_price_threshold'] - price_elas)/(agents[i]['dr_price_threshold'] - price_min), 0)
+                # d_elas = d_elas_max * max((agents[i]['dr_price_threshold'] - price_elas)/(agents[i]['dr_price_threshold'] - price_min), 0)
                 if price_elas == price_min:
                     # To avoid missing intersection point of supply and demand curve
                     price_elas += 0.00001
                 # デマンドレスポンス可の需要はid_base+1に割り当てる
-                demand_list.append([d_elas, price_elas, id_base+1, True])
+                demand_list.append([d_elas_max, price_elas, id_base+1, True])
 
                 # バッテリー充放電価格の取得
                 price_buy_battery = q.get_actions[i, 1]
@@ -242,7 +242,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         buy_inelastic_record_arr[t, user] = value
                         reward[user] -= value * price
-                        cost[user] = value * price
+                        cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price)
                             input()
@@ -255,7 +255,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         reward[user] -= value * price
                         reward[user] -= (agents[int(user)]['alpha']/2 * (demand_elastic_arr[t, i] - value)**2 + 
                                         agents[int(user)]['beta']*(demand_elastic_arr[t, i] - value))
-                        cost[user] = value * price
+                        cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, demand_elastic_arr[t, i])
                             input()
@@ -270,7 +270,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] - value) * 
                                         (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
                                         agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
-                        cost[user] = value * price
+                        cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, battery_soc_record_arr[t, user])
                             input()
@@ -285,7 +285,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] + value) * 
                                         (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
                                         agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
-                        cost[user] = -value * price
+                        cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, battery_soc_record_arr[t, user])
                             input()
@@ -300,7 +300,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] - value) *
                                         (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
                                         agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
-                        cost[user] = value * price
+                        cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, ev_battery_soc_record_arr[t, user])
                             input()
@@ -315,7 +315,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] + value) *
                                         (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
                                         agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
-                        cost[user] = -value * price
+                        cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, ev_battery_soc_record_arr[t, user])
                             input()
@@ -324,7 +324,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         sell_pv_record_arr[t, user] = value
                         reward[user] += value * price
-                        cost[user] = -value * price
+                        cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             print(item, value, price)
                             input()
@@ -346,6 +346,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
             actions_arr = q.get_actions
             for i in range(num_agent):
                 reward_arr[t, i] = reward[i]
+                electricity_cost_arr[t, i] = cost[i]
                 # バッテリー充放電とEVバッテリー充放電は同じstateで管理できるため重複している
                 states = [int(dr_states[i]), int(battery_states[i]), int(battery_states[i]), int(ev_battery_states[i]), int(ev_battery_states[i])]
                 actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4]]
