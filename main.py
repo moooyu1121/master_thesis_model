@@ -387,7 +387,7 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
         buy_shifted_record_df = pd.DataFrame(buy_shifted_record_arr, index=timestamp, columns=demand_df.columns)
         buy_shifted_record_df.to_csv(parent_dir + '/buy_shifted_record.csv', index=True)
         sell_pv_record_df = pd.DataFrame(sell_pv_record_arr, index=timestamp, columns=supply_df.columns)
-        sell_pv_record_df.to_csv(parent_dir + '/sell_record.csv', index=True)
+        sell_pv_record_df.to_csv(parent_dir + '/sell_pv_record.csv', index=True)
         
         buy_battery_record_df = pd.DataFrame(buy_battery_record_arr, index=timestamp, columns=demand_df.columns)
         buy_battery_record_df.to_csv(parent_dir + '/buy_battery_record.csv', index=True)
