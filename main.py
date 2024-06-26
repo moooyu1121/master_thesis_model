@@ -417,7 +417,7 @@ if __name__ == "__main__":
     pm.market.MECHANISM['uniform'] = market.UniformPrice # type: ignore
     # pd.set_option('display.max_rows', None)  # 全行表示
 
-    main(num_agent=50, num_episode=100, BID_SAVE=True, price_min=10)
+    main(num_agent=50, num_episode=51, BID_SAVE=True, price_min=10)
     
 
     # max_workers = os.cpu_count()

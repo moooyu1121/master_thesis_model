@@ -279,7 +279,7 @@ class Visualize:
         # レイアウトの設定
         fig.update_layout(
             title='Consumption and generation',
-            xaxis_title='Time',
+            # xaxis_title='Time',
             yaxis_title='kWh',
             xaxis=dict(
                 tickformat='%Y-%m-%d %H',
@@ -299,10 +299,10 @@ class Visualize:
                 )
             ]
         )
-        fig.update_xaxes(title_text='Time', row=1, col=1)
+        # fig.update_xaxes(title_text='Time', row=1, col=1)
         fig.update_yaxes(title_text='kWh', row=1, col=1)
 
-        fig.update_xaxes(title_text='Time', row=2, col=1)
+        # fig.update_xaxes(title_text='Time', row=2, col=1)
         fig.update_yaxes(title_text='cents/kWh', row=2, col=1)
 
         fig.update_xaxes(title_text='Time', row=3, col=1)
