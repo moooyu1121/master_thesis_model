@@ -77,6 +77,14 @@ class Visualize:
         visible=True
         ), row=1, col=1)
 
+        fig.add_trace(go.Scatter(
+        x=self.timestamps, y=-self.grid_import_df['Grid import'],
+        mode='lines',
+        name='Grid import',
+        stackgroup='down',
+        visible=True
+        ), row=1, col=1)
+
         # Stack plot for upper part -> buy
         fig.add_trace(go.Scatter(
         x=self.timestamps, y=self.buy_inelastic_df.sum(axis=1), 
@@ -256,7 +264,7 @@ class Visualize:
                     method='update'
                 )
             )
-        for j in range(12):
+        for j in range(13):
             dropdown_buttons[-1]['args'][0]['visible'][j] = True
         dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
         dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
@@ -271,7 +279,7 @@ class Visualize:
                 )
             )
             for j in range(12):
-                dropdown_buttons[-1]['args'][0]['visible'][12*(i+1) + j] = True
+                dropdown_buttons[-1]['args'][0]['visible'][13+12*(i) + j] = True
             dropdown_buttons[-1]['args'][0]['visible'][-2] = True  # show microgrid price
             dropdown_buttons[-1]['args'][0]['visible'][-1] = True  # show grid price
         

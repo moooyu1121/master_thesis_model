@@ -268,8 +268,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             battery_soc_record_arr[t+1, user] = battery_record_arr[t+1, user] / agents[user]['battery_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] - value) * 
-                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
-                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
+                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_arr[t, user]))))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, battery_soc_record_arr[t, user])
@@ -283,8 +283,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             battery_soc_record_arr[t+1, user] = battery_record_arr[t+1, user] / agents[user]['battery_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_battery_charge_speed'] + value) * 
-                                        (agents[int(user)]['gamma']/2 * (100 * (1-battery_soc_record_arr[t, user]))**2 + 
-                                        agents[int(user)]['epsilon']*(100 * (1-battery_soc_record_arr[t, user]))))
+                                        (agents[int(user)]['gamma']/2 * (1 * (1-battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['epsilon']*(1 * (1-battery_soc_record_arr[t, user]))))
                         cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, battery_soc_record_arr[t, user])
@@ -298,8 +298,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             ev_battery_soc_record_arr[t+1, user] = ev_battery_record_arr[t+1, user] / agents[user]['ev_capacity']
                         reward[user] -= value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] - value) *
-                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
-                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
+                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_arr[t, user]))))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, ev_battery_soc_record_arr[t, user])
@@ -313,8 +313,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                             ev_battery_soc_record_arr[t+1, user] = ev_battery_record_arr[t+1, user] / agents[user]['ev_capacity']
                         reward[user] += value * price
                         reward[user] -= ((agents[int(user)]['max_ev_charge_speed'] + value) *
-                                        (agents[int(user)]['psi']/2 * (100 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
-                                        agents[int(user)]['omega']*(100 * (1-ev_battery_soc_record_arr[t, user]))))
+                                        (agents[int(user)]['psi']/2 * (1 * (1-ev_battery_soc_record_arr[t, user]))**2 + 
+                                        agents[int(user)]['omega']*(1 * (1-ev_battery_soc_record_arr[t, user]))))
                         cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             print(item, value, price, ev_battery_soc_record_arr[t, user])
@@ -364,6 +364,8 @@ def main(num_agent, num_episode, BID_SAVE=False, **kwargs):
                     previous_actions = actions
                     previous_rewards = rewards
             # print(reward_arr[t,:])
+            # print(electricity_cost_arr[t,:])
+            # input()
         # ====================================================================================================
         timestamp = pd.read_csv('data/demand.csv').iloc[:, 0]
         # parent_dir = 'output/episode' + str(episode)
@@ -419,7 +421,6 @@ if __name__ == "__main__":
 
     main(num_agent=50, num_episode=51, BID_SAVE=True, price_min=10)
     
-
     # max_workers = os.cpu_count()
     # max_workers = 8
     # with ProcessPoolExecutor(max_workers=max_workers) as executor:
