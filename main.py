@@ -481,6 +481,8 @@ if __name__ == "__main__":
     np.save('output/average_q/1/ev_battery_buy_qtb.npy', average_ev_battery_buy_qtb)
     np.save('output/average_q/1/ev_battery_sell_qtb.npy', average_ev_battery_sell_qtb)
 
+    print('episode 1 finished.')
+
     for episode in range(2, 101):
         p = Pool(max_workers)
         values = [{'num_agent': 50, 'episode': episode, 'BID_SAVE': False, 'price_min': 10, 'thread_num': x, 'load_q': True} for x in range(max_workers)]
@@ -495,6 +497,7 @@ if __name__ == "__main__":
         battery_sell_qtb_list = glob.glob('output/*/episode' + str(episode) + '/battery_sell_qtb.npy')
         ev_battery_buy_qtb_list = glob.glob('output/*/episode' + str(episode) + '/ev_battery_buy_qtb.npy')
         ev_battery_sell_qtb_list = glob.glob('output/*/episode' + str(episode) + '/ev_battery_sell_qtb.npy')
+
         for thread in range(max_workers):
             dr_buy_qtb = np.load(dr_buy_qtb_list[thread])
             battery_buy_qtb = np.load(battery_buy_qtb_list[thread])
@@ -523,3 +526,5 @@ if __name__ == "__main__":
         np.save('output/average_q/' + str(episode) + '/battery_sell_qtb.npy', average_battery_sell_qtb)
         np.save('output/average_q/' + str(episode) + '/ev_battery_buy_qtb.npy', average_ev_battery_buy_qtb)
         np.save('output/average_q/' + str(episode) + '/ev_battery_sell_qtb.npy', average_ev_battery_sell_qtb)
+        print(f'episode {episode} finished.')
+    print('All episodes finished.')
