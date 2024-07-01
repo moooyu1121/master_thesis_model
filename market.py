@@ -213,12 +213,12 @@ class Market:
         bids = self.market.bm.get_df()
         return transactions_df, extras
     
-    def plot(self, title, episode, number, ax=None):
+    def plot(self, title, number, parent_dir, ax=None):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax = self.market.plot(ax=ax)
         ax.set_title(title)
-        os.makedirs('output/episode' + str(episode) + '/bid_image', exist_ok=True)
-        fig.savefig(f"output/episode{episode}/bid_image/{number}.png")
+        os.makedirs(parent_dir + '/bid_image', exist_ok=True)
+        fig.savefig(f"{parent_dir}/bid_image/{number}.png")
         plt.close(fig)
         plt.clf()
 
