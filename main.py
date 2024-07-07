@@ -133,9 +133,15 @@ def main(num_agent, episode, BID_SAVE=False, **kwargs):
             # 時刻tでのバッテリー残量を時刻t+1にコピー、取引があった場合バッテリー残量をさらに更新
             if t+1 != len(demand_df):
                 battery_record_arr[t+1, i] = battery_record_arr[t, i]
-                battery_soc_record_arr[t+1, i] = battery_record_arr[t+1, i] / agents[i]['battery_capacity']
+                if agents[i]['battery_capacity'] != 0:
+                    battery_soc_record_arr[t+1, i] = battery_record_arr[t+1, i] / agents[i]['battery_capacity']
+                else:
+                    battery_soc_record_arr[t+1, i] = 0.0
                 ev_battery_record_arr[t+1, i] = ev_battery_record_arr[t, i]
-                ev_battery_soc_record_arr[t+1, i] = ev_battery_record_arr[t+1, i] / agents[i]['ev_capacity']
+                if agents[i]['ev_capacity'] != 0:
+                    ev_battery_soc_record_arr[t+1, i] = ev_battery_record_arr[t+1, i] / agents[i]['ev_capacity']
+                else:
+                    ev_battery_soc_record_arr[t+1, i] = 0.0
             # ユーザIDはデマンドレスポンスによる移動を考慮して1エージェントごとに
             # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間ステップ分の数IDを保有する
             # シフトリミットが24時間なら，31個IDを保有する
