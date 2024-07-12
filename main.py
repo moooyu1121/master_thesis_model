@@ -12,7 +12,6 @@ from preprocess import Preprocess
 from market import Market, UniformPrice
 from agent import Agent
 from q import Q
-# from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Pool
 import logging
 logger = logging.getLogger('Logging')
@@ -486,6 +485,16 @@ if __name__ == "__main__":
     np.save('output/average_q/1/battery_sell_qtb.npy', average_battery_sell_qtb)
     np.save('output/average_q/1/ev_battery_buy_qtb.npy', average_ev_battery_buy_qtb)
     np.save('output/average_q/1/ev_battery_sell_qtb.npy', average_ev_battery_sell_qtb)
+    df = pd.DataFrame(average_dr_buy_qtb)
+    df.to_csv('output/average_q/1/dr_buy_qtb.csv')
+    df = pd.DataFrame(average_battery_buy_qtb)
+    df.to_csv('output/average_q/1/battery_buy_qtb.csv')
+    df = pd.DataFrame(average_battery_sell_qtb)
+    df.to_csv('output/average_q/1/battery_sell_qtb.csv')
+    df = pd.DataFrame(average_ev_battery_buy_qtb)
+    df.to_csv('output/average_q/1/ev_battery_buy_qtb.csv')
+    df = pd.DataFrame(average_ev_battery_sell_qtb)
+    df.to_csv('output/average_q/1/ev_battery_sell_qtb.csv')
 
     print('episode 1 finished.')
 
@@ -532,5 +541,15 @@ if __name__ == "__main__":
         np.save('output/average_q/' + str(episode) + '/battery_sell_qtb.npy', average_battery_sell_qtb)
         np.save('output/average_q/' + str(episode) + '/ev_battery_buy_qtb.npy', average_ev_battery_buy_qtb)
         np.save('output/average_q/' + str(episode) + '/ev_battery_sell_qtb.npy', average_ev_battery_sell_qtb)
+        df = pd.DataFrame(average_dr_buy_qtb)
+        df.to_csv('output/average_q/' + str(episode) + '/dr_buy_qtb.csv')
+        df = pd.DataFrame(average_battery_buy_qtb)
+        df.to_csv('output/average_q/' + str(episode) + '/battery_buy_qtb.csv')
+        df = pd.DataFrame(average_battery_sell_qtb)
+        df.to_csv('output/average_q/' + str(episode) + '/battery_sell_qtb.csv')
+        df = pd.DataFrame(average_ev_battery_buy_qtb)
+        df.to_csv('output/average_q/' + str(episode) + '/ev_battery_buy_qtb.csv')
+        df = pd.DataFrame(average_ev_battery_sell_qtb)
+        df.to_csv('output/average_q/' + str(episode) + '/ev_battery_sell_qtb.csv')
         print(f'episode {episode} finished.')
     print('All episodes finished.')
