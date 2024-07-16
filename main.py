@@ -360,7 +360,7 @@ def main(num_agent, episode, BID_SAVE=False, **kwargs):
         for i in range(num_agent):
             reward_arr[t, i] = reward[i]
             electricity_cost_arr[t, i] = cost[i]
-            # バッテリー充放電とEVバッテリー充放電は同じstateで管理できるため重複している
+            # バッテリーの充放電、EVバッテリーの充放電はそれぞれ同じstateで管理できるため重複している
             states = [int(dr_states[i]), int(battery_states[i]), int(battery_states[i]), int(ev_battery_states[i]), int(ev_battery_states[i])]
             actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4]]
             rewards = [reward[i], reward[i], reward[i], reward[i], reward[i]]   # rewardは共通の値(すべての要素からのrewardの合計)
@@ -438,7 +438,7 @@ if __name__ == "__main__":
 
     # main(num_agent=50, num_episode=51, BID_SAVE=True, price_min=10)
     
-    # 並列処理で10エピソード行って，qテーブルを平均値で更新，また並列処理で10エピソード行う
+    # 並列処理で1エピソード行って，qテーブルを平均値で更新，また並列処理で1エピソード行う
     # 100エピソードまで行う．
 
     # max_workers = os.cpu_count()

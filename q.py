@@ -9,46 +9,29 @@ def bins(clip_min, clip_max, num):
 
 
 class Q:
-    def __init__(self, params, agent_num, num_dizitized_pv_ratio, num_dizitized_soc):
+    def __init__(self, params, agent_num, num_dizitized_pv_ratio, num_dizitized_soc, num_elastic_ratio_pattern):
         self.agent_num = agent_num
         self.possible_params = Agent(self.agent_num).generate_params()
         self.params = params
         self.num_dizitized_pv_ratio = num_dizitized_pv_ratio
         self.num_dizitized_soc = num_dizitized_soc
+        self.num_elastic_ratio_pattern = num_elastic_ratio_pattern
 
-        dr_buy_rows = self.num_dizitized_pv_ratio * len(self.possible_params['elastic_ratio_list']) * \
-                len(self.possible_params['dr_price_threshold_list']) * \
-                len(self.possible_params['alpha_list']) * \
-                len(self.possible_params['beta_list'])
-        battery_buy_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc * \
-                len(self.possible_params['battery_capacity_list']) * \
-                len(self.possible_params['gamma_list']) * \
-                len(self.possible_params['epsilon_list'])
-        battery_sell_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc * \
-                len(self.possible_params['battery_capacity_list']) * \
-                len(self.possible_params['gamma_list']) * \
-                len(self.possible_params['epsilon_list'])
-        ev_battery_buy_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc * \
-                len(self.possible_params['ev_capacity_list']) * \
-                len(self.possible_params['psi_list']) * \
-                len(self.possible_params['omega_list'])
-        ev_battery_sell_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc * \
-                len(self.possible_params['ev_capacity_list']) * \
-                len(self.possible_params['psi_list']) * \
-                len(self.possible_params['omega_list'])
+        dr_buy_rows = self.num_dizitized_pv_ratio * self.num_elastic_ratio_pattern
+        battery_buy_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc
+        battery_sell_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc
+        ev_battery_buy_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc
+        ev_battery_sell_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc
         cols = int(self.params['price_max']) - int(self.params['price_min']) + 1
-        self.dr_buy_qtb = np.full((dr_buy_rows, cols), 1000.0)
-        self.battery_buy_qtb = np.full((battery_buy_rows, cols), 1000.0)
-        self.battery_sell_qtb = np.full((battery_sell_rows, cols), 1000.0)
-        self.ev_battery_buy_qtb = np.full((ev_battery_buy_rows, cols), 1000.0)
-        self.ev_battery_sell_qtb = np.full((ev_battery_sell_rows, cols), 1000.0)
-
-    def set_agent_params(self, agent_params_df):
-        self.agents_params_df = agent_params_df
+        self.dr_buy_qtb_list = [np.full((dr_buy_rows, cols), 100.0)] * self.agent_num
+        self.battery_buy_qtb_list = [np.full((battery_buy_rows, cols), 100.0)] * self.agent_num
+        self.battery_sell_qtb_list = [np.full((battery_sell_rows, cols), 100.0)] * self.agent_num
+        self.ev_battery_buy_qtb_list = [np.full((ev_battery_buy_rows, cols), 100.0)] * self.agent_num
+        self.ev_battery_sell_qtb_list = [np.full((ev_battery_sell_rows, cols), 100.0)] * self.agent_num
 
     @property
-    def get_qtbs_(self):
-        return self.dr_buy_qtb, self.battery_buy_qtb, self.battery_sell_qtb, self.ev_battery_buy_qtb, self.ev_battery_sell_qtb
+    def get_qtbs_(self, agent_id):
+        return self.dr_buy_qtb[agent_id], self.battery_buy_qtb[agent_id], self.battery_sell_qtb[agent_id], self.ev_battery_buy_qtb[agent_id], self.ev_battery_sell_qtb[agent_id]
     
     def reset_all_digitized_states(self):
         self.dr_states = np.full(self.agent_num, np.nan)
