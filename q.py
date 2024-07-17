@@ -161,7 +161,7 @@ class Q:
             self.battery_sell_qtb_list.append(np.load(folder_path + f'/battery_sell_qtb_{i}.npy'))
             self.ev_battery_buy_qtb_list.append(np.load(folder_path + f'/ev_battery_buy_qtb_{i}.npy'))
             self.ev_battery_sell_qtb_list.append(np.load(folder_path + f'/ev_battery_sell_qtb_{i}.npy'))
-        print('Q table loaded.')
+        # print('Q table loaded.')
     
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ def main(num_agent, parent_dir, episode, load_q=False, **kwargs):
         params = {'thread_num': -1}
         params.update(kwargs)
         thread_num = params['thread_num']
-        world.load_existing_q_table(folder_path=f'output/thread{thread_num}/episode{episode}/q_table')
+        world.load_existing_q_table(folder_path=f'output/thread{thread_num}/episode{episode-1}/q_table')
     world.preprocess()
     world.run()
     world.save()
