@@ -50,8 +50,8 @@ class Simulation:
         # Initialize Q table
         self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20, num_elastic_ratio_pattern=3)
     
-    def load_existing_q_table(self, path):
-        self.q.load_q_table(folder_path=path)
+    def load_existing_q_table(self, folder_path):
+        self.q.load_q_table(folder_path=folder_path)
 
     def preprocess(self):
         # Preprocess and generate demand, supply, and price data

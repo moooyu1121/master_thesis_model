@@ -131,21 +131,21 @@ class Q:
 
     def save_q_table(self, folder_path):
         for i in range(len(self.dr_buy_qtb_list)):
-            np.save(folder_path + f'/dr_buy_qtb_{i}.npy', self.dr_buy_qtb_list[i])
-            np.save(folder_path + f'/battery_buy_qtb_{i}.npy', self.battery_buy_qtb_list[i])
-            np.save(folder_path + f'/battery_sell_qtb_{i}.npy', self.battery_sell_qtb_list[i])
-            np.save(folder_path + f'/ev_battery_buy_qtb_{i}.npy', self.ev_battery_buy_qtb_list[i])
-            np.save(folder_path + f'/ev_battery_sell_qtb_{i}.npy', self.ev_battery_sell_qtb_list[i])
+            np.save(folder_path + f'/q_table/dr_buy_qtb_{i}.npy', self.dr_buy_qtb_list[i])
+            np.save(folder_path + f'/q_table/battery_buy_qtb_{i}.npy', self.battery_buy_qtb_list[i])
+            np.save(folder_path + f'/q_table/battery_sell_qtb_{i}.npy', self.battery_sell_qtb_list[i])
+            np.save(folder_path + f'/q_table/ev_battery_buy_qtb_{i}.npy', self.ev_battery_buy_qtb_list[i])
+            np.save(folder_path + f'/q_table/ev_battery_sell_qtb_{i}.npy', self.ev_battery_sell_qtb_list[i])
             df = pd.DataFrame(self.dr_buy_qtb_list[i])
-            df.to_csv(folder_path + f'/dr_buy_qtb_{i}.csv')
+            df.to_csv(folder_path + f'/q_table/dr_buy_qtb_{i}.csv')
             df = pd.DataFrame(self.battery_buy_qtb_list[i])
-            df.to_csv(folder_path + f'/battery_buy_qtb_{i}.csv')
+            df.to_csv(folder_path + f'/q_table/battery_buy_qtb_{i}.csv')
             df = pd.DataFrame(self.battery_sell_qtb_list[i])
-            df.to_csv(folder_path + f'/battery_sell_qtb_{i}.csv')
+            df.to_csv(folder_path + f'/q_table/battery_sell_qtb_{i}.csv')
             df = pd.DataFrame(self.ev_battery_buy_qtb_list[i])
-            df.to_csv(folder_path + f'/ev_battery_buy_qtb_{i}.csv')
+            df.to_csv(folder_path + f'/q_table/ev_battery_buy_qtb_{i}.csv')
             df = pd.DataFrame(self.ev_battery_sell_qtb_list[i])
-            df.to_csv(folder_path + f'/ev_battery_sell_qtb_{i}.csv')
+            df.to_csv(folder_path + f'/q_table/ev_battery_sell_qtb_{i}.csv')
             
     def load_q_table(self, folder_path):
         self.dr_buy_qtb_list = []
@@ -159,6 +159,7 @@ class Q:
             self.battery_sell_qtb_list.append(np.load(folder_path + f'/battery_sell_qtb_{i}.npy'))
             self.ev_battery_buy_qtb_list.append(np.load(folder_path + f'/ev_battery_buy_qtb_{i}.npy'))
             self.ev_battery_sell_qtb_list.append(np.load(folder_path + f'/ev_battery_sell_qtb_{i}.npy'))
+        print('Q table loaded.')
     
 
 if __name__ == '__main__':
