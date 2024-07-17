@@ -1,6 +1,7 @@
 from agent import Agent
 import pandas as pd
 import numpy as np
+import os
 
 
 # 観測した状態を離散値にデジタル変換する
@@ -130,6 +131,7 @@ class Q:
         self.ev_battery_sell_qtb_list[agent_id][states[4], int(actions[4] - self.params['price_min'])] += alpha * ev_battery_sell_td_error
 
     def save_q_table(self, folder_path):
+        os.makedirs(folder_path + '/q_table', exist_ok=True)
         for i in range(len(self.dr_buy_qtb_list)):
             np.save(folder_path + f'/q_table/dr_buy_qtb_{i}.npy', self.dr_buy_qtb_list[i])
             np.save(folder_path + f'/q_table/battery_buy_qtb_{i}.npy', self.battery_buy_qtb_list[i])
