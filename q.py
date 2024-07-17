@@ -25,11 +25,11 @@ class Q:
         ev_battery_sell_rows = self.num_dizitized_pv_ratio * self.num_dizitized_soc
         cols = int(self.params['price_max']) - int(self.params['price_min']) + 1
         # MARLのため、エージェントごとにQテーブルを用意する
-        self.dr_buy_qtb_list = [np.full((dr_buy_rows, cols), 100.0)] * self.agent_num
-        self.battery_buy_qtb_list = [np.full((battery_buy_rows, cols), 100.0)] * self.agent_num
-        self.battery_sell_qtb_list = [np.full((battery_sell_rows, cols), 100.0)] * self.agent_num
-        self.ev_battery_buy_qtb_list = [np.full((ev_battery_buy_rows, cols), 100.0)] * self.agent_num
-        self.ev_battery_sell_qtb_list = [np.full((ev_battery_sell_rows, cols), 100.0)] * self.agent_num
+        self.dr_buy_qtb_list = [np.full((dr_buy_rows, cols), 100.0) for _ in range(self.agent_num)]
+        self.battery_buy_qtb_list = [np.full((battery_buy_rows, cols), 100.0) for _ in range(self.agent_num)]
+        self.battery_sell_qtb_list = [np.full((battery_sell_rows, cols), 100.0) for _ in range(self.agent_num)]
+        self.ev_battery_buy_qtb_list = [np.full((ev_battery_buy_rows, cols), 100.0) for _ in range(self.agent_num)]
+        self.ev_battery_sell_qtb_list = [np.full((ev_battery_sell_rows, cols), 100.0) for _ in range(self.agent_num)]
 
     @property
     def get_qtbs_(self):
@@ -111,6 +111,11 @@ class Q:
         states, actions, rewards, next_statesは全てリスト
         それぞれのリストについて、0番目にdr_buy、1番目にbattery_buy、2番目にbattery_sell、3番目にev_battery_buy、4番目にev_battery_sellの情報が格納されている
         """
+        if agent_id == 3:
+            print('states:', states)
+            print('actions:', actions)
+            print('rewards:', rewards)
+            print('next_states:', next_states)
         gamma = 0.99
         alpha = 0.1
         dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb_list[agent_id][next_states[0], :]) - self.dr_buy_qtb_list[agent_id][states[0], 
