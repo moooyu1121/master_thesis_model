@@ -99,7 +99,7 @@ class Q:
         return next_action_list
     
     @property
-    def get_actions(self):
+    def get_actions_(self):
         """
         エージェントiの行動がi行目
         カラムにはdr_buy, battery_buy, battery_sell, ev_battery_buy, ev_battery_sellの順で格納されている
@@ -165,7 +165,7 @@ class Q:
     
 
 if __name__ == '__main__':
-    agent_num = 20
+    agent_num = 10
     params = {'price_max': 120,
               'price_min': 5,
               'wheeling_charge': 10,

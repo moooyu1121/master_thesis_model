@@ -130,11 +130,14 @@ class Simulation:
             self.q.reset_all_actions()
             for i in range(self.num_agent):
                 #============================================================================================================================================================
-                self.q.set_digitized_states(agent_id=i,
-                                    pv_ratio=self.pv_ratio_arr[t],
-                                    battery_soc=self.battery_soc_record_arr[t, i],
-                                    ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
-                                    elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                dr_state, battery_state, ev_battery_state = self.q.set_digitized_states(agent_id=i,
+                                                            pv_ratio=self.pv_ratio_arr[t],
+                                                            battery_soc=self.battery_soc_record_arr[t, i],
+                                                            ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
+                                                            elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                if i == 3:
+                    # print(self.q.get_agent_states(agent_id=i))
+                    pass
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
@@ -166,7 +169,7 @@ class Simulation:
 
                 # デマンドレスポンス可能の需要
                 d_elas_max = self.demand_elastic_arr[t, i]
-                price_elas = self.q.get_actions[i, 0]
+                price_elas = self.q.get_actions_[i, 0]
                 # d_elas = d_elas_max * max((agents[i]['dr_price_threshold'] - price_elas)/(agents[i]['dr_price_threshold'] - price_min), 0)
                 if price_elas == self.price_min:
                     # To avoid missing intersection point of supply and demand curve
@@ -175,8 +178,8 @@ class Simulation:
                 demand_list.append([d_elas_max, price_elas, id_base+1, True])
 
                 # バッテリー充放電価格の取得
-                price_buy_battery = self.q.get_actions[i, 1]
-                price_sell_battery = self.q.get_actions[i, 2]
+                price_buy_battery = self.q.get_actions_[i, 1]
+                price_sell_battery = self.q.get_actions_[i, 2]
                 # バッテリー充放電可能量の取得
                 battery_amount = self.battery_record_arr[t, i]
                 if (self.agents[i]['battery_capacity'] - battery_amount) < (self.agents[i]['max_battery_charge_speed'] * self.battery_charge_efficiency):
@@ -195,8 +198,8 @@ class Simulation:
                 supply_list.append([discharge_amount, price_sell_battery, id_base+3, False])
 
                 # EV充放電価格の取得 
-                price_buy_ev_battery = self.q.get_actions[i, 3]
-                price_sell_ev_battery = self.q.get_actions[i, 4]
+                price_buy_ev_battery = self.q.get_actions_[i, 3]
+                price_sell_ev_battery = self.q.get_actions_[i, 4]
                 # EV充放電可能量の取得
                 ev_battery_amount = self.ev_battery_record_arr[t, i]
                 if (self.agents[i]['ev_capacity'] - ev_battery_amount) < (self.agents[i]['max_ev_charge_speed'] * self.ev_charge_efficiency):
@@ -382,7 +385,11 @@ class Simulation:
 
             # Q学習
             dr_states, battery_states, ev_battery_states = self.q.get_states_
-            actions_arr = self.q.get_actions    
+            actions_arr = self.q.get_actions_
+            if t == 0:
+                previous_states = []
+                previous_actions = []
+                previous_rewards = []
             for i in range(self.num_agent):
                 self.reward_arr[t, i] = reward[i]
                 self.electricity_cost_arr[t, i] = cost[i] / 100  # record cost in dollar, not cents
@@ -391,18 +398,20 @@ class Simulation:
                 actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4]]
                 rewards = [reward[i], reward[i], reward[i], reward[i], reward[i]]   # rewardは共通の値(すべての要素からのrewardの合計)
                 if t == 0:
-                    previous_states = states
-                    previous_actions = actions
-                    previous_rewards = rewards
+                    previous_states.append(states)
+                    previous_actions.append(actions)
+                    previous_rewards.append(rewards)
                 else:
+                    if i == 3:
+                        print('previous states:', previous_states[i][0], previous_states[i][1], previous_states[i][2], previous_states[i][3], previous_states[i][4])
                     self.q.update_q_table(agent_id=i,
-                                          states=previous_states, 
-                                          actions=previous_actions, 
-                                          rewards=previous_rewards, 
+                                          states=previous_states[i],
+                                          actions=previous_actions[i], 
+                                          rewards=previous_rewards[i],
                                           next_states=states)
-                    previous_states = states
-                    previous_actions = actions
-                    previous_rewards = rewards
+                    previous_states[i] = states
+                    previous_actions[i] = actions
+                    previous_rewards[i] = rewards
 
     def save(self):
         timestamp = pd.read_csv('data/demand.csv').iloc[:, 0]
