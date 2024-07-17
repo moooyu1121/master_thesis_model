@@ -374,9 +374,10 @@ class Simulation:
             
             # EV SoCが0未満になっている場合は0にする、報酬に-10000を反映
             for i in range(self.num_agent):
-                if self.ev_battery_soc_record_arr[t+1, i] < 0:
-                    self.ev_battery_soc_record_arr[t+1, i] = 0
-                    reward[i] -= 10000
+                if t+1 != len(self.demand_df):
+                    if self.ev_battery_soc_record_arr[t+1, i] < 0:
+                        self.ev_battery_soc_record_arr[t+1, i] = 0
+                        reward[i] -= 10000
 
             self.microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
