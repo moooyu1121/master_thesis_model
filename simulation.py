@@ -149,7 +149,7 @@ class Simulation:
                         self.battery_soc_record_arr[t+1, i] = 0.0
 
                     if self.car_movement_df.at[t, f'{i}'] and self.agents[i]['ev_capacity'] != 0:
-                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_movement_speed / self.agents[i]['ev_efficiency']
+                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_movement_speed / self.ev_efficiency
                     else:
                         self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i]
                     if self.agents[i]['ev_capacity'] != 0:
