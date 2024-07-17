@@ -20,10 +20,11 @@ formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(me
 fh.setFormatter(formatter)
 
 class Simulation:
-    def __init__(self, num_agent, parent_dir, **kwargs) -> None:
+    def __init__(self, num_agent, parent_dir, episode, **kwargs) -> None:
         os.makedirs(parent_dir, exist_ok=True)
         self.num_agent = num_agent
         self.parent_dir = parent_dir
+        self.episode = episode
         # Adding the new mechanism to the list of available mechanism of the market
         pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
         # Update market and uniform parameters
@@ -47,7 +48,7 @@ class Simulation:
         self.ev_discharge_efficiency = params['ev_discharge_efficiency']
 
         # Initialize Q table
-        self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20)
+        self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20, num_elastic_ratio_pattern=3)
     
     def load_existing_q_table(self, path):
         self.q.load_q_table(folder_path=path)
@@ -70,7 +71,6 @@ class Simulation:
         self.agents.generate_params(seed=self.thread_num)
         self.agents.save(self.parent_dir)
         agent_params_df = self.agents.get_agents_params_df_
-        self.q.set_agent_params(agent_params_df)
 
         # get average pv production ratio to get state in Q table
         # data is stored as kWh/kW, which means, the values are within 0~1
@@ -100,8 +100,8 @@ class Simulation:
         self.demand_elastic_arr = self.demand_df.values.copy()
         self.demand_inelastic_arr = self.demand_df.values.copy()
         for i in range(self.num_agent):
-            self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * self.agents[i]['elastic_ratio']
-            self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - self.agents[i]['elastic_ratio'])
+            self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * 0.4
+            self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - 0.4)
 
         # Prepare dataframe to record shifted demand
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
@@ -115,11 +115,15 @@ class Simulation:
             self.q.reset_all_digitized_states()
             self.q.reset_all_actions()
             for i in range(self.num_agent):
+                #============================================================================================================================================================
+                # elastic ratioを0.4に固定しているが，これはtimeslotのデータフレームか何かを使ってパラメータとして与えるべき
                 self.q.set_digitized_states(agent_id=i,
                                     pv_ratio=self.pv_ratio_arr[t],
                                     battery_soc=self.battery_soc_record_arr[t, i],
-                                    ev_battery_soc=self.ev_battery_soc_record_arr[t, i])
-                self.q.set_actions(agent_id=i, episode=self.episode)
+                                    ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
+                                    elastic_ratio=0.4)
+                # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
+                self.q.set_actions(agent_id=i, episode=self.episode-1)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
                 if t+1 != len(self.demand_df):
                     self.battery_record_arr[t+1, i] = self.battery_record_arr[t, i]
@@ -338,8 +342,8 @@ class Simulation:
             self.microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
             # Q学習
-            dr_states, battery_states, ev_battery_states = self.q.get_states
-            actions_arr = self.q.get_actions
+            dr_states, battery_states, ev_battery_states = self.q.get_states_
+            actions_arr = self.q.get_actions    
             for i in range(self.num_agent):
                 self.reward_arr[t, i] = reward[i]
                 self.electricity_cost_arr[t, i] = cost[i]
@@ -352,7 +356,8 @@ class Simulation:
                     previous_actions = actions
                     previous_rewards = rewards
                 else:
-                    self.q.update_q_table(states=previous_states, 
+                    self.q.update_q_table(agent_id=i,
+                                          states=previous_states, 
                                           actions=previous_actions, 
                                           rewards=previous_rewards, 
                                           next_states=states)

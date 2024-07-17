@@ -8,10 +8,13 @@ from multiprocessing import Pool
 from simulation import Simulation
 
 
-def main(num_agent, parent_dir, load_q=False, **kwargs):
-    world = Simulation(num_agent, parent_dir)
+def main(num_agent, parent_dir, episode, load_q=False, **kwargs):
+    world = Simulation(num_agent, parent_dir, episode, **kwargs)
     if load_q:
-        world.load_q()
+        world.load_existing_q_table(path='output/average_q/' + str(episode) + '/')
+    world.preprocess()
+    world.run()
+    world.save()
     
 
 def main_wrapper(args):
@@ -22,7 +25,7 @@ if __name__ == "__main__":
     max_workers = 16
     
     p = Pool(max_workers)
-    values = [{'num_agent': 50, 'episode': 1, 'price_min': 10, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1/'} for x in range(max_workers)]
+    values = [{'num_agent': 100, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1/'} for x in range(max_workers)]
     p.map(main_wrapper, values)
 
     p.close()
