@@ -402,8 +402,6 @@ class Simulation:
                     previous_actions.append(actions)
                     previous_rewards.append(rewards)
                 else:
-                    if i == 3:
-                        print('previous states:', previous_states[i][0], previous_states[i][1], previous_states[i][2], previous_states[i][3], previous_states[i][4])
                     self.q.update_q_table(agent_id=i,
                                           states=previous_states[i],
                                           actions=previous_actions[i], 
