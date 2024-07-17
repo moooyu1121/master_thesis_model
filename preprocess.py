@@ -23,14 +23,17 @@ class Preprocess:
         self.car_movement_df = car_movement_df
         self.car_movement_df['timestamp'] = pd.to_datetime(self.car_movement_df['timestamp'])
         self.car_movement_df.set_index('timestamp', inplace=True)
+        self.elastic_ratio_df = pd.read_csv('data/elastic_ratio.csv')
+        self.elastic_ratio_df['timestamp'] = pd.to_datetime(self.elastic_ratio_df['timestamp'])
+        self.elastic_ratio_df.set_index('timestamp', inplace=True)
 
     @property
     def get_dfs_(self):
-        return self.demand_df, self.supply_df, self.price_df, self.car_movement_df
+        return self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df
     
     @property
     def get_nparrays_(self):
-        return self.demand_df.to_numpy(), self.supply_df.to_numpy(), self.price_df.to_numpy(), self.car_movement_df.to_numpy()
+        return self.demand_df.to_numpy(), self.supply_df.to_numpy(), self.price_df.to_numpy(), self.car_movement_df.to_numpy(), self.elastic_ratio_df.to_numpy()
     
     def generate_demand(self, n):
         num_columns = self.demand_df.shape[1]
@@ -66,7 +69,8 @@ class Preprocess:
         self.supply_df.reset_index(inplace=True, drop=True)
         self.price_df.reset_index(inplace=True, drop=True)
         self.car_movement_df.reset_index(inplace=True, drop=True)
-        return self.demand_df, self.supply_df, self.price_df, self.car_movement_df
+        self.elastic_ratio_df.reset_index(inplace=True, drop=True)
+        return self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df
     
     def save(self, folder_path):
         self.demand_df.to_csv(f'{folder_path}/demand.csv', index=True)

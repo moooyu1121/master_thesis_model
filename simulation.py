@@ -70,7 +70,7 @@ class Simulation:
         preprocess.generate_car_movement(self.num_agent)
         preprocess.save(self.parent_dir)
         preprocess.drop_index_  # drop timestamp index
-        self.demand_df, self.supply_df, self.price_df, self.car_movement_df = preprocess.get_dfs_
+        self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df = preprocess.get_dfs_
 
         # Generate agent parameters
         self.agents = Agent(self.num_agent)
@@ -114,8 +114,8 @@ class Simulation:
         self.demand_elastic_arr = self.demand_df.values.copy()
         self.demand_inelastic_arr = self.demand_df.values.copy()
         for i in range(self.num_agent):
-            self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * 0.4
-            self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - 0.4)
+            self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * self.elastic_ratio_df["elastic_ratio"]
+            self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - self.elastic_ratio_df["elastic_ratio"])
 
         # Prepare dataframe to record shifted demand
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
@@ -130,12 +130,11 @@ class Simulation:
             self.q.reset_all_actions()
             for i in range(self.num_agent):
                 #============================================================================================================================================================
-                # elastic ratioを0.4に固定しているが，これはtimeslotのデータフレームか何かを使ってパラメータとして与えるべき
                 self.q.set_digitized_states(agent_id=i,
                                     pv_ratio=self.pv_ratio_arr[t],
                                     battery_soc=self.battery_soc_record_arr[t, i],
                                     ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
-                                    elastic_ratio=0.4)
+                                    elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
