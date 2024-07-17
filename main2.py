@@ -25,7 +25,7 @@ if __name__ == "__main__":
     max_workers = 16
     
     p = Pool(max_workers)
-    values = [{'num_agent': 100, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1/'} for x in range(max_workers)]
+    values = [{'num_agent': 50, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1/'} for x in range(max_workers)]
     p.map(main_wrapper, values)
 
     p.close()
