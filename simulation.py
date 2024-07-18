@@ -454,7 +454,7 @@ class Simulation:
         electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
         electricity_cost_df.to_csv(self.parent_dir + '/electricity_cost.csv', index=True)
         self.q.save_q_table(folder_path = self.parent_dir)
-        self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=False)
+        self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 
         vis = visualize.Visualize(folder_path=self.parent_dir)
         vis.plot_consumption()
