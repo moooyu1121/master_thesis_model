@@ -351,7 +351,7 @@ class Simulation:
                         #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
                         reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
                                         self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user])))
-                        cost[user] -= -value * price
+                        cost[user] -= value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: ev discharge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
 
@@ -359,7 +359,7 @@ class Simulation:
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.sell_pv_record_arr[t, user] = value
                         reward[user] += value * price
-                        cost[user] -= -value * price
+                        cost[user] -= value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: pv, {value}, {price}')
 
