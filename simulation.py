@@ -30,7 +30,7 @@ class Simulation:
         # Update market and uniform parameters
         params = {'thread_num': -1,
                   'price_max': 120,
-                  'price_min': 0,
+                  'price_min': 10,
                   'wheeling_charge': 10,
                   'battery_charge_efficiency': 0.9,
                   'battery_discharge_efficiency': 0.9,
