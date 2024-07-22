@@ -20,11 +20,12 @@ formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(me
 fh.setFormatter(formatter)
 
 class Simulation:
-    def __init__(self, num_agent, parent_dir, episode, **kwargs) -> None:
+    def __init__(self, num_agent, parent_dir, episode, train, **kwargs) -> None:
         os.makedirs(parent_dir, exist_ok=True)
         self.num_agent = num_agent
         self.parent_dir = parent_dir
         self.episode = episode
+        self.train = train
         # Adding the new mechanism to the list of available mechanism of the market
         pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
         # Update market and uniform parameters
@@ -101,6 +102,8 @@ class Simulation:
         self.sell_ev_battery_record_arr = np.full((len(self.supply_df), self.num_agent), 0.0)
         self.reward_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.electricity_cost_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.potential_demand_arr = np.full(len(self.demand_df), 0.0)
+        self.potential_supply_arr = np.full(len(self.supply_df), 0.0)
 
         # set initial ev battery state to 50% of its capacity
         for i in range(self.num_agent):
@@ -125,6 +128,8 @@ class Simulation:
         for t in tqdm(range(len(self.demand_df))):
             demand_list = []
             supply_list = []
+            potential_demand = 0
+            potential_supply = 0
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
             self.q.reset_all_digitized_states()
             self.q.reset_all_actions()
@@ -135,11 +140,8 @@ class Simulation:
                                                             battery_soc=self.battery_soc_record_arr[t, i],
                                                             ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
                                                             elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
-                if i == 3:
-                    # print(self.q.get_agent_states(agent_id=i))
-                    pass
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
-                self.q.set_actions(agent_id=i, episode=self.episode-1)
+                self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
                 # car_movement_dfがTrueの場合は1時間走行したとして消費したバッテリー量を時刻t+1に記録
                 # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-10000を報酬に反映
@@ -166,6 +168,7 @@ class Simulation:
                 # デマンドレスポンス不可の需要
                 d_inelas = self.demand_inelastic_arr[t, i]
                 demand_list.append([d_inelas, self.price_max, id_base+0, True])
+                potential_demand += d_inelas
 
                 # デマンドレスポンス可能の需要
                 d_elas_max = self.demand_elastic_arr[t, i]
@@ -176,6 +179,7 @@ class Simulation:
                     price_elas += 0.00001
                 # デマンドレスポンス可の需要はid_base+1に割り当てる
                 demand_list.append([d_elas_max, price_elas, id_base+1, True])
+                potential_demand += d_elas_max
 
                 # バッテリー充放電価格の取得
                 price_buy_battery = self.q.get_actions_[i, 1]
@@ -196,6 +200,8 @@ class Simulation:
                 # バッテリー充電はid_base+2, 放電はid_base+3に割り当てる
                 demand_list.append([charge_amount, price_buy_battery, id_base+2, True])
                 supply_list.append([discharge_amount, price_sell_battery, id_base+3, False])
+                potential_demand += charge_amount
+                potential_supply += discharge_amount
 
                 # EV充放電価格の取得 
                 price_buy_ev_battery = self.q.get_actions_[i, 3]
@@ -220,11 +226,14 @@ class Simulation:
                 # EVバッテリー充電はid_base+4, 放電はid_base+5に割り当てる
                 demand_list.append([ev_charge_amount, price_buy_ev_battery, id_base+4, True])
                 supply_list.append([ev_discharge_amount, price_sell_ev_battery, id_base+5, False])
+                potential_demand += ev_charge_amount
+                potential_supply += ev_discharge_amount
 
                 # 供給
                 s = self.supply_df.at[t, f'{i}']
                 # 供給はid_base+6に割り当てる
                 supply_list.append([s, self.price_min, id_base+6, False])
+                potential_supply += s
 
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
@@ -241,7 +250,10 @@ class Simulation:
                             price_shift = self.price_max
                         # 過去からのシフトはj+7から割り当てる
                         demand_list.append([d_shift, price_shift, id_base+7+t-k-1, True])
+                        potential_demand += d_shift
 
+            self.potential_demand_arr[t] = potential_demand
+            self.potential_supply_arr[t] = potential_supply
             
             market = Market(demand_list, supply_list, wholesale_price)
             market.bid()
@@ -448,6 +460,11 @@ class Simulation:
 
         shift_df = pd.DataFrame(self.shift_arr, index=timestamp, columns=self.demand_df.columns)
         shift_df.to_csv(self.parent_dir + '/shift_record.csv', index=True)
+
+        potential_demand_df = pd.DataFrame(self.potential_demand_arr, index=timestamp, columns=['Potential demand'])
+        potential_demand_df.to_csv(self.parent_dir + '/potential_demand.csv', index=True)
+        potential_supply_df = pd.DataFrame(self.potential_supply_arr, index=timestamp, columns=['Potential supply'])
+        potential_supply_df.to_csv(self.parent_dir + '/potential_supply.csv', index=True)
 
         reward_df = pd.DataFrame(self.reward_arr, index=timestamp, columns=self.demand_df.columns)
         reward_df.to_csv(self.parent_dir + '/reward.csv', index=True)

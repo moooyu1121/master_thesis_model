@@ -80,23 +80,35 @@ class Q:
     def reset_all_actions(self):
         self.next_actions = np.full((self.agent_num, 5), np.nan)
     
-    def set_actions(self, agent_id, episode):
-        # 徐々に最適行動のみをとる、ε-greedy法
-        epsilon = 0.5 * (1 / (episode + 1))
-        next_action_list = []
-        if epsilon <= np.random.uniform(0, 1):
+    def set_actions(self, agent_id, episode, is_train):
+        if is_train:
+            # 徐々に最適行動のみをとる、ε-greedy法
+            epsilon = 0.5 * (1 / (episode + 1))
+            next_action_list = []
+            if epsilon <= np.random.uniform(0, 1):
+                next_action_list.append(np.argmax(self.dr_buy_qtb_list[agent_id][int(self.dr_states[agent_id])]) + int(self.params['price_min']))
+                next_action_list.append(np.argmax(self.battery_buy_qtb_list[agent_id][int(self.battery_states[agent_id])]) + int(self.params['price_min']))
+                next_action_list.append(np.argmax(self.battery_sell_qtb_list[agent_id][int(self.battery_states[agent_id])]) + int(self.params['price_min']))
+                next_action_list.append(np.argmax(self.ev_battery_buy_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
+                next_action_list.append(np.argmax(self.ev_battery_sell_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
+            else:
+                for i in range(5):
+                    next_action_list.append(np.random.choice(
+                        range(int(self.params['price_min']), int(self.params['price_max']) + 1)
+                        ))
+            self.next_actions[agent_id] = next_action_list
+            return next_action_list
+        # テスト時は最適行動のみをとる
+        else:
+            next_action_list = []
             next_action_list.append(np.argmax(self.dr_buy_qtb_list[agent_id][int(self.dr_states[agent_id])]) + int(self.params['price_min']))
             next_action_list.append(np.argmax(self.battery_buy_qtb_list[agent_id][int(self.battery_states[agent_id])]) + int(self.params['price_min']))
             next_action_list.append(np.argmax(self.battery_sell_qtb_list[agent_id][int(self.battery_states[agent_id])]) + int(self.params['price_min']))
             next_action_list.append(np.argmax(self.ev_battery_buy_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
             next_action_list.append(np.argmax(self.ev_battery_sell_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
-        else:
-            for i in range(5):
-                next_action_list.append(np.random.choice(
-                    range(int(self.params['price_min']), int(self.params['price_max']) + 1)
-                    ))
-        self.next_actions[agent_id] = next_action_list
-        return next_action_list
+            self.next_actions[agent_id] = next_action_list
+            return next_action_list
+
     
     @property
     def get_actions_(self):

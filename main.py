@@ -8,8 +8,8 @@ from multiprocessing import Pool
 from simulation import Simulation
 
 
-def main(num_agent, parent_dir, episode, load_q=False, **kwargs):
-    world = Simulation(num_agent, parent_dir, episode, **kwargs)
+def main(num_agent, parent_dir, episode, load_q=False, train=True, **kwargs):
+    world = Simulation(num_agent, parent_dir, episode, train, **kwargs)
     if load_q:
         params = {'thread_num': -1}
         params.update(kwargs)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     max_workers = 16
     
     p = Pool(max_workers)
-    values = [{'num_agent': 50, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1'} for x in range(max_workers)]
+    values = [{'num_agent': 50, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'parent_dir': 'output/thread'+str(x)+'/episode1'} for x in range(max_workers)]
     p.map(main_wrapper, values)
 
     p.close()
@@ -38,11 +38,22 @@ if __name__ == "__main__":
 
     for episode in range(2, 101):
         p = Pool(max_workers)
-        values = [{'num_agent': 50, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/thread{x}/episode{episode}'} for x in range(max_workers)]
+        values = [{'num_agent': 50, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/thread{x}/episode{episode}'} for x in range(max_workers)]
         p.map(main_wrapper, values)
 
         p.close()
         p.join()
 
         print(f'episode {episode} finished.')
+
+        if episode % 10 == 0:
+            print('Running test...')
+            p = Pool(max_workers)
+            values = [{'num_agent': 50, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+            p.map(main_wrapper, values)
+
+            p.close()
+            p.join()
+
+            print(f'Test @ episode {episode} finished.')
     print('All episodes finished.')
