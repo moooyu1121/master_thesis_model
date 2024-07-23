@@ -414,11 +414,12 @@ class Simulation:
                     previous_actions.append(actions)
                     previous_rewards.append(rewards)
                 else:
-                    self.q.update_q_table(agent_id=i,
-                                          states=previous_states[i],
-                                          actions=previous_actions[i], 
-                                          rewards=previous_rewards[i],
-                                          next_states=states)
+                    if self.train:
+                        self.q.update_q_table(agent_id=i,
+                                            states=previous_states[i],
+                                            actions=previous_actions[i], 
+                                            rewards=previous_rewards[i],
+                                            next_states=states)
                     previous_states[i] = states
                     previous_actions[i] = actions
                     previous_rewards[i] = rewards
