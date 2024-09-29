@@ -683,12 +683,14 @@ def sor_per_month_plot(thread_num):
 
 
 if __name__ == '__main__':
-    agent_num = pd.read_csv('output/thread0/episode1/agent_params.csv', index_col=0).shape[0]
+    # agent_num = pd.read_csv('output/thread0/episode1/agent_params.csv', index_col=0).shape[0]
+    agent_num = pd.read_csv('output/test/thread0/episode10/agent_params.csv', index_col=0).shape[0]
     print(f'Detected number of agents: {agent_num}')
 
     reward_sorted_file_paths_list = []
     for i in range(max_workers):
-        reward_file_paths = glob.glob(f'output/thread{i}/episode*/reward.csv')
+        # reward_file_paths = glob.glob(f'output/thread{i}/episode*/reward.csv')
+        reward_file_paths = glob.glob(f'output/test/thread{i}/episode*/reward.csv')
         reward_sorted_file_paths = sorted(reward_file_paths, key=numerical_sort)
         reward_sorted_file_paths_list.append(reward_sorted_file_paths)
     # print(reward_sorted_file_paths_list)
