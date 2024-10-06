@@ -69,8 +69,8 @@ class Agent:
                   'max_ev_discharge_speed': [3.0],  # kW
                   'dr_price_threshold_list': [20, 25, 30],  # cents/kWh
                 #   'battery_capacity_list': [10, 15, 20],    # kWh
-                  'battery_capacity_list': [0, 15, 30],
-                  'ev_capacity_list': [0, 20, 40, 60, 80],     # kWh
+                  'battery_capacity_list': [0, 15],
+                  'ev_capacity_list': [0, 40],     # kWh
                 #   'ev_capacity_list': [0],
                   'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                   'beta_list': [1, 1.5, 2],

@@ -469,8 +469,9 @@ class Simulation:
 
         reward_df = pd.DataFrame(self.reward_arr, index=timestamp, columns=self.demand_df.columns)
         reward_df.to_csv(self.parent_dir + '/reward.csv', index=True)
-        electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
-        electricity_cost_df.to_csv(self.parent_dir + '/electricity_cost.csv', index=True)
+        # This data is recorded as net cost
+        net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
+        net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
         self.q.save_q_table(folder_path = self.parent_dir)
         self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 

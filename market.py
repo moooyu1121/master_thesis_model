@@ -197,7 +197,7 @@ class Market:
         for i in range(len(self.supply_list)):
             if self.supply_list[i][0] > 0:
                 self.market.accept_bid(self.supply_list[i][0], self.supply_list[i][1], self.supply_list[i][2], False)
-        # import from grid and export to grid
+        # import from grid
         if self.BID_SAVE:
             self.market.accept_bid(0.2*len(self.demand_list), self.whoelsale_price, 99999, False)
             # self.market.accept_bid(0.1*len(self.supply_list), 0.01, 99999, True)
