@@ -284,6 +284,7 @@ class Simulation:
                     item = id % 100
                     price = transactions_df[transactions_df['bid']==bid_num]['price'].values[0]
                     if item == 0:
+                        # リアルタイム(inelas)の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.buy_inelastic_record_arr[t, user] = value
                         reward[user] -= value * price
@@ -292,6 +293,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: inelastic, {value}, {price}')
 
                     elif item == 1:
+                        # リアルタイム(elas)の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.buy_elastic_record_arr[t, user] = value
                         # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
@@ -304,6 +306,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, i]}')
 
                     elif item == 2:
+                        # バッテリー充電の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.buy_battery_record_arr[t, user] = value
                         if t+1 != len(self.demand_df):
@@ -320,6 +323,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: battery charge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
 
                     elif item == 3:
+                        # バッテリー放電の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.sell_battery_record_arr[t, user] = value
                         if t+1 !=len(self.demand_df):
@@ -336,6 +340,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: battery discharge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
 
                     elif item == 4:
+                        # EVバッテリー充電の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.buy_ev_battery_record_arr[t, user] = value
                         if t+1 !=len(self.demand_df):
@@ -352,6 +357,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: ev charge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
 
                     elif item == 5:
+                        # EVバッテリー放電の取引量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.sell_ev_battery_record_arr[t, user] = value
                         if t+1 !=len(self.demand_df):
@@ -368,6 +374,7 @@ class Simulation:
                             logger.error(f'Numpy nan is detected: ev discharge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
 
                     elif item == 6:
+                        # PV発電供給量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.sell_pv_record_arr[t, user] = value
                         reward[user] += value * price
@@ -428,50 +435,51 @@ class Simulation:
         timestamp = pd.read_csv('data/demand.csv').iloc[:, 0]
         # parent_dir = 'output/episode' + str(episode)
 
-        grid_import_record_df = pd.DataFrame(self.grid_import_record_arr, index=timestamp, columns=['Grid import'])
-        grid_import_record_df.to_csv(self.parent_dir + '/grid_import_record.csv', index=True)
-        microgrid_price_record_df = pd.DataFrame(self.microgrid_price_record_arr, index=timestamp, columns=['Price'])
-        microgrid_price_record_df.to_csv(self.parent_dir + '/price_record.csv', index=True)
-        battery_record_df = pd.DataFrame(self.battery_record_arr, index=timestamp, columns=self.demand_df.columns)
-        battery_record_df.to_csv(self.parent_dir + '/battery_record.csv', index=True)
-        ev_battery_record_df = pd.DataFrame(self.ev_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
-        ev_battery_record_df.to_csv(self.parent_dir + '/ev_battery_record.csv', index=True)
-        battery_soc_record_df = pd.DataFrame(self.battery_soc_record_arr, index=timestamp, columns=self.demand_df.columns)
-        battery_soc_record_df.to_csv(self.parent_dir + '/battery_soc_record.csv', index=True)
-        ev_battery_soc_record_df = pd.DataFrame(self.ev_battery_soc_record_arr, index=timestamp, columns=self.demand_df.columns)
-        ev_battery_soc_record_df.to_csv(self.parent_dir + '/ev_battery_soc_record.csv', index=True)
+        if not self.train:
+            grid_import_record_df = pd.DataFrame(self.grid_import_record_arr, index=timestamp, columns=['Grid import'])
+            grid_import_record_df.to_csv(self.parent_dir + '/grid_import_record.csv', index=True)
+            microgrid_price_record_df = pd.DataFrame(self.microgrid_price_record_arr, index=timestamp, columns=['Price'])
+            microgrid_price_record_df.to_csv(self.parent_dir + '/price_record.csv', index=True)
+            battery_record_df = pd.DataFrame(self.battery_record_arr, index=timestamp, columns=self.demand_df.columns)
+            battery_record_df.to_csv(self.parent_dir + '/battery_record.csv', index=True)
+            ev_battery_record_df = pd.DataFrame(self.ev_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
+            ev_battery_record_df.to_csv(self.parent_dir + '/ev_battery_record.csv', index=True)
+            battery_soc_record_df = pd.DataFrame(self.battery_soc_record_arr, index=timestamp, columns=self.demand_df.columns)
+            battery_soc_record_df.to_csv(self.parent_dir + '/battery_soc_record.csv', index=True)
+            ev_battery_soc_record_df = pd.DataFrame(self.ev_battery_soc_record_arr, index=timestamp, columns=self.demand_df.columns)
+            ev_battery_soc_record_df.to_csv(self.parent_dir + '/ev_battery_soc_record.csv', index=True)
 
-        buy_inelastic_record_df = pd.DataFrame(self.buy_inelastic_record_arr, index=timestamp, columns=self.demand_df.columns)
-        buy_inelastic_record_df.to_csv(self.parent_dir + '/buy_inelastic_record.csv', index=True)
-        buy_elastic_record_df = pd.DataFrame(self.buy_elastic_record_arr, index=timestamp, columns=self.demand_df.columns)
-        buy_elastic_record_df.to_csv(self.parent_dir + '/buy_elastic_record.csv', index=True)
-        buy_shifted_record_df = pd.DataFrame(self.buy_shifted_record_arr, index=timestamp, columns=self.demand_df.columns)
-        buy_shifted_record_df.to_csv(self.parent_dir + '/buy_shifted_record.csv', index=True)
-        sell_pv_record_df = pd.DataFrame(self.sell_pv_record_arr, index=timestamp, columns=self.supply_df.columns)
-        sell_pv_record_df.to_csv(self.parent_dir + '/sell_pv_record.csv', index=True)
-        
-        buy_battery_record_df = pd.DataFrame(self.buy_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
-        buy_battery_record_df.to_csv(self.parent_dir + '/buy_battery_record.csv', index=True)
-        buy_ev_battery_record_df = pd.DataFrame(self.buy_ev_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
-        buy_ev_battery_record_df.to_csv(self.parent_dir + '/buy_ev_battery_record.csv', index=True)
-        sell_battery_record_df = pd.DataFrame(self.sell_battery_record_arr, index=timestamp, columns=self.supply_df.columns)
-        sell_battery_record_df.to_csv(self.parent_dir + '/sell_battery_record.csv', index=True)
-        sell_ev_battery_record_df = pd.DataFrame(self.sell_ev_battery_record_arr, index=timestamp, columns=self.supply_df.columns)
-        sell_ev_battery_record_df.to_csv(self.parent_dir + '/sell_ev_battery_record.csv', index=True)
+            buy_inelastic_record_df = pd.DataFrame(self.buy_inelastic_record_arr, index=timestamp, columns=self.demand_df.columns)
+            buy_inelastic_record_df.to_csv(self.parent_dir + '/buy_inelastic_record.csv', index=True)
+            buy_elastic_record_df = pd.DataFrame(self.buy_elastic_record_arr, index=timestamp, columns=self.demand_df.columns)
+            buy_elastic_record_df.to_csv(self.parent_dir + '/buy_elastic_record.csv', index=True)
+            buy_shifted_record_df = pd.DataFrame(self.buy_shifted_record_arr, index=timestamp, columns=self.demand_df.columns)
+            buy_shifted_record_df.to_csv(self.parent_dir + '/buy_shifted_record.csv', index=True)
+            sell_pv_record_df = pd.DataFrame(self.sell_pv_record_arr, index=timestamp, columns=self.supply_df.columns)
+            sell_pv_record_df.to_csv(self.parent_dir + '/sell_pv_record.csv', index=True)
+            
+            buy_battery_record_df = pd.DataFrame(self.buy_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
+            buy_battery_record_df.to_csv(self.parent_dir + '/buy_battery_record.csv', index=True)
+            buy_ev_battery_record_df = pd.DataFrame(self.buy_ev_battery_record_arr, index=timestamp, columns=self.demand_df.columns)
+            buy_ev_battery_record_df.to_csv(self.parent_dir + '/buy_ev_battery_record.csv', index=True)
+            sell_battery_record_df = pd.DataFrame(self.sell_battery_record_arr, index=timestamp, columns=self.supply_df.columns)
+            sell_battery_record_df.to_csv(self.parent_dir + '/sell_battery_record.csv', index=True)
+            sell_ev_battery_record_df = pd.DataFrame(self.sell_ev_battery_record_arr, index=timestamp, columns=self.supply_df.columns)
+            sell_ev_battery_record_df.to_csv(self.parent_dir + '/sell_ev_battery_record.csv', index=True)
 
-        shift_df = pd.DataFrame(self.shift_arr, index=timestamp, columns=self.demand_df.columns)
-        shift_df.to_csv(self.parent_dir + '/shift_record.csv', index=True)
+            shift_df = pd.DataFrame(self.shift_arr, index=timestamp, columns=self.demand_df.columns)
+            shift_df.to_csv(self.parent_dir + '/shift_record.csv', index=True)
 
-        potential_demand_df = pd.DataFrame(self.potential_demand_arr, index=timestamp, columns=['Potential demand'])
-        potential_demand_df.to_csv(self.parent_dir + '/potential_demand.csv', index=True)
-        potential_supply_df = pd.DataFrame(self.potential_supply_arr, index=timestamp, columns=['Potential supply'])
-        potential_supply_df.to_csv(self.parent_dir + '/potential_supply.csv', index=True)
+            potential_demand_df = pd.DataFrame(self.potential_demand_arr, index=timestamp, columns=['Potential demand'])
+            potential_demand_df.to_csv(self.parent_dir + '/potential_demand.csv', index=True)
+            potential_supply_df = pd.DataFrame(self.potential_supply_arr, index=timestamp, columns=['Potential supply'])
+            potential_supply_df.to_csv(self.parent_dir + '/potential_supply.csv', index=True)
 
-        reward_df = pd.DataFrame(self.reward_arr, index=timestamp, columns=self.demand_df.columns)
-        reward_df.to_csv(self.parent_dir + '/reward.csv', index=True)
-        # This data is recorded as net cost
-        net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
-        net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
+            reward_df = pd.DataFrame(self.reward_arr, index=timestamp, columns=self.demand_df.columns)
+            reward_df.to_csv(self.parent_dir + '/reward.csv', index=True)
+            # This data is recorded as net cost
+            net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
+            net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
         self.q.save_q_table(folder_path = self.parent_dir)
         self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 

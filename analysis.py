@@ -201,6 +201,7 @@ def buy_amount_by_battery_ev_presence_plot(thread_num):
     ax.set_xticklabels(['w/ battery, w/ ev', 'w/ battery, w/o ev', 'w/o battery, w/ ev', 'w/o battery, w/o ev'])
     ax.set_ylabel('Energy Amount [kWh]')
     ax.set_title('Average Energy Amount Buy Composition by Battery and EV Presence')
+    # ax.set_ylim(0, 25000)
     ax.legend()
 
     plt.tight_layout()
@@ -554,6 +555,101 @@ def sell_cost_by_battery_ev_presence_plot(thread_num):
 
 
 def net_cost_by_battery_ev_presence_plot(thread_num):
+    net_cost_file_path_list = []
+    for i in range(thread_num):
+        # Change it later
+        # net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/net_electricity_cost.csv')
+        net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/electricity_cost.csv')
+        net_cost_sorted_file_paths = sorted(net_cost_file_paths, key=numerical_sort)
+        net_cost_file_path_list.append(net_cost_sorted_file_paths[-1])  # get the last episode
+
+    agent_params_file_path_list = []
+    for i in range(thread_num):
+        agent_params_file_paths = glob.glob(f'output/thread{i}/episode*/agent_params.csv')
+        agent_params_sorted_file_paths = sorted(agent_params_file_paths, key=numerical_sort)
+        agent_params_file_path_list.append(agent_params_sorted_file_paths[-1])  # get the last episode
+    
+    net_dict = {
+        'w/battery_w/ev': [],
+        'w/battery_w/oev': [],
+        'w/obattery_w/ev': [],
+        'w/obattery_w/oev': []
+    }
+
+    for i in range(len(agent_params_file_path_list)):
+        agent_params_file_path = agent_params_file_path_list[i]
+        agent_params_df = pd.read_csv(agent_params_file_path, index_col=0)
+        net_cost_df = pd.read_csv(net_cost_file_path_list[i], index_col=0)  # already recorded as dollars
+        for j in range(agent_params_df.shape[0]):
+            battery_capacity = agent_params_df.loc[j, 'battery_capacity']
+            ev_capacity = agent_params_df.loc[j, 'ev_capacity']
+            if battery_capacity > 0 and ev_capacity > 0:
+                net_dict['w/battery_w/ev'].append(net_cost_df.loc[:, f'{j}'].sum())
+            elif battery_capacity > 0 and ev_capacity == 0:
+                net_dict['w/battery_w/oev'].append(net_cost_df.loc[:, f'{j}'].sum())
+            elif battery_capacity == 0 and ev_capacity > 0:
+                net_dict['w/obattery_w/ev'].append(net_cost_df.loc[:, f'{j}'].sum())
+            elif battery_capacity == 0 and ev_capacity == 0:
+                net_dict['w/obattery_w/oev'].append(net_cost_df.loc[:, f'{j}'].sum())
+    # print(len(net_dict['w/battery_w/ev']), len(net_dict['w/battery_w/oev']), len(net_dict['w/obattery_w/ev']), len(net_dict['w/obattery_w/oev']))
+    # Calculate mean and standard deviation of costs for each category
+    mean_costs = [np.mean(net_dict[key]) for key in net_dict.keys()]
+    std_costs = [np.std(net_dict[key]) for key in net_dict.keys()]
+
+    # Plotting
+    categories = ['w/battery_w/ev', 'w/battery_w/oev', 'w/obattery_w/ev', 'w/obattery_w/oev']
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Create a boxplot for each category
+    boxprops = dict(color='black', linewidth=1.5)
+    medianprops = dict(color='red', linewidth=2)
+    meanpointprops = dict(marker='D', markeredgecolor='black', markerfacecolor='blue', markersize=8)
+
+    bplot = ax.boxplot([net_dict[cat] for cat in categories], patch_artist=True, showmeans=True,
+                       boxprops=boxprops, medianprops=medianprops, meanprops=meanpointprops)
+
+    # Set boxplot colors
+    colors = ['#1f77b4', '#0000ff', '#66c2a5', '#d62728']
+    for patch, color in zip(bplot['boxes'], colors):
+        patch.set_facecolor(color)
+
+    # Add labels, title, and grid
+    ax.set_xticklabels(['w/ battery, w/ ev', 'w/ battery, w/o ev', 'w/o battery, w/ ev', 'w/o battery, w/o ev'])
+    ax.set_ylabel('Net Electricity Cost [$]')
+    ax.set_title('Net Electricity Cost Distribution by Battery and EV Presence')
+    ax.yaxis.grid(True)
+    ax.set_axisbelow(True)
+
+    # Adding mean and standard deviation text
+    for i in range(len(categories)):
+        ax.text(i + 1, mean_costs[i], f'Mean: ${mean_costs[i]:.2f}\nStd: ${std_costs[i]:.2f}', ha='center', va='center',
+                bbox=dict(facecolor='white', alpha=0.5))
+
+    plt.tight_layout()
+    plt.savefig('output/insight/net_cost_by_battery_ev.png', dpi=600)
+    plt.savefig('output/insight/net_cost_by_battery_ev.svg')
+    # plt.show()
+
+    print('Net cost by battery and EV presence plot saved.')
+
+
+def net_cost_by_battery_ev_presence_plot_2(thread_num):
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     net_cost_file_path_list = []
     for i in range(thread_num):
         # Change it later
