@@ -495,8 +495,9 @@ class Simulation:
             # This data is recorded as net cost
             net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
-        self.q.save_q_table(folder_path = self.parent_dir)
-        self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
+            self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 
-        vis = visualize.Visualize(folder_path=self.parent_dir)
-        vis.plot_consumption()
+            vis = visualize.Visualize(folder_path=self.parent_dir)
+            vis.plot_consumption()
+        self.q.save_q_table(folder_path = self.parent_dir)
+        logger.info(f'Q table is saved to {self.parent_dir}')
