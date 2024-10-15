@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import pymarket as pm
 from tqdm import tqdm
+import random
 import warnings
 warnings.simplefilter('ignore', FutureWarning)
 import visualize
@@ -59,7 +60,11 @@ class Simulation:
         self.q.load_q_table(folder_path=folder_path)
 
     def preprocess(self):
-        # Preprocess and generate demand, supply, price, and car_movement(boolean) data
+        # Generate agent parameters
+        self.agents = Agent(self.num_agent)
+        self.agents.generate_params(seed=self.thread_num)
+        
+        # Preprocess and generate demand, price, and car_movement(boolean) data
         preprocess = Preprocess(seed=self.thread_num)
         preprocess.set(
             pd.read_csv('data/demand.csv'),
@@ -67,17 +72,21 @@ class Simulation:
             pd.read_csv('data/price.csv'),
             pd.read_csv('data/car_movement.csv')
         )
-        preprocess.generate_d_s(self.num_agent)
-        preprocess.generate_car_movement(self.num_agent)
+        # preprocess.generate_d_s(self.num_agent)
+        preprocess.generate_demand(self.num_agent)
+        _, agent_car_categories = preprocess.generate_car_movement(self.num_agent)
+
+        # Save car movement categories data to agent_params_df
+        self.agents.set_car_movement_categories(agent_car_categories)
+        self.agents.save(self.parent_dir)
+        agent_params_df = self.agents.get_agents_params_df_
+
+        pv_capacity_list = agent_params_df['pv_capacity'].values
+        # Generate supply data
+        preprocess.generate_supply_flex_pv_size(self.num_agent, pv_capacity_list)
         preprocess.save(self.parent_dir)
         preprocess.drop_index_  # drop timestamp index
         self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df = preprocess.get_dfs_
-
-        # Generate agent parameters
-        self.agents = Agent(self.num_agent)
-        self.agents.generate_params(seed=self.thread_num)
-        self.agents.save(self.parent_dir)
-        agent_params_df = self.agents.get_agents_params_df_
 
         # get average pv production ratio to get state in Q table
         # data is stored as kWh/kW, which means, the values are within 0~1
@@ -117,8 +126,14 @@ class Simulation:
         self.demand_elastic_arr = self.demand_df.values.copy()
         self.demand_inelastic_arr = self.demand_df.values.copy()
         for i in range(self.num_agent):
-            self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * self.elastic_ratio_df["elastic_ratio"]
-            self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - self.elastic_ratio_df["elastic_ratio"])
+            if self.agents[i]['dr_boolean_list'] == False:
+                self.demand_elastic_arr[:, i] = 0
+                self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}']
+            elif self.agents[i]['dr_boolean_list'] == True:
+                self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * self.elastic_ratio_df["elastic_ratio"]
+                self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - self.elastic_ratio_df["elastic_ratio"])
+            else:
+                raise ValueError("DR boolean key is invalid.")
 
         # Prepare dataframe to record shifted demand
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)

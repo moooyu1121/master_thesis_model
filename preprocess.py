@@ -46,8 +46,15 @@ class Preprocess:
     def generate_supply(self, n):
         num_columns = self.supply_df.shape[1]
         columns = generate_random_integers(num_columns, n, seed=self.seed)
-        # とりあえず10kWの容量のPVを導入するとして供給を生成する
-        self.supply_df = self.supply_df.iloc[:, columns] * 10
+        # とりあえず8kWの容量のPVを導入するとして供給を生成する
+        self.supply_df = self.supply_df.iloc[:, columns] * 8
+        self.supply_df.columns = [f'{i}' for i in range(n)]
+        return self.supply_df
+    
+    def generate_supply_flex_pv_size(self, n, pv_capacity_list):
+        num_columns = self.supply_df.shape[1]
+        columns = generate_random_integers(num_columns, n, seed=self.seed)
+        self.supply_df = self.supply_df.iloc[:, columns] * pv_capacity_list
         self.supply_df.columns = [f'{i}' for i in range(n)]
         return self.supply_df
     
@@ -57,11 +64,28 @@ class Preprocess:
         return self.demand_df, self.supply_df
     
     def generate_car_movement(self, n):
+        mileage_categories = ["-3000", "3000-5000", "5000-7000", "7000-9000", "9000-11000", "11000-16000", "16000-"]
         num_columns = self.car_movement_df.shape[1]
         columns = generate_random_integers(num_columns, n, seed=self.seed)
         self.car_movement_df = self.car_movement_df.iloc[:, columns]
         self.car_movement_df.columns = [f'{i}' for i in range(n)]
-        return self.car_movement_df
+        agent_car_categories = []
+        for column in columns:
+            if column < 129:
+                agent_car_categories.append(mileage_categories[0])
+            elif column < 387:
+                agent_car_categories.append(mileage_categories[1])
+            elif column < 612:
+                agent_car_categories.append(mileage_categories[2])
+            elif column < 760:
+                agent_car_categories.append(mileage_categories[3])
+            elif column < 898:
+                agent_car_categories.append(mileage_categories[4])
+            elif column < 958:
+                agent_car_categories.append(mileage_categories[5])
+            else:
+                agent_car_categories.append(mileage_categories[6])
+        return self.car_movement_df, agent_car_categories
     
     @property
     def drop_index_(self):
@@ -93,5 +117,8 @@ if __name__ == '__main__':
     s_df = preprocess.generate_supply(20)
     print(d_df)
     print(s_df)
-    car_movement_df = preprocess.generate_car_movement(20)
+    car_movement_df, agent_car_categories = preprocess.generate_car_movement(20)
     print(car_movement_df)
+    print(agent_car_categories)
+    s_df = preprocess.generate_supply_flex_pv_size(5, [0, 10, 12, 14, 16])
+    print(s_df.head(50))
