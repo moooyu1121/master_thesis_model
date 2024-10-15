@@ -14,7 +14,7 @@ class Agent:
                                                                                       'battery_capacity', 
                                                                                       'ev_capacity', 
                                                                                       'pv_capacity',
-                                                                                      'dr_boolean_list',
+                                                                                      'dr_boolean',
                                                                                       'alpha', 
                                                                                       'beta',
                                                                                       'gamma', 
@@ -39,7 +39,7 @@ class Agent:
         self.agent_params_df['battery_capacity'] = kwargs['battery_capacity']
         self.agent_params_df['ev_capacity'] = kwargs['ev_capacity']
         self.agent_params_df['pv_capacity'] = kwargs['pv_capacity']
-        self.agent_params_df['dr_boolean_list'] = kwargs['dr_boolean_list']
+        self.agent_params_df['dr_boolean'] = kwargs['dr_boolean']
         self.agent_params_df['alpha'] = kwargs['alpha']
         self.agent_params_df['beta'] = kwargs['beta']
         self.agent_params_df['gamma'] = kwargs['gamma']
@@ -57,7 +57,7 @@ class Agent:
         self.agent_params_df.at[agent_id, 'battery_capacity'] = kwargs['battery_capacity']
         self.agent_params_df.at[agent_id, 'ev_capacity'] = kwargs['ev_capacity']
         self.agent_params_df.at[agent_id, 'pv_capacity'] = kwargs['pv_capacity']
-        self.agent_params_df.at[agent_id, 'dr_boolean_list'] = kwargs['dr_boolean_list']
+        self.agent_params_df.at[agent_id, 'dr_boolean'] = kwargs['dr_boolean']
         self.agent_params_df.at[agent_id, 'alpha'] = kwargs['alpha']
         self.agent_params_df.at[agent_id, 'beta'] = kwargs['beta']
         self.agent_params_df.at[agent_id, 'gamma'] = kwargs['gamma']
@@ -122,7 +122,7 @@ class Agent:
             lambda row: ev_capacity_list[np.random.randint(0, len(ev_capacity_list))], axis=1)
         self.agent_params_df['pv_capacity'] = self.agent_params_df.apply(
             lambda row: pv_capacity_list[np.random.randint(0, len(pv_capacity_list))], axis=1)
-        self.agent_params_df['dr_boolean_list'] = self.agent_params_df.apply(
+        self.agent_params_df['dr_boolean'] = self.agent_params_df.apply(
             lambda row: dr_boolean_list[np.random.randint(0, len(dr_boolean_list))], axis=1)
         self.agent_params_df['alpha'] = self.agent_params_df.apply(
             lambda row: alpha_list[np.random.randint(0, len(alpha_list))], axis=1)

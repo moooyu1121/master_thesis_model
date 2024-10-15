@@ -126,10 +126,10 @@ class Simulation:
         self.demand_elastic_arr = self.demand_df.values.copy()
         self.demand_inelastic_arr = self.demand_df.values.copy()
         for i in range(self.num_agent):
-            if self.agents[i]['dr_boolean_list'] == False:
+            if self.agents[i]['dr_boolean'] == False:
                 self.demand_elastic_arr[:, i] = 0
                 self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}']
-            elif self.agents[i]['dr_boolean_list'] == True:
+            elif self.agents[i]['dr_boolean'] == True:
                 self.demand_elastic_arr[:, i] = self.demand_df[f'{i}'] * self.elastic_ratio_df["elastic_ratio"]
                 self.demand_inelastic_arr[:, i] = self.demand_df[f'{i}'] * (1 - self.elastic_ratio_df["elastic_ratio"])
             else:
