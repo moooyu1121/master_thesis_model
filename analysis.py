@@ -877,7 +877,7 @@ def sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num):
     print('Energy cost sell composition plot saved.')
 
 
-def net_cost_by_battery_ev_presence_plot(thread_num):
+def net_cost_by_battery_ev_pv_dr_exist_plot(thread_num):
     net_cost_file_path_list = []
     for i in range(thread_num):
         # Change it later
@@ -994,90 +994,283 @@ def net_cost_by_battery_ev_presence_plot(thread_num):
                 bbox=dict(facecolor='white', alpha=0.5))
 
     plt.tight_layout()
-    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr.png', dpi=600)
-    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr.svg')
+    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr_misstake.png', dpi=600)
+    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr_misstake.svg')
     # plt.show()
 
-    print('Net cost by battery and EV presence plot saved.')
+    print('Net cost by battery, EV, PV, and DR plot saved. Maybe mistake in the data.')
 
 
-def net_cost_by_battery_ev_presence_plot_2(thread_num):
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    net_cost_file_path_list = []
+def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num):
+    buy_inelastic_file_path_list = []
     for i in range(thread_num):
-        # Change it later
-        # net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/net_electricity_cost.csv')
-        net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/electricity_cost.csv')
-        net_cost_sorted_file_paths = sorted(net_cost_file_paths, key=numerical_sort)
-        net_cost_file_path_list.append(net_cost_sorted_file_paths[-1])  # get the last episode
+        buy_inelastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_inelastic_record.csv')
+        buy_inelastic_sorted_file_paths = sorted(buy_inelastic_file_paths, key=numerical_sort)
+        buy_inelastic_file_path_list.append(buy_inelastic_sorted_file_paths[-1])  # get the last episode
+    buy_elastic_file_path_list = []
+    for i in range(thread_num):
+        buy_elastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_elastic_record.csv')
+        buy_elastic_sorted_file_paths = sorted(buy_elastic_file_paths, key=numerical_sort)
+        buy_elastic_file_path_list.append(buy_elastic_sorted_file_paths[-1])  # get the last episode
+    buy_shifted_file_path_list = []
+    for i in range(thread_num):
+        buy_shifted_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_shifted_record.csv')
+        buy_shifted_sorted_file_paths = sorted(buy_shifted_file_paths, key=numerical_sort)
+        buy_shifted_file_path_list.append(buy_shifted_sorted_file_paths[-1])  # get the last episode
+    buy_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_battery_record.csv')
+        buy_battery_sorted_file_paths = sorted(buy_battery_file_paths, key=numerical_sort)
+        buy_battery_file_path_list.append(buy_battery_sorted_file_paths[-1])  # get the last episode
+    buy_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_ev_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_ev_battery_record.csv')
+        buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
+        buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
+
+    sell_pv_file_path_list = []
+    for i in range(thread_num):
+        sell_pv_file_paths = glob.glob(f'output/test/thread{i}/episode*/sell_pv_record.csv')
+        sell_pv_sorted_file_paths = sorted(sell_pv_file_paths, key=numerical_sort)
+        sell_pv_file_path_list.append(sell_pv_sorted_file_paths[-1])  # get the last episode
+    sell_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/sell_battery_record.csv')
+        sell_battery_sorted_file_paths = sorted(sell_battery_file_paths, key=numerical_sort)
+        sell_battery_file_path_list.append(sell_battery_sorted_file_paths[-1])  # get the last episode
+    sell_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_ev_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/sell_ev_battery_record.csv')
+        sell_ev_battery_sorted_file_paths = sorted(sell_ev_battery_file_paths, key=numerical_sort)
+        sell_ev_battery_file_path_list.append(sell_ev_battery_sorted_file_paths[-1])  # get the last episode
 
     agent_params_file_path_list = []
     for i in range(thread_num):
-        agent_params_file_paths = glob.glob(f'output/thread{i}/episode*/agent_params.csv')
+        agent_params_file_paths = glob.glob(f'output/test/thread{i}/episode*/agent_params.csv')
         agent_params_sorted_file_paths = sorted(agent_params_file_paths, key=numerical_sort)
         agent_params_file_path_list.append(agent_params_sorted_file_paths[-1])  # get the last episode
-    
+
+    microgrid_price_file_path_list = []
+    for i in range(thread_num):
+        microgrid_price_file_paths = glob.glob(f'output/test/thread{i}/episode*/price_record.csv')
+        microgrid_price_sorted_file_paths = sorted(microgrid_price_file_paths, key=numerical_sort)
+        microgrid_price_file_path_list.append(microgrid_price_sorted_file_paths[-1])  # get the last episode
+
     net_dict = {
-        'w/battery_w/ev': [],
-        'w/battery_w/oev': [],
-        'w/obattery_w/ev': [],
-        'w/obattery_w/oev': []
+        'w/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': []},
+        'w/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': []},
+        'w/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': []},
+        'w/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': []},
+        'w/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': []},
+        'w/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': []},
+        'w/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': []},
+        'w/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': []},
+        'wo/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': []},
+        'wo/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': []},
+        'wo/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': []},
+        'wo/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': []},
+        'wo/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': []},
+        'wo/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': []},
+        'wo/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': []},
+        'wo/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': []}
     }
+
+    buy_composition = ['buy_inelastic', 'buy_elastic', 'buy_shifted', 'buy_battery', 'buy_ev_battery']
+    sell_composition = ['sell_pv', 'sell_battery', 'sell_ev_battery']
 
     for i in range(len(agent_params_file_path_list)):
         agent_params_file_path = agent_params_file_path_list[i]
         agent_params_df = pd.read_csv(agent_params_file_path, index_col=0)
-        net_cost_df = pd.read_csv(net_cost_file_path_list[i], index_col=0)  # already recorded as dollars
+        microgrid_price = pd.read_csv(microgrid_price_file_path_list[i], index_col=0)
+        buy_inelastic = pd.read_csv(buy_inelastic_file_path_list[i], index_col=0)
+        buy_elastic = pd.read_csv(buy_elastic_file_path_list[i], index_col=0)
+        buy_shifted = pd.read_csv(buy_shifted_file_path_list[i], index_col=0)
+        buy_battery = pd.read_csv(buy_battery_file_path_list[i], index_col=0)
+        buy_ev_battery = pd.read_csv(buy_ev_battery_file_path_list[i], index_col=0)
+        sell_pv = pd.read_csv(sell_pv_file_path_list[i], index_col=0)
+        sell_battery = pd.read_csv(sell_battery_file_path_list[i], index_col=0)
+        sell_ev_battery = pd.read_csv(sell_ev_battery_file_path_list[i], index_col=0)
         for j in range(agent_params_df.shape[0]):
             battery_capacity = agent_params_df.loc[j, 'battery_capacity']
             ev_capacity = agent_params_df.loc[j, 'ev_capacity']
-            if battery_capacity > 0 and ev_capacity > 0:
-                net_dict['w/battery_w/ev'].append(net_cost_df.loc[:, f'{j}'].sum())
-            elif battery_capacity > 0 and ev_capacity == 0:
-                net_dict['w/battery_w/oev'].append(net_cost_df.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity > 0:
-                net_dict['w/obattery_w/ev'].append(net_cost_df.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity == 0:
-                net_dict['w/obattery_w/oev'].append(net_cost_df.loc[:, f'{j}'].sum())
-    # print(len(net_dict['w/battery_w/ev']), len(net_dict['w/battery_w/oev']), len(net_dict['w/obattery_w/ev']), len(net_dict['w/obattery_w/oev']))
+            pv_capacity = agent_params_df.loc[j, 'pv_capacity']
+            dr_boolean = agent_params_df.loc[j, 'dr_boolean']
+            if battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['w/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['w/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['w/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['w/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['w/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['w/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['w/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['w/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['wo/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['wo/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['wo/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['wo/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['wo/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['wo/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['wo/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                                                            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+                
     # Calculate mean and standard deviation of costs for each category
-    mean_costs = [np.mean(net_dict[key]) for key in net_dict.keys()]
-    std_costs = [np.std(net_dict[key]) for key in net_dict.keys()]
+    mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
+    std_costs = [np.std(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
-    categories = ['w/battery_w/ev', 'w/battery_w/oev', 'w/obattery_w/ev', 'w/obattery_w/oev']
+    categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
+                    'w/battery_wo/ev_w/pv_w/dr', 'w/battery_wo/ev_w/pv_wo/dr', 'w/battery_wo/ev_wo/pv_w/dr', 'w/battery_wo/ev_wo/pv_wo/dr',
+                    'wo/battery_w/ev_w/pv_w/dr', 'wo/battery_w/ev_w/pv_wo/dr', 'wo/battery_w/ev_wo/pv_w/dr', 'wo/battery_w/ev_wo/pv_wo/dr',
+                    'wo/battery_wo/ev_w/pv_w/dr', 'wo/battery_wo/ev_w/pv_wo/dr', 'wo/battery_wo/ev_wo/pv_w/dr', 'wo/battery_wo/ev_wo/pv_wo/dr']
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(20, 16))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
     medianprops = dict(color='red', linewidth=2)
     meanpointprops = dict(marker='D', markeredgecolor='black', markerfacecolor='blue', markersize=8)
 
-    bplot = ax.boxplot([net_dict[cat] for cat in categories], patch_artist=True, showmeans=True,
+    bplot = ax.boxplot([net_dict[cat]['cost'] for cat in categories], patch_artist=True, showmeans=True,
                        boxprops=boxprops, medianprops=medianprops, meanprops=meanpointprops)
 
-    # Set boxplot colors
-    colors = ['#1f77b4', '#0000ff', '#66c2a5', '#d62728']
-    for patch, color in zip(bplot['boxes'], colors):
-        patch.set_facecolor(color)
+    # Set all boxplot colors to gray
+    gray_color = '#808080'
+    for patch in bplot['boxes']:
+        patch.set_facecolor(gray_color)
 
     # Add labels, title, and grid
-    ax.set_xticklabels(['w/ battery, w/ ev', 'w/ battery, w/o ev', 'w/o battery, w/ ev', 'w/o battery, w/o ev'])
+    ax.set_xticklabels(['w/ BES, w/ EV, w/ PV, w/ DR', 'w/ BES, w/ EV, w/ PV, w/o DR', 'w/ BES, w/ EV, w/o PV, w/ DR', 'w/ BES, w/ EV, w/o PV, w/o DR',
+                        'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
+                        'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
+                        'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
+                    rotation=90)
     ax.set_ylabel('Net Electricity Cost [$]')
     ax.set_title('Net Electricity Cost Distribution by Battery and EV Presence')
     ax.yaxis.grid(True)
@@ -1089,11 +1282,11 @@ def net_cost_by_battery_ev_presence_plot_2(thread_num):
                 bbox=dict(facecolor='white', alpha=0.5))
 
     plt.tight_layout()
-    plt.savefig('output/insight/net_cost_by_battery_ev.png', dpi=600)
-    plt.savefig('output/insight/net_cost_by_battery_ev.svg')
+    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr.png', dpi=600)
+    plt.savefig('output/insight/net_cost_by_battery_ev_pv_dr.svg')
     # plt.show()
 
-    print('Net cost by battery and EV presence plot saved.')
+    print('Net cost by battery, EV, PV, and DR plot saved.')
 
 
 def net_average_cost_per_kwh_by_battery_ev_presence_plot(thread_num):
@@ -1101,39 +1294,39 @@ def net_average_cost_per_kwh_by_battery_ev_presence_plot(thread_num):
     for i in range(thread_num):
         # Change it later
         # net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/net_electricity_cost.csv')
-        net_cost_file_paths = glob.glob(f'output/thread{i}/episode*/electricity_cost.csv')
+        net_cost_file_paths = glob.glob(f'output/test/thread{i}/episode*/electricity_cost.csv')
         net_cost_sorted_file_paths = sorted(net_cost_file_paths, key=numerical_sort)
         net_cost_file_path_list.append(net_cost_sorted_file_paths[-1])  # get the last episode
 
     buy_inelastic_file_path_list = []
     for i in range(thread_num):
-        buy_inelastic_file_paths = glob.glob(f'output/thread{i}/episode*/buy_inelastic_record.csv')
+        buy_inelastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_inelastic_record.csv')
         buy_inelastic_sorted_file_paths = sorted(buy_inelastic_file_paths, key=numerical_sort)
         buy_inelastic_file_path_list.append(buy_inelastic_sorted_file_paths[-1])  # get the last episode
     buy_elastic_file_path_list = []
     for i in range(thread_num):
-        buy_elastic_file_paths = glob.glob(f'output/thread{i}/episode*/buy_elastic_record.csv')
+        buy_elastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_elastic_record.csv')
         buy_elastic_sorted_file_paths = sorted(buy_elastic_file_paths, key=numerical_sort)
         buy_elastic_file_path_list.append(buy_elastic_sorted_file_paths[-1])  # get the last episode
     buy_shifted_file_path_list = []
     for i in range(thread_num):
-        buy_shifted_file_paths = glob.glob(f'output/thread{i}/episode*/buy_shifted_record.csv')
+        buy_shifted_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_shifted_record.csv')
         buy_shifted_sorted_file_paths = sorted(buy_shifted_file_paths, key=numerical_sort)
         buy_shifted_file_path_list.append(buy_shifted_sorted_file_paths[-1])  # get the last episode
     buy_battery_file_path_list = []
     for i in range(thread_num):
-        buy_battery_file_paths = glob.glob(f'output/thread{i}/episode*/buy_battery_record.csv')
+        buy_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_battery_record.csv')
         buy_battery_sorted_file_paths = sorted(buy_battery_file_paths, key=numerical_sort)
         buy_battery_file_path_list.append(buy_battery_sorted_file_paths[-1])  # get the last episode
     buy_ev_battery_file_path_list = []
     for i in range(thread_num):
-        buy_ev_battery_file_paths = glob.glob(f'output/thread{i}/episode*/buy_ev_battery_record.csv')
+        buy_ev_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_ev_battery_record.csv')
         buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
         buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
 
     agent_params_file_path_list = []
     for i in range(thread_num):
-        agent_params_file_paths = glob.glob(f'output/thread{i}/episode*/agent_params.csv')
+        agent_params_file_paths = glob.glob(f'output/test/thread{i}/episode*/agent_params.csv')
         agent_params_sorted_file_paths = sorted(agent_params_file_paths, key=numerical_sort)
         agent_params_file_path_list.append(agent_params_sorted_file_paths[-1])  # get the last episode
     
@@ -1216,11 +1409,11 @@ def sor_per_month_plot(thread_num):
     
     # Collect the file paths for all threads
     for i in range(thread_num):
-        pv_gen_file_paths = glob.glob(f'output/thread{i}/episode*/supply.csv')
+        pv_gen_file_paths = glob.glob(f'output/test/thread{i}/episode*/supply.csv')
         pv_gen_sorted_file_paths = sorted(pv_gen_file_paths, key=numerical_sort)
         pv_gen_file_path_list.append(pv_gen_sorted_file_paths[-1])  # get the last episode
         
-        pv_sell_file_paths = glob.glob(f'output/thread{i}/episode*/sell_pv_record.csv')
+        pv_sell_file_paths = glob.glob(f'output/test/thread{i}/episode*/sell_pv_record.csv')
         pv_sell_sorted_file_paths = sorted(pv_sell_file_paths, key=numerical_sort)
         pv_sell_file_path_list.append(pv_sell_sorted_file_paths[-1])  # get the last episode
 
@@ -1272,33 +1465,33 @@ def ssr_per_month_plot(thread_num):
     grid_import_file_path_list = []
     # Collect the file paths for all threads
     for i in range(thread_num):
-        grid_import_file_paths = glob.glob(f'output/thread{i}/episode*/grid_import_record.csv')
+        grid_import_file_paths = glob.glob(f'output/test/thread{i}/episode*/grid_import_record.csv')
         grid_import_sorted_file_paths = sorted(grid_import_file_paths, key=numerical_sort)
         grid_import_file_path_list.append(grid_import_sorted_file_paths[-1])  # get the last episode
 
     buy_inelastic_file_path_list = []
     for i in range(thread_num):
-        buy_inelastic_file_paths = glob.glob(f'output/thread{i}/episode*/buy_inelastic_record.csv')
+        buy_inelastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_inelastic_record.csv')
         buy_inelastic_sorted_file_paths = sorted(buy_inelastic_file_paths, key=numerical_sort)
         buy_inelastic_file_path_list.append(buy_inelastic_sorted_file_paths[-1])  # get the last episode
     buy_elastic_file_path_list = []
     for i in range(thread_num):
-        buy_elastic_file_paths = glob.glob(f'output/thread{i}/episode*/buy_elastic_record.csv')
+        buy_elastic_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_elastic_record.csv')
         buy_elastic_sorted_file_paths = sorted(buy_elastic_file_paths, key=numerical_sort)
         buy_elastic_file_path_list.append(buy_elastic_sorted_file_paths[-1])  # get the last episode
     buy_shifted_file_path_list = []
     for i in range(thread_num):
-        buy_shifted_file_paths = glob.glob(f'output/thread{i}/episode*/buy_shifted_record.csv')
+        buy_shifted_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_shifted_record.csv')
         buy_shifted_sorted_file_paths = sorted(buy_shifted_file_paths, key=numerical_sort)
         buy_shifted_file_path_list.append(buy_shifted_sorted_file_paths[-1])  # get the last episode
     buy_battery_file_path_list = []
     for i in range(thread_num):
-        buy_battery_file_paths = glob.glob(f'output/thread{i}/episode*/buy_battery_record.csv')
+        buy_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_battery_record.csv')
         buy_battery_sorted_file_paths = sorted(buy_battery_file_paths, key=numerical_sort)
         buy_battery_file_path_list.append(buy_battery_sorted_file_paths[-1])  # get the last episode
     buy_ev_battery_file_path_list = []
     for i in range(thread_num):
-        buy_ev_battery_file_paths = glob.glob(f'output/thread{i}/episode*/buy_ev_battery_record.csv')
+        buy_ev_battery_file_paths = glob.glob(f'output/test/thread{i}/episode*/buy_ev_battery_record.csv')
         buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
         buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
 
@@ -1349,34 +1542,35 @@ def ssr_per_month_plot(thread_num):
 
 
 if __name__ == '__main__':
-    # # agent_num = pd.read_csv('output/thread0/episode1/agent_params.csv', index_col=0).shape[0]
-    # agent_num = pd.read_csv('output/test/thread0/episode10/agent_params.csv', index_col=0).shape[0]
-    # print(f'Detected number of agents: {agent_num}')
+    # agent_num = pd.read_csv('output/thread0/episode1/agent_params.csv', index_col=0).shape[0]
+    agent_num = pd.read_csv('output/test/thread0/episode10/agent_params.csv', index_col=0).shape[0]
+    print(f'Detected number of agents: {agent_num}')
 
-    # reward_sorted_file_paths_list = []
-    # for i in range(max_workers):
-    #     # reward_file_paths = glob.glob(f'output/thread{i}/episode*/reward.csv')
-    #     reward_file_paths = glob.glob(f'output/test/thread{i}/episode*/reward.csv') 
-    #     reward_sorted_file_paths = sorted(reward_file_paths, key=numerical_sort)
-    #     reward_sorted_file_paths_list.append(reward_sorted_file_paths)
-    # # print(reward_sorted_file_paths_list)
-    # if os.path.exists('output/insight/reward_history_powerplot.png'):
-    #     print('Reward history powerplot already exists. Skip plotting.')
-    # else:
-    #     reward_history_plot_4_4_powerplot(reward_sorted_file_paths_list, agent_num=agent_num)
+    reward_sorted_file_paths_list = []
+    for i in range(max_workers):
+        # reward_file_paths = glob.glob(f'output/thread{i}/episode*/reward.csv')
+        reward_file_paths = glob.glob(f'output/test/thread{i}/episode*/reward.csv') 
+        reward_sorted_file_paths = sorted(reward_file_paths, key=numerical_sort)
+        reward_sorted_file_paths_list.append(reward_sorted_file_paths)
+    # print(reward_sorted_file_paths_list)
+    if os.path.exists('output/insight/reward_history_powerplot.png'):
+        print('Reward history powerplot already exists. Skip plotting.')
+    else:
+        reward_history_plot_4_4_powerplot(reward_sorted_file_paths_list, agent_num=agent_num)
 
-    # if os.path.exists('output/insight/reward_history.png'):
-    #     print('Reward history already exists. Skip plotting.')
-    # else:
-    #     reward_history_plot_4_4(reward_sorted_file_paths_list, agent_num=agent_num)
+    if os.path.exists('output/insight/reward_history.png'):
+        print('Reward history already exists. Skip plotting.')
+    else:
+        reward_history_plot_4_4(reward_sorted_file_paths_list, agent_num=agent_num)
 
 # ==================================================================================================
     buy_amount_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers)
     buy_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers)
     sell_amount_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers)
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers)
-    net_cost_by_battery_ev_presence_plot(thread_num=max_workers)
-    net_average_cost_per_kwh_by_battery_ev_presence_plot(thread_num=max_workers)
+    net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers)
+    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers)
+    # net_average_cost_per_kwh_by_battery_ev_presence_plot(thread_num=max_workers)
 
 # ==================================================================================================
     sor_per_month_plot(thread_num=max_workers)
