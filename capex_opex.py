@@ -7,7 +7,7 @@ ILR:	inverter loading ratio
 PII:    Permitting, Inspection, Interconnection
 """
 
-def pv_capex_func(pv_size_kw, mode):
+def pv_capex_func(pv_size_kw, mode='mmp'):
     if mode == 'msp':
         module_efficiency = 0.203
         watt_per_m2 = 1000
@@ -60,7 +60,7 @@ def pv_capex_func(pv_size_kw, mode):
     return capex
 
 
-def pv_opex_func(pv_size_kw, mode):
+def pv_opex_func(pv_size_kw, mode='mmp'):
     if mode == 'msp':
         opex_per_kwdc = 29.49
         opex = opex_per_kwdc * pv_size_kw
@@ -72,7 +72,7 @@ def pv_opex_func(pv_size_kw, mode):
     return opex
 
 
-def battery_capex(battery_size_kwh, pv_size_kw, mode):
+def battery_capex(battery_size_kwh, pv_size_kw, mode='mmp'):
     battery_pack_footprint_kWh_per_m2 = 8.3
     if mode == 'msp':
         battery_price_per_kwh = 235
@@ -110,7 +110,7 @@ def battery_capex(battery_size_kwh, pv_size_kw, mode):
     return capex
 
 
-def battery_opex():
+def battery_opex(mode='mmp'):
     """
     battery opex is not provided in the NREL report
     """
@@ -120,13 +120,13 @@ def battery_opex():
 if __name__ == "__main__":
     mode = 'mmp'
 
-    pv_size_kw = 7.9
+    pv_size_kw = 8.0
     pv_capex = pv_capex_func(pv_size_kw, mode)
     print(f'PV Capex: {pv_capex}')
     pv_opex = pv_opex_func(pv_size_kw, mode)
     print(f'PV Opex: {pv_opex}')
 
-    battery_size = 12.5
+    battery_size = 13.5
     battery_capex = battery_capex(battery_size, pv_size_kw, mode)
     print(f'Battery Capex: {battery_capex}')
 
