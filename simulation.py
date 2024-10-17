@@ -608,6 +608,7 @@ class BauSimulation:
                 #============================================================================================================================================================
                 # PV supply
                 s = self.supply_df.at[t, f'{i}']
+
                 # inelastic demand
                 d_inelas = self.demand_inelastic_arr[t, i]
                 if s >= d_inelas:
@@ -618,14 +619,35 @@ class BauSimulation:
                     self.inelastic_record_arr[t, i] = d_inelas
                     self.electricity_cost_arr[t, i] += buy_d_inelas * wholesale_price
                     s_ = 0
+
+                # Possible charge/discharge battery amount
+                battery_amount = self.battery_record_arr[t, i]
+                if (self.agents[i]['battery_capacity'] - battery_amount) < (self.agents[i]['max_battery_charge_speed'] * self.battery_charge_efficiency):
+                    chargable_amount = (self.agents[i]['battery_capacity'] - battery_amount) / self.battery_charge_efficiency
+                else:
+                    chargable_amount = self.agents[i]['max_battery_charge_speed']
+                if battery_amount < (self.agents[i]['max_battery_discharge_speed'] / self.battery_discharge_efficiency):
+                    dischargable_amount = battery_amount * self.battery_discharge_efficiency
+                else:
+                    dischargable_amount = self.agents[i]['max_battery_discharge_speed']
+
                 # elastic demand
-                self.shift_arr[t, i] = self.demand_elastic_arr[t, i]
-                if s_ >= self.demand_elastic_arr[t, i]:
+                if s_ >= self.demand_elastic_arr[t, i]:  # Still over supply
                     s_ -= self.demand_elastic_arr[t, i]
                     self.elastic_record_arr[t, i] = self.demand_elastic_arr[t, i]
-                else:
-                    buy_d_elas = self.demand_elastic_arr[t, i] - s_
-                    self.elastic_record_arr[t, i] = s_
+                    self.shift_arr[t, i] += 0
+                else:  # Supply is not enough to meet elastic demand
+                    d_elas_remain = self.demand_elastic_arr[t, i] - s_
+                    self.elastic_record_arr[t, i] += s_
+                    # Ask battery to discharge
+                    if dischargable_amount >= d_elas_remain:  # Discharge power from battery is enough to meet remaining elastic demand
+                        discharge_amount = d_elas_remain
+                        d_elas_remain = 0
+                    else:  # Discharge power from battery is not enough to meet remaining elastic demand
+                        discharge_amount = dischargable_amount
+                        d_elas_remain -= dischargable_amount
+
+
                     self.electricity_cost_arr[t, i] += buy_d_elas * wholesale_price
                 if wholesale_price >= self.agents[i]['dr_price_threshold']:
                     self.elastic_record_arr[t, i] = 0
