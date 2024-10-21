@@ -63,6 +63,10 @@ if __name__ == "__main__":
         for folder in glob.glob('output/thread*/episode*'):
             episode = int(folder.split('episode')[-1])
             existing_episodes.add(episode)
+        # remove the last episode, because it has not finished yet.
+        max_number = max(existing_episodes)
+        existing_episodes.remove(max_number)
+        print('Existing episodes:')
         print(existing_episodes)
         for episode in range(1, 101):
             if episode not in existing_episodes:
