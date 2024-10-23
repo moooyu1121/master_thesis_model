@@ -503,11 +503,16 @@ class Simulation:
         logger.info(f'Q table is saved to {self.parent_dir}')
 
 
-class BauSimulation:
-    def __init__(self, num_agent, parent_dir, **kwargs) -> None:
+class SimulationNoP2P:
+    def __init__(self, num_agent, parent_dir, episode, train, **kwargs) -> None:
         os.makedirs(parent_dir, exist_ok=True)
         self.num_agent = num_agent
         self.parent_dir = parent_dir
+        self.episode = episode
+        self.train = train
+        # Adding the new mechanism to the list of available mechanism of the market
+        # pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
+        # Update market and uniform parameters
         params = {'thread_num': -1,
                   'price_max': 120,
                   'price_min': 10,
@@ -531,6 +536,12 @@ class BauSimulation:
         self.ev_efficiency = params['ev_efficiency']
         self.car_movement_speed = params['car_movement_speed']
 
+        # Initialize Q table
+        self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20, num_elastic_ratio_pattern=3)
+    
+    def load_existing_q_table(self, folder_path):
+        self.q.load_q_table(folder_path=folder_path)
+
     def preprocess(self):
         # Generate agent parameters
         self.agents = Agent(self.num_agent)
@@ -544,6 +555,7 @@ class BauSimulation:
             pd.read_csv('data/price.csv'),
             pd.read_csv('data/car_movement.csv')
         )
+        # preprocess.generate_d_s(self.num_agent)
         preprocess.generate_demand(self.num_agent)
         _, agent_car_categories = preprocess.generate_car_movement(self.num_agent)
 
@@ -559,17 +571,28 @@ class BauSimulation:
         preprocess.drop_index_  # drop timestamp index
         self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df = preprocess.get_dfs_
 
+        # get average pv production ratio to get state in Q table
+        # data is stored as kWh/kW, which means, the values are within 0~1
+        pv_ratio_df = pd.read_csv('data/supply.csv', index_col=0)
+        pv_ratio_df['mean'] = pv_ratio_df.mean(axis=1)
+        self.pv_ratio_arr = pv_ratio_df['mean'].values    
+
         # Initialize record arrays
         self.grid_import_record_arr = np.full(len(self.price_df), 0.0)
+        self.microgrid_price_record_arr = np.full(len(self.price_df), 999.0)
         self.ev_battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.battery_soc_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.ev_battery_soc_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.inelastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.elastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.shifted_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.ev_battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.buy_inelastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.buy_elastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.buy_shifted_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.buy_battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.buy_ev_battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.sell_pv_record_arr = np.full((len(self.supply_df), self.num_agent), 0.0)
+        self.sell_battery_record_arr = np.full((len(self.supply_df), self.num_agent), 0.0)
+        self.sell_ev_battery_record_arr = np.full((len(self.supply_df), self.num_agent), 0.0)
+        self.reward_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.electricity_cost_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.potential_demand_arr = np.full(len(self.demand_df), 0.0)
         self.potential_supply_arr = np.full(len(self.supply_df), 0.0)
@@ -599,73 +622,27 @@ class BauSimulation:
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
         self.shift_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
 
-    def run(self):
+    def run(self, BID_SAVE=False):
         for t in tqdm(range(len(self.demand_df))):
+            demand_list = []
+            supply_list = []
             potential_demand = 0
             potential_supply = 0
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
+            self.q.reset_all_digitized_states()
+            self.q.reset_all_actions()
             for i in range(self.num_agent):
                 #============================================================================================================================================================
-                # PV supply
-                s = self.supply_df.at[t, f'{i}']
-
-                # inelastic demand
-                d_inelas = self.demand_inelastic_arr[t, i]
-                if s >= d_inelas:
-                    s_ = s - d_inelas
-                    self.inelastic_record_arr[t, i] = d_inelas
-                else:
-                    buy_d_inelas = d_inelas - s
-                    self.inelastic_record_arr[t, i] = d_inelas
-                    self.electricity_cost_arr[t, i] += buy_d_inelas * wholesale_price
-                    s_ = 0
-
-                # Possible charge/discharge battery amount
-                battery_amount = self.battery_record_arr[t, i]
-                if (self.agents[i]['battery_capacity'] - battery_amount) < (self.agents[i]['max_battery_charge_speed'] * self.battery_charge_efficiency):
-                    chargable_amount = (self.agents[i]['battery_capacity'] - battery_amount) / self.battery_charge_efficiency
-                else:
-                    chargable_amount = self.agents[i]['max_battery_charge_speed']
-                if battery_amount < (self.agents[i]['max_battery_discharge_speed'] / self.battery_discharge_efficiency):
-                    dischargable_amount = battery_amount * self.battery_discharge_efficiency
-                else:
-                    dischargable_amount = self.agents[i]['max_battery_discharge_speed']
-
-                # elastic demand
-                if s_ >= self.demand_elastic_arr[t, i]:  # Still over supply
-                    s_ -= self.demand_elastic_arr[t, i]
-                    self.elastic_record_arr[t, i] = self.demand_elastic_arr[t, i]
-                    self.shift_arr[t, i] += 0
-                else:  # Supply is not enough to meet elastic demand
-                    d_elas_remain = self.demand_elastic_arr[t, i] - s_
-                    self.elastic_record_arr[t, i] += s_
-                    # Ask battery to discharge
-                    if dischargable_amount >= d_elas_remain:  # Discharge power from battery is enough to meet remaining elastic demand
-                        discharge_amount = d_elas_remain
-                        d_elas_remain = 0
-                    else:  # Discharge power from battery is not enough to meet remaining elastic demand
-                        discharge_amount = dischargable_amount
-                        d_elas_remain -= dischargable_amount
-
-
-                    self.electricity_cost_arr[t, i] += buy_d_elas * wholesale_price
-                if wholesale_price >= self.agents[i]['dr_price_threshold']:
-                    self.elastic_record_arr[t, i] = 0
-                else:
-                    if self.agents[i]['dr_price_threshold'] <= wholesale_price:
-                        self.elastic_record_arr[t, i] = self.demand_elastic_arr[t, i]
-                    else:
-                        self.elastic_record_arr[t, i] = self.demand_elastic_arr[t, i] * max((self.agents[i]['dr_price_threshold'] - wholesale_price)/(self.agents[i]['dr_price_threshold'] - self.price_min), 0)
-                    # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
-                    self.shift_arr[t, i] -= self.demand_elastic_arr[t, i]
-                    if np.isnan(reward[i]):
-                        logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, i]}')
-                
-
-                
-                
-                # 時刻tでのバッテリー残量を時刻t+1にコピー、あとでバッテリー残量をさらに更新
+                dr_state, battery_state, ev_battery_state = self.q.set_digitized_states(agent_id=i,
+                                                            pv_ratio=self.pv_ratio_arr[t],
+                                                            battery_soc=self.battery_soc_record_arr[t, i],
+                                                            ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
+                                                            elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
+                self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
+                # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
                 # car_movement_dfがTrueの場合は1時間走行したとして消費したバッテリー量を時刻t+1に記録
+                # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-10000を報酬に反映
                 if t+1 != len(self.demand_df):
                     self.battery_record_arr[t+1, i] = self.battery_record_arr[t, i]
                     if self.agents[i]['battery_capacity'] != 0:
@@ -681,52 +658,8 @@ class BauSimulation:
                         self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                     else:
                         self.ev_battery_soc_record_arr[t+1, i] = 0.0
-                # 後ろの時間にシフトさせる需要量の最大値を記録
-                # DRがあった場合，その分shiftする需要量を差し引くことで更新する
-                self.shift_arr[t, i] = self.demand_elastic_arr[t, i]
-                if wholesale_price >= self.agents[i]['dr_price_threshold']:
-                    self.buy_elastic_record_arr[t, i] = 0
-                else:
-                    if self.agents[i]['dr_price_threshold'] <= wholesale_price:
-                        self.buy_elastic_record_arr[t, i] = self.demand_elastic_arr[t, i]
-                    else:
-                        self.buy_elastic_record_arr[t, i] = self.demand_elastic_arr[t, i] * max((self.agents[i]['dr_price_threshold'] - wholesale_price)/(self.agents[i]['dr_price_threshold'] - self.price_min), 0)
-                    # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
-                    self.shift_arr[t, i] -= self.demand_elastic_arr[t, i]
-                    if np.isnan(reward[i]):
-                        logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, i]}')
-                # バッテリー充放電可能量の取得
-                battery_amount = self.battery_record_arr[t, i]
-                if (self.agents[i]['battery_capacity'] - battery_amount) < (self.agents[i]['max_battery_charge_speed'] * self.battery_charge_efficiency):
-                    charge_amount = (self.agents[i]['battery_capacity'] - battery_amount) / self.battery_charge_efficiency
-                else:
-                    charge_amount = self.agents[i]['max_battery_charge_speed']
-                if battery_amount < (self.agents[i]['max_battery_discharge_speed'] / self.battery_discharge_efficiency):
-                    discharge_amount = battery_amount * self.battery_discharge_efficiency
-                else:
-                    discharge_amount = self.agents[i]['max_battery_discharge_speed']
-                
-                # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間
-
-
-            for i in range(self.num_agent):
-                self.buy_inelastic_record_arr[t, i] = self.demand_inelastic_arr[t, i]
-
-                
-
-                
-                # バッテリー充放量の記録
-                self.buy_battery_record_arr[t, user] = charge_amount
-                if t+1 != len(self.demand_df):
-                    self.battery_record_arr[t+1, user] += charge_amount * self.battery_charge_efficiency
-                    self.battery_soc_record_arr[t+1, user] = self.battery_record_arr[t+1, user] / self.agents[user]['battery_capacity']
-                if np.isnan(reward[user]):
-                    logger.error(f'Numpy nan is detected: battery charge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
-
-                
-                    
-
-
+                # ユーザIDはデマンドレスポンスによる移動を考慮して1エージェントごとに
+                # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間ステップ分の数IDを保有する
                 # シフトリミットが24時間なら，31個IDを保有する
                 # agentのIDは0～, 100～, 200～, 300～, ...として，101にagent1のinelas，102にagent1のelas...のように割り当てる
                 id_base = i * 100
@@ -794,7 +727,8 @@ class BauSimulation:
                 potential_demand += ev_charge_amount
                 potential_supply += ev_discharge_amount
 
-                
+                # 供給
+                s = self.supply_df.at[t, f'{i}']
                 # 供給はid_base+6に割り当てる
                 supply_list.append([s, self.price_min, id_base+6, False])
                 potential_supply += s
@@ -1048,3 +982,5 @@ class BauSimulation:
 
             vis = visualize.Visualize(folder_path=self.parent_dir)
             vis.plot_consumption()
+        self.q.save_q_table(folder_path = self.parent_dir)
+        logger.info(f'Q table is saved to {self.parent_dir}')
