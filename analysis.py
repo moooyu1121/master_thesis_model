@@ -292,7 +292,7 @@ def buy_amount_by_battery_ev_pv_dr_exist_plot(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Energy Amount [kWh]')
     ax.set_title('Average Energy Amount Buy Composition')
     ax.legend()
@@ -571,7 +571,7 @@ def buy_cost_by_battery_ev_pv_dr_exist_plot(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Energy Cost [$]')
     ax.set_title('Average Energy Cost Buy Composition')
     ax.legend()
@@ -743,7 +743,7 @@ def sell_amount_by_battery_ev_pv_dr_exist_plot(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Energy Amount [kWh]')
     ax.set_title('Average Energy Amount Sell Composition')
     ax.legend()
@@ -922,7 +922,7 @@ def sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Energy Cost [$]')
     ax.set_title('Average Energy Cost Sell Composition')
     ax.legend()
@@ -1039,7 +1039,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Net Electricity Cost [$]')
     ax.set_title('Net Electricity Cost Distribution')
     ax.yaxis.grid(True)
@@ -1505,7 +1505,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Net Electricity Cost [$]')
     ax.set_title('Net Electricity Cost Distribution')
     ax.yaxis.grid(True)
@@ -1552,7 +1552,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num):
                         'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
                         'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
                         'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
-                    rotation=90)
+                    rotation=45)
     ax.set_ylabel('Net Electricity Unit Cost [$/kWh]')
     ax.set_title('Net Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
