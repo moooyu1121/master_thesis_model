@@ -259,7 +259,7 @@ class Simulation:
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
                         # シフトした需要の価格は，最低価格からしきい価格までシフトリミット時間ステップ分で線形に変化
-                        price_shift = self.price_min + (self.agents[i]['dr_price_threshold'] - self.price_min) * (t-k) / self.agents[i]['shift_limit']
+                        price_shift = self.price_min + (price_elas - self.price_min) * (t-k) / self.agents[i]['shift_limit']
                         if k == t-int(self.agents[i]['shift_limit']):
                             # シフトリミットでの価格は最高価格
                             price_shift = self.price_max
