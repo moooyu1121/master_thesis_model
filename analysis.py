@@ -39,7 +39,7 @@ def reward_history_plot_4_4_powerplot(reward_sorted_file_paths_list, agent_num):
             axs[i, j].set_title(f'Thread {i*4+j}')
             axs[i, j].set_xlabel('Episode')
             axs[i, j].set_ylabel('Reward')
-            axs[i, j].set_yscale('log')  # log scale
+            # axs[i, j].set_yscale('log')  # log scale
             print(f'Thread {i*4+j} done.')
     plt.tight_layout()
     # plt.show()
@@ -78,7 +78,7 @@ def reward_history_plot_4_4(reward_sorted_file_paths_list, agent_num):
             axs[i, j].set_title(f'Thread {i*4+j}')
             axs[i, j].set_xlabel('Episode')
             axs[i, j].set_ylabel('Reward')
-            axs[i, j].set_yscale('log')  # log scale
+            # axs[i, j].set_yscale('log')  # log scale
             print(f'Thread {i*4+j} done.')
     plt.tight_layout()
     # plt.show()

@@ -126,15 +126,17 @@ class Visualize:
         visible=True
         ), row=1, col=1)
 
+        filtered_battery_soc_df = self.battery_soc_df.loc[:, (self.battery_soc_df != 0).any(axis=0)]
         fig.add_trace(go.Scatter(
-        x=self.timestamps, y=self.battery_soc_df.mean(axis=1)*100,
+        x=self.timestamps, y=filtered_battery_soc_df.mean(axis=1)*100,
         mode='lines',
         name='Battery SoC average',
         visible=True,
         ), row=3, col=1)
 
+        filtered_ev_battery_soc_df = self.ev_battery_soc_df.loc[:, (self.ev_battery_soc_df != 0).any(axis=0)]
         fig.add_trace(go.Scatter(
-        x=self.timestamps, y=self.ev_battery_soc_df.mean(axis=1)*100,
+        x=self.timestamps, y=filtered_ev_battery_soc_df.mean(axis=1)*100,
         mode='lines',
         name='EV Battery SoC average',
         visible=True,
