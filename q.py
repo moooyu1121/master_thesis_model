@@ -129,7 +129,7 @@ class Q:
         #     print('rewards:', rewards)
         #     print('next_states:', next_states)
         gamma = 0.99
-        alpha = 0.01
+        alpha = 0.1
         dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb_list[agent_id][next_states[0], :]) - self.dr_buy_qtb_list[agent_id][states[0], 
                                                                                                             int(actions[0]-self.params['price_min'])]
         battery_buy_td_error = rewards[1] + gamma * np.max(self.battery_buy_qtb_list[agent_id][next_states[1], :]) - self.battery_buy_qtb_list[agent_id][states[1], 
