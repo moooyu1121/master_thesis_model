@@ -49,7 +49,7 @@ if __name__ == "__main__":
             if episode % 10 == 0:
                 print('Running test...')
                 p = Pool(max_workers)
-                values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                 p.map(main_wrapper, values)
 
                 p.close()
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                 if episode % 10 == 0:
                     print('Running test...')
                     p = Pool(max_workers)
-                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_wrapper, values)
 
                     p.close()
