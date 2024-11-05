@@ -150,11 +150,11 @@ class Simulation:
             self.q.reset_all_actions()
             for i in range(self.num_agent):
                 #============================================================================================================================================================
-                dr_state, battery_state, ev_battery_state, pv_states = self.q.set_digitized_states(agent_id=i,
-                                                                                                   pv_ratio=self.pv_ratio_arr[t],
-                                                                                                   battery_soc=self.battery_soc_record_arr[t, i],
-                                                                                                   ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
-                                                                                                   elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                dr_states, battery_states, ev_battery_states, pv_states = self.q.set_digitized_states(agent_id=i,
+                                                                                                      pv_ratio=self.pv_ratio_arr[t],
+                                                                                                      battery_soc=self.battery_soc_record_arr[t, i],
+                                                                                                      ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
+                                                                                                      elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
@@ -634,11 +634,11 @@ class SimulationNoP2P:
             self.q.reset_all_actions()
             for i in range(self.num_agent):
                 #============================================================================================================================================================
-                dr_state, battery_state, ev_battery_state = self.q.set_digitized_states(agent_id=i,
-                                                            pv_ratio=self.pv_ratio_arr[t],
-                                                            battery_soc=self.battery_soc_record_arr[t, i],
-                                                            ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
-                                                            elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                dr_states, battery_states, ev_battery_states, pv_states = self.q.set_digitized_states(agent_id=i,
+                                                                                                      pv_ratio=self.pv_ratio_arr[t],
+                                                                                                      battery_soc=self.battery_soc_record_arr[t, i],
+                                                                                                      ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
+                                                                                                      elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
@@ -659,25 +659,23 @@ class SimulationNoP2P:
                         self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                     else:
                         self.ev_battery_soc_record_arr[t+1, i] = 0.0
+                # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間ステップ分の種類の需要と供給がある
 
                 # 供給
                 s = self.supply_df.at[t, f'{i}']
+                price_pv = self.q.get_actions_[i, 5]
                 potential_supply += s
-
+                
                 # デマンドレスポンス不可の需要
                 d_inelas = self.demand_inelastic_arr[t, i]
-                demand_list.append([d_inelas, self.price_max, id_base+0, True])
                 potential_demand += d_inelas
 
                 # デマンドレスポンス可能の需要
                 d_elas_max = self.demand_elastic_arr[t, i]
                 price_elas = self.q.get_actions_[i, 0]
-                # d_elas = d_elas_max * max((agents[i]['dr_price_threshold'] - price_elas)/(agents[i]['dr_price_threshold'] - price_min), 0)
                 if price_elas == self.price_min:
                     # To avoid missing intersection point of supply and demand curve
                     price_elas += 0.00001
-                # デマンドレスポンス可の需要はid_base+1に割り当てる
-                demand_list.append([d_elas_max, price_elas, id_base+1, True])
                 potential_demand += d_elas_max
 
                 # バッテリー充放電価格の取得
@@ -696,7 +694,6 @@ class SimulationNoP2P:
                 if price_buy_battery == self.price_min:
                     # To avoid missing intersection point of supply and demand curve
                     price_buy_battery += 0.00001
-                # バッテリー充電はid_base+2, 放電はid_base+3に割り当てる
                 demand_list.append([charge_amount, price_buy_battery, id_base+2, True])
                 supply_list.append([discharge_amount, price_sell_battery, id_base+3, False])
                 potential_demand += charge_amount
@@ -722,24 +719,20 @@ class SimulationNoP2P:
                 if price_buy_ev_battery == self.price_min:
                     # To avoid missing intersection point of supply and demand curve
                     price_buy_ev_battery += 0.00001
-                # EVバッテリー充電はid_base+4, 放電はid_base+5に割り当てる
                 demand_list.append([ev_charge_amount, price_buy_ev_battery, id_base+4, True])
                 supply_list.append([ev_discharge_amount, price_sell_ev_battery, id_base+5, False])
                 potential_demand += ev_charge_amount
                 potential_supply += ev_discharge_amount
 
-                
-
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
                 self.shift_arr[t, i] = d_elas_max
-
                 # 過去からシフトした需要の入札
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
                         # シフトした需要の価格は，最低価格からしきい価格までシフトリミット時間ステップ分で線形に変化
-                        price_shift = self.price_min + (price_elas - self.price_min) * (t-k) / self.agents[i]['shift_limit']
+                        price_shift = price_elas
                         if k == t-int(self.agents[i]['shift_limit']):
                             # シフトリミットでの価格は最高価格
                             price_shift = self.price_max
@@ -898,7 +891,7 @@ class SimulationNoP2P:
             self.microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
             # Q学習
-            dr_states, battery_states, ev_battery_states = self.q.get_states_
+            dr_states, battery_states, ev_battery_states, pv_states = self.q.get_states_
             actions_arr = self.q.get_actions_
             if t == 0:
                 previous_states = []
@@ -908,9 +901,9 @@ class SimulationNoP2P:
                 self.reward_arr[t, i] = reward[i]
                 self.electricity_cost_arr[t, i] = cost[i] / 100  # record cost in dollar, not cents
                 # バッテリーの充放電、EVバッテリーの充放電はそれぞれ同じstateで管理できるため重複している
-                states = [int(dr_states[i]), int(battery_states[i]), int(battery_states[i]), int(ev_battery_states[i]), int(ev_battery_states[i])]
-                actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4]]
-                rewards = [reward[i], reward[i], reward[i], reward[i], reward[i]]   # rewardは共通の値(すべての要素からのrewardの合計)
+                states = [int(dr_states[i]), int(battery_states[i]), int(battery_states[i]), int(ev_battery_states[i]), int(ev_battery_states[i]), int(pv_states[i])]
+                actions = [actions_arr[i, 0], actions_arr[i, 1], actions_arr[i, 2], actions_arr[i, 3], actions_arr[i, 4], actions_arr[i, 5]]
+                rewards = [reward[i], reward[i], reward[i], reward[i], reward[i], reward[i]]   # rewardは共通の値(すべての要素からのrewardの合計)
                 if t == 0:
                     previous_states.append(states)
                     previous_actions.append(actions)

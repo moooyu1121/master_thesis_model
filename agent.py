@@ -10,7 +10,6 @@ class Agent:
                                                                                       'max_battery_discharge_speed',
                                                                                       'max_ev_charge_speed',
                                                                                       'max_ev_discharge_speed',
-                                                                                      'dr_price_threshold', 
                                                                                       'battery_capacity', 
                                                                                       'ev_capacity', 
                                                                                       'pv_capacity',
@@ -35,7 +34,6 @@ class Agent:
         self.agent_params_df['max_battery_discharge_speed'] = kwargs['max_battery_discharge_speed']
         self.agent_params_df['max_ev_charge_speed'] = kwargs['max_ev_charge_speed']
         self.agent_params_df['max_ev_discharge_speed'] = kwargs['max_ev_discharge_speed']
-        self.agent_params_df['dr_price_threshold'] = kwargs['dr_price_threshold']
         self.agent_params_df['battery_capacity'] = kwargs['battery_capacity']
         self.agent_params_df['ev_capacity'] = kwargs['ev_capacity']
         self.agent_params_df['pv_capacity'] = kwargs['pv_capacity']
@@ -53,7 +51,6 @@ class Agent:
         self.agent_params_df.at[agent_id, 'max_battery_discharge_speed'] = kwargs['max_battery_discharge_speed']
         self.agent_params_df.at[agent_id, 'max_ev_charge_speed'] = kwargs['max_ev_charge_speed']
         self.agent_params_df.at[agent_id, 'max_ev_discharge_speed'] = kwargs['max_ev_discharge_speed']
-        self.agent_params_df.at[agent_id, 'dr_price_threshold'] = kwargs['dr_price_threshold']
         self.agent_params_df.at[agent_id, 'battery_capacity'] = kwargs['battery_capacity']
         self.agent_params_df.at[agent_id, 'ev_capacity'] = kwargs['ev_capacity']
         self.agent_params_df.at[agent_id, 'pv_capacity'] = kwargs['pv_capacity']
@@ -73,7 +70,6 @@ class Agent:
                   'max_battery_discharge_speed': [3.0],  # kW
                   'max_ev_charge_speed': [6.0],  # kW
                   'max_ev_discharge_speed': [3.0],  # kW
-                  'dr_price_threshold_list': [20, 25, 30],  # cents/kWh
                 #   'battery_capacity_list': [10, 15, 20],    # kWh
                   'battery_capacity_list': [0, 13.5],
                   'ev_capacity_list': [0, 40],     # kWh
@@ -92,7 +88,6 @@ class Agent:
         max_battery_discharge_speed = params['max_battery_discharge_speed']
         max_ev_charge_speed = params['max_ev_charge_speed']
         max_ev_discharge_speed = params['max_ev_discharge_speed']
-        dr_price_threshold_list = params['dr_price_threshold_list']
         battery_capacity_list = params['battery_capacity_list']
         ev_capacity_list = params['ev_capacity_list']
         pv_capacity_list = params['pv_capacity_list']
@@ -114,8 +109,6 @@ class Agent:
             lambda row: max_ev_charge_speed[np.random.randint(0, len(max_ev_charge_speed))], axis=1)
         self.agent_params_df['max_ev_discharge_speed'] = self.agent_params_df.apply(
             lambda row: max_ev_discharge_speed[np.random.randint(0, len(max_ev_discharge_speed))], axis=1)
-        self.agent_params_df['dr_price_threshold'] = self.agent_params_df.apply(
-            lambda row: dr_price_threshold_list[np.random.randint(0, len(dr_price_threshold_list))], axis=1)
         self.agent_params_df['battery_capacity'] = self.agent_params_df.apply(
             lambda row: battery_capacity_list[np.random.randint(0, len(battery_capacity_list))], axis=1)
         self.agent_params_df['ev_capacity'] = self.agent_params_df.apply(
