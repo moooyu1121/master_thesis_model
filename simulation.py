@@ -31,6 +31,7 @@ class Simulation:
         pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
         # Update market and uniform parameters
         params = {'thread_num': -1,
+                  'BID_SAVE': False,
                   'price_max': 120,
                   'price_min': 10,
                   'wheeling_charge': 10,
@@ -43,6 +44,7 @@ class Simulation:
         }
         params.update(kwargs)
         self.thread_num = params['thread_num']
+        self.BID_SAVE = params['BID_SAVE']
         self.price_max = params['price_max']
         self.price_min = params['price_min']
         self.wheeling_charge = params['wheeling_charge']
@@ -139,7 +141,7 @@ class Simulation:
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
         self.shift_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
 
-    def run(self, BID_SAVE=False):
+    def run(self):
         for t in tqdm(range(len(self.demand_df))):
             demand_list = []
             supply_list = []
@@ -248,8 +250,10 @@ class Simulation:
                 s = self.supply_df.at[t, f'{i}']
                 # 供給はid_base+6に割り当てる
                 price_pv = self.q.get_actions_[i, 5]
-                supply_list.append([s, price_pv, id_base+6, False])
-                potential_supply += s
+                # 学習を安定させいい感じのところに導くためにPVの入札価格は最低価格で固定する
+                # supply_list.append([s, price_pv, id_base+6, False])
+                supply_list.append([s, self.price_min, id_base+6, False])
+                potential_supply += s 
 
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
@@ -259,7 +263,7 @@ class Simulation:
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
-                        # シフトした需要の価格は，最低価格からしきい価格までシフトリミット時間ステップ分で線形に変化
+                        # シフトした需要の入札価格は，デマンドレスポンス可能の需要の入札価格と同じ
                         price_shift = price_elas
                         if k == t-int(self.agents[i]['shift_limit']):
                             # シフトリミットでの価格は最高価格
@@ -276,7 +280,7 @@ class Simulation:
             bids_df = market.market.bm.get_df()
             
             # if episode == 0 or episode == num_episode-1 or episode%10 == 9:
-            if BID_SAVE:
+            if self.BID_SAVE:
                 timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
                 market.plot(title=timestamp, number=t, parent_dir=self.parent_dir)
             transactions_df, _ = market.run(mechanism='uniform')
@@ -672,13 +676,14 @@ class SimulationNoP2P:
 
                 # デマンドレスポンス可能の需要
                 d_elas_max = self.demand_elastic_arr[t, i]
+                # デマンドレスポンスするかのしきい価格の取得
                 price_elas = self.q.get_actions_[i, 0]
                 if price_elas == self.price_min:
-                    # To avoid missing intersection point of supply and demand curve
+                    # To make the same situation as the case with P2P
                     price_elas += 0.00001
                 potential_demand += d_elas_max
 
-                # バッテリー充放電価格の取得
+                # バッテリー充放電しきい価格の取得
                 price_buy_battery = self.q.get_actions_[i, 1]
                 price_sell_battery = self.q.get_actions_[i, 2]
                 # バッテリー充放電可能量の取得
@@ -692,14 +697,14 @@ class SimulationNoP2P:
                 else:
                     discharge_amount = self.agents[i]['max_battery_discharge_speed']
                 if price_buy_battery == self.price_min:
-                    # To avoid missing intersection point of supply and demand curve
+                    # To make the same situation as the case with P2P
                     price_buy_battery += 0.00001
                 demand_list.append([charge_amount, price_buy_battery, id_base+2, True])
                 supply_list.append([discharge_amount, price_sell_battery, id_base+3, False])
                 potential_demand += charge_amount
                 potential_supply += discharge_amount
 
-                # EV充放電価格の取得 
+                # EV充放電しきい価格の取得 
                 price_buy_ev_battery = self.q.get_actions_[i, 3]
                 price_sell_ev_battery = self.q.get_actions_[i, 4]
                 # EV充放電可能量の取得
@@ -717,7 +722,7 @@ class SimulationNoP2P:
                     ev_discharge_amount = 0
 
                 if price_buy_ev_battery == self.price_min:
-                    # To avoid missing intersection point of supply and demand curve
+                    # To make the same situation as the case with P2P
                     price_buy_ev_battery += 0.00001
                 demand_list.append([ev_charge_amount, price_buy_ev_battery, id_base+4, True])
                 supply_list.append([ev_discharge_amount, price_sell_ev_battery, id_base+5, False])
@@ -731,7 +736,7 @@ class SimulationNoP2P:
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
-                        # シフトした需要の価格は，最低価格からしきい価格までシフトリミット時間ステップ分で線形に変化
+                        # シフトした需要の入札価格は，デマンドレスポンス可能の需要の入札価格と同じ
                         price_shift = price_elas
                         if k == t-int(self.agents[i]['shift_limit']):
                             # シフトリミットでの価格は最高価格

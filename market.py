@@ -7,10 +7,10 @@ import os
 import logging
 logger = logging.getLogger('Logging')
 logger.setLevel(10)
-fh = logging.FileHandler('market.log')
-logger.addHandler(fh)
-formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(message)s')
-fh.setFormatter(formatter)
+# fh = logging.FileHandler('market.log')
+# logger.addHandler(fh)
+# formatter = logging.Formatter('%(asctime)s: line %(lineno)d: %(levelname)s: %(message)s')
+# fh.setFormatter(formatter)
 
 
 class ModifiedPyMarket(pm.Market):
