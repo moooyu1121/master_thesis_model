@@ -636,7 +636,7 @@ class SimulationNoP2P:
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
             self.q.reset_all_digitized_states()
             self.q.reset_all_actions()
-            for i in range(self.num_agent):
+            for i in range(self.num_agent): 
                 #============================================================================================================================================================
                 dr_states, battery_states, ev_battery_states, pv_states = self.q.set_digitized_states(agent_id=i,
                                                                                                       pv_ratio=self.pv_ratio_arr[t],
@@ -667,7 +667,7 @@ class SimulationNoP2P:
 
                 # 供給
                 s = self.supply_df.at[t, f'{i}']
-                price_pv = self.q.get_actions_[i, 5]
+                # price_pv = self.q.get_actions_[i, 5]
                 potential_supply += s
                 
                 # デマンドレスポンス不可の需要
@@ -732,14 +732,14 @@ class SimulationNoP2P:
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
                 self.shift_arr[t, i] = d_elas_max
-                # 過去からシフトした需要の入札
+                # 過去からシフトした需
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
-                        # シフトした需要の入札価格は，デマンドレスポンス可能の需要の入札価格と同じ
+                        # シフトした需要のしきい価格は，デマンドレスポンス可能の需要のしきい価格と同じ
                         price_shift = price_elas
                         if k == t-int(self.agents[i]['shift_limit']):
-                            # シフトリミットでの価格は最高価格
+                            # シフトリミットでの価格しきい値は最高価格
                             price_shift = self.price_max
                         # 過去からのシフトはj+7から割り当てる
                         demand_list.append([d_shift, price_shift, id_base+7+t-k-1, True])
@@ -747,6 +747,12 @@ class SimulationNoP2P:
 
             self.potential_demand_arr[t] = potential_demand
             self.potential_supply_arr[t] = potential_supply
+
+            # If PV generate is 0, all the electricity is imported from the grid or discharged from the battery
+            if s == 0:
+                if price_sell_battery <= wholesale_price:
+                    
+
             
             market = Market(demand_list, supply_list, wholesale_price)
             market.bid()
