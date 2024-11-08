@@ -751,7 +751,7 @@ class SimulationNoP2P:
             # If PV generate is 0, all the electricity is imported from the grid or discharged from the battery
             if s == 0:
                 if price_sell_battery <= wholesale_price:
-                    
+                    pass
 
             
             market = Market(demand_list, supply_list, wholesale_price)
