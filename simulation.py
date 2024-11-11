@@ -729,6 +729,67 @@ class SimulationNoP2P:
                 potential_demand += ev_charge_amount
                 potential_supply += ev_discharge_amount
 
+                # Check if the PV of the agent is enough to supply the inelastic demand
+                if s >= d_inelas:
+                    s_residue = s - d_inelas
+                    d_inelas_residue = 0
+                    self.buy_inelastic_record_arr[t, i] += d_inelas
+                    self.sell_pv_record_arr[t, i] += d_inelas
+                else:
+                    s_residue = 0
+                    d_inelas_residue = d_inelas - s
+                    self.buy_inelastic_record_arr[t, i] += s
+                    self.sell_pv_record_arr[t, i] += s
+                
+                # Check if the residue PV of the agent is enough to supply the elastic demand
+                if s_residue >= d_elas_max:
+                    s_residue -= d_elas_max
+                    d_elas_residue = 0
+                    self.buy_elastic_record_arr[t, i] += d_elas_max
+                    self.sell_pv_record_arr[t, i] += d_elas_max
+                else:
+                    s_residue = 0
+                    d_elas_residue = d_elas_max - s_residue
+                    self.buy_elastic_record_arr[t, i] += s_residue
+                    self.sell_pv_record_arr[t, i] += s_residue
+
+                # Check if the residue PV of the agent is enough to supply the EV battery charge demand
+                if s_residue >= ev_charge_amount:
+                    s_residue -= ev_charge_amount
+                    ev_charge_residue = 0
+                    if t+1 != len(self.demand_df):
+                        self.buy_ev_battery_record_arr[t+1, i] += ev_charge_amount * self.ev_charge_efficiency
+                        self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
+                    self.sell_pv_record_arr[t, i] += ev_charge_amount
+                else:
+                    s_residue = 0
+                    ev_charge_residue = ev_charge_amount - s_residue
+                    if t+1 != len(self.demand_df):
+                        self.buy_ev_battery_record_arr[t+1, i] += s_residue * self.ev_charge_efficiency
+                        self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
+                    self.sell_pv_record_arr[t, i] += s_residue
+                
+                # Check if the residue PV of the agent is enough to supply the battery charge demand
+                if s_residue >= charge_amount:
+                    s_residue -= charge_amount
+                    charge_residue = 0
+                    if t+1 != len(self.demand_df):
+                        self.buy_battery_record_arr[t+1, i] += charge_amount * self.battery_charge_efficiency
+                        self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                    self.sell_pv_record_arr[t, i] += charge_amount
+                else:
+                    s_residue = 0
+                    charge_residue = charge_amount - s_residue
+                    if t+1 != len(self.demand_df):
+                        self.buy_battery_record_arr[t+1, i] += s_residue * self.battery_charge_efficiency
+                        self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                    self.sell_pv_record_arr[t, i] += s_residue
+
+                
+
+
+
+
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
                 self.shift_arr[t, i] = d_elas_max
@@ -745,13 +806,14 @@ class SimulationNoP2P:
                         demand_list.append([d_shift, price_shift, id_base+7+t-k-1, True])
                         potential_demand += d_shift
 
+                
+                
+
+
             self.potential_demand_arr[t] = potential_demand
             self.potential_supply_arr[t] = potential_supply
 
-            # If PV generate is 0, all the electricity is imported from the grid or discharged from the battery
-            if s == 0:
-                if price_sell_battery <= wholesale_price:
-                    pass
+            
 
             
             market = Market(demand_list, supply_list, wholesale_price)
