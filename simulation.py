@@ -319,11 +319,11 @@ class Simulation:
                         # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
                         self.shift_arr[t, user] -= value
                         reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                        reward[user] -= (self.agents[int(user)]['alpha']/2 * (self.demand_elastic_arr[t, i] - value)**2 + 
-                                        self.agents[int(user)]['beta']*(self.demand_elastic_arr[t, i] - value))
+                        reward[user] -= (self.agents[int(user)]['alpha']/2 * (self.demand_elastic_arr[t, user] - value)**2 + 
+                                        self.agents[int(user)]['beta']*(self.demand_elastic_arr[t, user] - value))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, i]}')
+                            logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, user]}')
 
                     elif item == 2:
                         # バッテリー充電の取引量を記録
@@ -636,6 +636,8 @@ class SimulationNoP2P:
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
             self.q.reset_all_digitized_states()
             self.q.reset_all_actions()
+            reward = np.full(self.num_agent, 0.0)
+            cost = np.full(self.num_agent, 0.0)
             for i in range(self.num_agent): 
                 #============================================================================================================================================================
                 dr_states, battery_states, ev_battery_states, pv_states = self.q.set_digitized_states(agent_id=i,
@@ -682,6 +684,9 @@ class SimulationNoP2P:
                     # To make the same situation as the case with P2P
                     price_elas += 0.00001
                 potential_demand += d_elas_max
+                # 後ろの時間にシフトさせる需要量の最大値を記録
+                # 実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
+                self.shift_arr[t, i] = d_elas_max
 
                 # バッテリー充放電しきい価格の取得
                 price_buy_battery = self.q.get_actions_[i, 1]
@@ -729,6 +734,7 @@ class SimulationNoP2P:
                 potential_demand += ev_charge_amount
                 potential_supply += ev_discharge_amount
 
+
                 # Check if the PV of the agent is enough to supply the inelastic demand
                 if s >= d_inelas:
                     s_residue = s - d_inelas
@@ -747,11 +753,13 @@ class SimulationNoP2P:
                     d_elas_residue = 0
                     self.buy_elastic_record_arr[t, i] += d_elas_max
                     self.sell_pv_record_arr[t, i] += d_elas_max
+                    self.shift_arr[t, i] = 0
                 else:
                     s_residue = 0
                     d_elas_residue = d_elas_max - s_residue
                     self.buy_elastic_record_arr[t, i] += s_residue
                     self.sell_pv_record_arr[t, i] += s_residue
+                    self.shift_arr[t, i] = d_elas_residue
 
                 # Check if the residue PV of the agent is enough to supply the EV battery charge demand
                 if s_residue >= ev_charge_amount:
@@ -785,14 +793,63 @@ class SimulationNoP2P:
                         self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                     self.sell_pv_record_arr[t, i] += s_residue
 
+                # Check if the battery discharge is available according to the wholesale price
+                # and discharge amount is enough to supply to residue of the inelastic demand
+                if price_sell_battery < wholesale_price:
+                    if discharge_amount >= d_inelas_residue:
+                        discharge_residue = discharge_amount - d_inelas_residue
+                        d_inelas_residue = 0
+                        self.sell_battery_record_arr[t, i] += d_inelas_residue 
+                    else:
+                        d_inelas_residue -= discharge_amount
+                        discharge_residue = 0
+                        self.sell_battery_record_arr[t, i] += discharge_amount
+
+                # Check if the EV battery discharge is available according to the wholesale price
+                # and discharge amount is enough to supply to residue of the inelastic demand
+                if price_sell_ev_battery < wholesale_price:
+                    if ev_discharge_amount >= d_inelas_residue:
+                        ev_discharge_residue = ev_discharge_amount - d_inelas_residue
+                        d_inelas_residue = 0
+                        self.sell_ev_battery_record_arr[t, i] += d_inelas_residue
+                    else:
+                        d_inelas_residue -= ev_discharge_amount
+                        ev_discharge_residue = 0
+                        self.sell_ev_battery_record_arr[t, i] += ev_discharge_amount
+
+                # import the lest of the inelastic demand from the grid
+                self.grid_import_record_arr[t] += d_inelas_residue
+                cost[i] += d_inelas_residue * wholesale_price
+                reward[i] -= d_inelas_residue * wholesale_price / 100  # reward cost in dollar, not cents
+
+                # Check if the DR is available according to the wholesale price
+                if price_elas > wholesale_price:
+                    self.buy_elastic_record_arr[t, i] += d_elas_residue
+                    self.grid_import_record_arr[t] += d_elas_residue
+                    cost[i] += d_elas_residue * wholesale_price
+                    reward[i] -= d_elas_residue * wholesale_price / 100  # reward cost in dollar, not cents
+                    reward[i] -= (self.agents[int(i)]['alpha']/2 * (d_elas_max - self.demand_elastic_arr[t, i])**2 + 
+                                        self.agents[int(i)]['beta']*(d_elas_max - self.demand_elastic_arr[t, i]))
+                    d_elas_residue = 0
+                    self.shift_arr[t, i] = 0
+                else:
+                    pass
+
+
                 
 
 
 
 
-                # 後ろの時間にシフトさせる需要量の最大値を記録
-                # マーケット取引をした後実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
-                self.shift_arr[t, i] = d_elas_max
+
+                
+
+
+
+
+
+
+                
                 # 過去からシフトした需
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
