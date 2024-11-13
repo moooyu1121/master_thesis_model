@@ -41,7 +41,7 @@ def main_no_p2p_wrapper(args):
 
 
 if __name__ == "__main__":
-    max_workers = 2
+    max_workers = 16
     p = Pool(max_workers)
     # No P2P <--- This is the BAU scenario
     if not os.path.exists('output'):
