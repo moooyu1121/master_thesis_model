@@ -502,8 +502,8 @@ class Simulation:
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
             self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 
-        vis = visualize.Visualize(folder_path=self.parent_dir)
-        vis.plot_consumption()
+            vis = visualize.Visualize(folder_path=self.parent_dir)
+            vis.plot_consumption()
         self.q.save_q_table(folder_path = self.parent_dir, train=self.train)
         logger.info(f'Q table is saved to {self.parent_dir}')
 
@@ -989,7 +989,7 @@ class SimulationNoP2P:
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
             self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
 
-        vis = visualize.Visualize(folder_path=self.parent_dir)
-        vis.plot_consumption()
+            vis = visualize.Visualize(folder_path=self.parent_dir)
+            vis.plot_consumption()
         self.q.save_q_table(folder_path = self.parent_dir, train=self.train)
         logger.info(f'Q table is saved to {self.parent_dir}')
