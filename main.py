@@ -77,7 +77,7 @@ if __name__ == "__main__":
     else:
         # Search for existing episodes
         existing_episodes = set()
-        for folder in glob.glob('output/thread*/episode*'):
+        for folder in glob.glob('output/no_p2p/thread*/episode*'):
             episode = int(folder.split('episode')[-1])
             existing_episodes.add(episode)
         # remove the last episode, because it has not finished yet.
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     else:
         # Search for existing episodes
         existing_episodes = set()
-        for folder in glob.glob('output/thread*/episode*'):
+        for folder in glob.glob('output/p2p/thread*/episode*'):
             episode = int(folder.split('episode')[-1])
             existing_episodes.add(episode)
         # remove the last episode, because it has not finished yet.
