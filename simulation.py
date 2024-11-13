@@ -629,8 +629,6 @@ class SimulationNoP2P:
 
     def run(self, BID_SAVE=False):
         for t in tqdm(range(len(self.demand_df))):
-            demand_list = []
-            supply_list = []
             potential_demand = 0
             potential_supply = 0
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
