@@ -332,12 +332,12 @@ class Simulation:
                         if t+1 != len(self.demand_df):
                             self.battery_record_arr[t+1, user] += value * self.battery_charge_efficiency
                             self.battery_soc_record_arr[t+1, user] = self.battery_record_arr[t+1, user] / self.agents[user]['battery_capacity']
-                        reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] - value) * 
-                        #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user])))
+                            reward[user] -= value * price / 100  # reward cost in dollar, not cents
+                            # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] - value) * 
+                            #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
+                            #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
+                            reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
+                                            self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: battery charge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
@@ -349,12 +349,12 @@ class Simulation:
                         if t+1 !=len(self.demand_df):
                             self.battery_record_arr[t+1, user] -= value / self.battery_discharge_efficiency
                             self.battery_soc_record_arr[t+1, user] = self.battery_record_arr[t+1, user] / self.agents[user]['battery_capacity']
-                        reward[user] += value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] + value) * 
-                        #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user])))
+                            reward[user] += value * price / 100  # reward cost in dollar, not cents
+                            # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] + value) * 
+                            #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
+                            #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
+                            reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
+                                            self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
                         cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: battery discharge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
@@ -366,12 +366,12 @@ class Simulation:
                         if t+1 !=len(self.demand_df):
                             self.ev_battery_record_arr[t+1, user] += value * self.ev_charge_efficiency
                             self.ev_battery_soc_record_arr[t+1, user] = self.ev_battery_record_arr[t+1, user] / self.agents[user]['ev_capacity']
-                        reward[user] -= value * price
-                        # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] - value) *
-                        #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user])))
+                            reward[user] -= value * price
+                            # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] - value) *
+                            #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
+                            #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
+                            reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
+                                            self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: ev charge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
@@ -383,12 +383,12 @@ class Simulation:
                         if t+1 !=len(self.demand_df):
                             self.ev_battery_record_arr[t+1, user] -= value / self.ev_discharge_efficiency
                             self.ev_battery_soc_record_arr[t+1, user] = self.ev_battery_record_arr[t+1, user] / self.agents[user]['ev_capacity']
-                        reward[user] += value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] + value) *
-                        #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user])))
+                            reward[user] += value * price / 100  # reward cost in dollar, not cents
+                            # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] + value) *
+                            #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
+                            #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
+                            reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
+                                            self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
                         cost[user] -= value * price 
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: ev discharge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
@@ -704,8 +704,6 @@ class SimulationNoP2P:
                 if price_buy_battery == self.price_min:
                     # To make the same situation as the case with P2P
                     price_buy_battery += 0.00001
-                demand_list.append([charge_amount, price_buy_battery, id_base+2, True])
-                supply_list.append([discharge_amount, price_sell_battery, id_base+3, False])
                 potential_demand += charge_amount
                 potential_supply += discharge_amount
 
@@ -729,8 +727,6 @@ class SimulationNoP2P:
                 if price_buy_ev_battery == self.price_min:
                     # To make the same situation as the case with P2P
                     price_buy_ev_battery += 0.00001
-                demand_list.append([ev_charge_amount, price_buy_ev_battery, id_base+4, True])
-                supply_list.append([ev_discharge_amount, price_sell_ev_battery, id_base+5, False])
                 potential_demand += ev_charge_amount
                 potential_supply += ev_discharge_amount
 
@@ -817,40 +813,56 @@ class SimulationNoP2P:
                         ev_discharge_residue = 0
                         self.sell_ev_battery_record_arr[t, i] += ev_discharge_amount
 
-                # import the lest of the inelastic demand from the grid
+                # import the rest of the inelastic demand from the grid
                 self.grid_import_record_arr[t] += d_inelas_residue
                 cost[i] += d_inelas_residue * wholesale_price
                 reward[i] -= d_inelas_residue * wholesale_price / 100  # reward cost in dollar, not cents
 
                 # Check if the DR is available according to the wholesale price
-                if price_elas > wholesale_price:
+                if price_elas >= wholesale_price:
                     self.buy_elastic_record_arr[t, i] += d_elas_residue
                     self.grid_import_record_arr[t] += d_elas_residue
                     cost[i] += d_elas_residue * wholesale_price
                     reward[i] -= d_elas_residue * wholesale_price / 100  # reward cost in dollar, not cents
-                    reward[i] -= (self.agents[int(i)]['alpha']/2 * (d_elas_max - self.demand_elastic_arr[t, i])**2 + 
-                                        self.agents[int(i)]['beta']*(d_elas_max - self.demand_elastic_arr[t, i]))
                     d_elas_residue = 0
                     self.shift_arr[t, i] = 0
                 else:
-                    pass
-
-
+                    reward[i] -= (self.agents[int(i)]['alpha']/2 * (d_elas_max - d_elas_residue)**2 + 
+                                        self.agents[int(i)]['beta']*(d_elas_max - d_elas_residue))
                 
+                # Check if the EV battery charge is available according to the wholesale price
+                if price_buy_ev_battery >= wholesale_price:
+                    self.grid_import_record_arr[t] += ev_charge_residue
+                    cost[i] += ev_charge_residue * wholesale_price
+                    ev_charge_residue = 0
+                    if t+1 != len(self.demand_df):
+                        self.buy_ev_battery_record_arr[t+1, i] += ev_charge_residue * self.ev_charge_efficiency
+                        self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
+                        reward[i] -= ev_charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
+                        reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
+                                    self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
+                else:
+                    if t+1 != len(self.demand_df):
+                        reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
+                                      self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
 
+                # Check if the battery charge is available according to the wholesale price
+                if price_buy_battery >= wholesale_price:
+                    self.grid_import_record_arr[t] += charge_residue
+                    cost[i] += charge_residue * wholesale_price
+                    charge_residue = 0
+                    if t+1 != len(self.demand_df):
+                        self.buy_battery_record_arr[t+1, i] += charge_residue * self.battery_charge_efficiency
+                        self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                        reward[i] -= charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
+                        reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
+                                      self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
+                else:
+                    if t+1 != len(self.demand_df):
+                        reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
+                                      self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
 
-
-
-
-                
-
-
-
-
-
-
-                
-                # 過去からシフトした需
+                # Check if the shifted demand is available according to the wholesale price and handle one by one
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
                     if k >= 0:
                         d_shift = self.shift_arr[k, i]
@@ -859,157 +871,20 @@ class SimulationNoP2P:
                         if k == t-int(self.agents[i]['shift_limit']):
                             # シフトリミットでの価格しきい値は最高価格
                             price_shift = self.price_max
-                        # 過去からのシフトはj+7から割り当てる
-                        demand_list.append([d_shift, price_shift, id_base+7+t-k-1, True])
+                        if price_shift >= wholesale_price:
+                            self.grid_import_record_arr[t] += d_shift
+                            cost[i] += d_shift * wholesale_price
+                            reward[i] -= d_shift * wholesale_price / 100  # reward cost in dollar, not cents
+                            self.buy_shifted_record_arr[t, i] += d_shift
                         potential_demand += d_shift
-
-                
-                
+                        if t-k-1 >= 0:
+                            self.shift_arr[t-k-1, i] -= d_shift
 
 
             self.potential_demand_arr[t] = potential_demand
             self.potential_supply_arr[t] = potential_supply
-
             
-
-            
-            market = Market(demand_list, supply_list, wholesale_price)
-            market.bid()
-            bids_df = market.market.bm.get_df()
-            
-            # if episode == 0 or episode == num_episode-1 or episode%10 == 9:
-            if BID_SAVE:
-                timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
-                market.plot(title=timestamp, number=t, parent_dir=self.parent_dir)
-            transactions_df, _ = market.run(mechanism='uniform')
-            # print(bids_df)
-            # print(transactions_df)
             # input()
-            
-            # マーケット取引の結果を記録、報酬を計算
-            reward = np.full(self.num_agent, 0.0)
-            cost = np.full(self.num_agent, 0.0)
-            for bid_num in transactions_df['bid']:
-                id = bids_df.at[bid_num, 'user']
-                if id == 99999:
-                    # record import from grid
-                    self.grid_import_record_arr[t] = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-
-                if id != 99999:
-                    # 100の位以降の数字を取り出す->agentID
-                    user = id // 100
-                    # リアルタイム(inelas, elas)@2，バッテリー充放電@2，ev充放電@2，シフトリミット@shift_limit，供給@1
-                    item = id % 100
-                    price = transactions_df[transactions_df['bid']==bid_num]['price'].values[0]
-                    if item == 0:
-                        # リアルタイム(inelas)の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.buy_inelastic_record_arr[t, user] = value
-                        reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                        cost[user] += value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: inelastic, {value}, {price}')
-
-                    elif item == 1:
-                        # リアルタイム(elas)の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.buy_elastic_record_arr[t, user] = value
-                        # 時刻tでのDRの分だけ後ろの時間にシフトさせる需要量を減らす
-                        self.shift_arr[t, user] -= value
-                        reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                        reward[user] -= (self.agents[int(user)]['alpha']/2 * (self.demand_elastic_arr[t, i] - value)**2 + 
-                                        self.agents[int(user)]['beta']*(self.demand_elastic_arr[t, i] - value))
-                        cost[user] += value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: elastic, {value}, {price}, {self.demand_elastic_arr[t, i]}')
-
-                    elif item == 2:
-                        # バッテリー充電の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.buy_battery_record_arr[t, user] = value
-                        if t+1 != len(self.demand_df):
-                            self.battery_record_arr[t+1, user] += value * self.battery_charge_efficiency
-                            self.battery_soc_record_arr[t+1, user] = self.battery_record_arr[t+1, user] / self.agents[user]['battery_capacity']
-                        reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] - value) * 
-                        #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user])))
-                        cost[user] += value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: battery charge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
-
-                    elif item == 3:
-                        # バッテリー放電の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.sell_battery_record_arr[t, user] = value
-                        if t+1 !=len(self.demand_df):
-                            self.battery_record_arr[t+1, user] -= value / self.battery_discharge_efficiency
-                            self.battery_soc_record_arr[t+1, user] = self.battery_record_arr[t+1, user] / self.agents[user]['battery_capacity']
-                        reward[user] += value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] + value) * 
-                        #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user])))
-                        cost[user] -= -value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: battery discharge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
-
-                    elif item == 4:
-                        # EVバッテリー充電の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.buy_ev_battery_record_arr[t, user] = value
-                        if t+1 !=len(self.demand_df):
-                            self.ev_battery_record_arr[t+1, user] += value * self.ev_charge_efficiency
-                            self.ev_battery_soc_record_arr[t+1, user] = self.ev_battery_record_arr[t+1, user] / self.agents[user]['ev_capacity']
-                        reward[user] -= value * price
-                        # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] - value) *
-                        #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user])))
-                        cost[user] += value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: ev charge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
-
-                    elif item == 5:
-                        # EVバッテリー放電の取引量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.sell_ev_battery_record_arr[t, user] = value
-                        if t+1 !=len(self.demand_df):
-                            self.ev_battery_record_arr[t+1, user] -= value / self.ev_discharge_efficiency
-                            self.ev_battery_soc_record_arr[t+1, user] = self.ev_battery_record_arr[t+1, user] / self.agents[user]['ev_capacity']
-                        reward[user] += value * price / 100  # reward cost in dollar, not cents
-                        # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] + value) *
-                        #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                        #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                        reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
-                                        self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user])))
-                        cost[user] -= value * price 
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: ev discharge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
-
-                    elif item == 6:
-                        # PV発電供給量を記録
-                        value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                        self.sell_pv_record_arr[t, user] = value
-                        reward[user] += value * price
-                        cost[user] -= value * price
-                        if np.isnan(reward[user]):
-                            logger.error(f'Numpy nan is detected: pv, {value}, {price}')
-
-                    else:
-                        # buy_shifted_record_dfに足し上げながらshift_dfを更新
-                        for k in range(7, 7+int(self.agents[user]['shift_limit'])):
-                            if item == k:
-                                value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
-                                self.buy_shifted_record_arr[t, user] += value
-                                reward[user] -= value * price / 100  # reward cost in dollar, not cents
-                                cost[user] += value * price
-                                if t-k+7-1>= 0:
-                                    self.shift_arr[t-k+7-1, user] -= value
             
             # EV SoCが0未満になっている場合は0にする、報酬に-10000を反映
             for i in range(self.num_agent):
@@ -1017,8 +892,6 @@ class SimulationNoP2P:
                     if self.ev_battery_soc_record_arr[t+1, i] < 0:
                         self.ev_battery_soc_record_arr[t+1, i] = 0
                         reward[i] -= 10000
-
-            self.microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
             # Q学習
             dr_states, battery_states, ev_battery_states, pv_states = self.q.get_states_
