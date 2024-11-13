@@ -760,22 +760,19 @@ class SimulationNoP2P:
                     self.shift_arr[t, i] = d_elas_residue
                     s_residue = 0
 
-                # # Check if the residue PV of the agent is enough to supply the shifted demand
-                # for k in range(t-int(self.agents[i]['shift_limit']), t):
-                #     if k >= 0:
-                #         d_shift = self.shift_arr[k, i]
-                #         potential_demand += d_shift
-                #         # シフトした需要のしきい価格は，デマンドレスポンス可能の需要のしきい価格と同じ
-                #         price_shift = price_elas
-                #         if k == t-int(self.agents[i]['shift_limit']):
-                #             # シフトリミットでの価格しきい値は最高価格
-                #             price_shift = self.price_max
-                #         if price_shift >= wholesale_price:
-                #             self.grid_import_record_arr[t] += d_shift
-                #             cost[i] += d_shift * wholesale_price
-                #             reward[i] -= d_shift * wholesale_price / 100  # reward cost in dollar, not cents
-                #             self.buy_shifted_record_arr[t, i] += d_shift
-                #             self.shift_arr[k, i] -= d_shift
+                # Check if the residue PV of the agent is enough to supply the shifted demand
+                for k in range(t-int(self.agents[i]['shift_limit']), t):
+                    if k >= 0:
+                        d_shift = self.shift_arr[k, i]
+                        potential_demand += d_shift
+                        if s_residue > d_shift:
+                            self.buy_shifted_record_arr[t, i] += d_shift
+                            self.shift_arr[k, i] -= d_shift
+                            s_residue -= d_shift
+                        else:
+                            self.buy_shifted_record_arr[t, i] += s_residue
+                            self.shift_arr[k, i] -= s_residue
+                            s_residue = 0                            
 
                 # Check if the residue PV of the agent is enough to supply the EV battery charge demand
                 if s_residue > ev_charge_amount:
