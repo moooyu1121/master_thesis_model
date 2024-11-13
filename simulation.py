@@ -515,8 +515,6 @@ class SimulationNoP2P:
         self.parent_dir = parent_dir
         self.episode = episode
         self.train = train
-        # Adding the new mechanism to the list of available mechanism of the market
-        pm.market.MECHANISM['uniform'] = UniformPrice # type: ignore
         # Update market and uniform parameters
         params = {'thread_num': -1,
                   'price_max': 120,
