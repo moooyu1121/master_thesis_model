@@ -1684,8 +1684,8 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
         plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex.png', dpi=600)
         plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex.svg')
     else:
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_wo.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_wo.svg')
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr.svg')
     # plt.show()
 
     print('Net cost by battery, EV, PV, and DR plot saved.')
@@ -2690,7 +2690,7 @@ if __name__ == '__main__':
     sell_amount_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
-    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p')
+    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=True)
     net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=False)
     buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
     sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
@@ -2727,7 +2727,7 @@ if __name__ == '__main__':
     sell_amount_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
-    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/p2p')
+    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
     net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=False)
     buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
