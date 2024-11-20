@@ -1480,7 +1480,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path):
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost']) for key in net_dict.keys()]
-    med_costs = [np.median(net_dict[key]) for key in net_dict.keys()]
+    med_costs = [np.median(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
     categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
@@ -1908,7 +1908,7 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost']) for key in net_dict.keys()]
-    med_costs = [np.median(net_dict[key]) for key in net_dict.keys()]
+    med_costs = [np.median(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
     categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
@@ -2252,7 +2252,7 @@ def sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost']) for key in net_dict.keys()]
-    med_costs = [np.median(net_dict[key]) for key in net_dict.keys()]
+    med_costs = [np.median(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
     categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
@@ -2302,7 +2302,10 @@ def sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     # Calculate cost per kWh for each category
     for key in net_dict.keys():
         for i in range(len(net_dict[key]['cost'])):
-            net_dict[key]['cost/kWh'].append(net_dict[key]['cost'][i]/net_dict[key]['amount'][i])
+            if net_dict[key]['amount'][i] == 0:
+                net_dict[key]['cost/kWh'].append(0)
+            else:
+                net_dict[key]['cost/kWh'].append(net_dict[key]['cost'][i]/net_dict[key]['amount'][i])
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
@@ -2520,6 +2523,8 @@ if __name__ == '__main__':
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p')
+    buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
+    sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/no_p2p')
 
 # ==================================================================================================
     sor_per_month_plot(thread_num=max_workers, folder_path='output/no_p2p')
@@ -2554,6 +2559,8 @@ if __name__ == '__main__':
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/p2p')
+    buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
+    sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
 
 # ==================================================================================================
     sor_per_month_plot(thread_num=max_workers, folder_path='output/p2p')
