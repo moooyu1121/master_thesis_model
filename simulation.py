@@ -634,6 +634,7 @@ class SimulationNoP2P:
             potential_demand = 0
             potential_supply = 0
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
+            self.microgrid_price_record_arr[t] = wholesale_price
             self.q.reset_all_digitized_states()
             self.q.reset_all_actions()
             reward = np.full(self.num_agent, 0.0)

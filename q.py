@@ -201,6 +201,12 @@ class Q:
             self.ev_battery_buy_qtb_list.append(np.load(folder_path + f'/ev_battery_buy_qtb_{i}.npy'))
             self.ev_battery_sell_qtb_list.append(np.load(folder_path + f'/ev_battery_sell_qtb_{i}.npy'))
             self.pv_sell_qtb_list.append(np.load(folder_path + f'/pv_sell_qtb_{i}.npy'))
+            os.remove(folder_path + f'/dr_buy_qtb_{i}.npy')
+            os.remove(folder_path + f'/battery_buy_qtb_{i}.npy')
+            os.remove(folder_path + f'/battery_sell_qtb_{i}.npy')
+            os.remove(folder_path + f'/ev_battery_buy_qtb_{i}.npy')
+            os.remove(folder_path + f'/ev_battery_sell_qtb_{i}.npy')
+            os.remove(folder_path + f'/pv_sell_qtb_{i}.npy')
         # print('Q table loaded.')
     
 
