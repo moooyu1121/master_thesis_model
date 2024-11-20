@@ -2728,7 +2728,7 @@ if __name__ == '__main__':
     sell_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
-    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=False)
+    net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=False)
     buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
     sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num=max_workers, folder_path='output/p2p')
 
