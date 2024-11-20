@@ -24,6 +24,9 @@ class Visualize:
         self.sell_battery_df = pd.read_csv(folder_path + '/sell_battery_record.csv', index_col=0)
         self.sell_ev_battery_df = pd.read_csv(folder_path + '/sell_ev_battery_record.csv', index_col=0)
 
+        self.potential_demand_df = pd.read_csv(folder_path + '/potential_demand.csv', index_col=0)
+        self.potential_supply_df = pd.read_csv(folder_path + '/potential_supply.csv', index_col=0)
+
         timestamp_df = pd.read_csv('data/demand.csv')
         timestamp_df['timestamp'] = pd.to_datetime(timestamp_df['timestamp'])
         self.timestamps = timestamp_df['timestamp']
@@ -32,7 +35,7 @@ class Visualize:
 
     def plot_consumption(self):
         # fig = go.Figure()
-        # Figureオブジェクトを作成し、2行1列のサブプロットを設定
+        # Figureオブジェクトを作成し、3行1列のサブプロットを設定
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.2)
 
         # Plot original demand line

@@ -2658,6 +2658,88 @@ def ssr_per_month_plot(thread_num, folder_path):
     # plt.show()
 
     print('SSR per month plot with error bars saved.')
+
+
+def supply_demand_margin_plot(thread_num, folder_path):
+    """
+    Self Sufficiency Ratio (SSR) per month plot with error bars
+    """
+    grid_import_file_path_list = []
+    # Collect the file paths for all threads
+    for i in range(thread_num):
+        grid_import_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/grid_import_record.csv')
+        grid_import_sorted_file_paths = sorted(grid_import_file_paths, key=numerical_sort)
+        grid_import_file_path_list.append(grid_import_sorted_file_paths[-1])  # get the last episode
+
+    buy_inelastic_file_path_list = []
+    for i in range(thread_num):
+        buy_inelastic_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_inelastic_record.csv')
+        buy_inelastic_sorted_file_paths = sorted(buy_inelastic_file_paths, key=numerical_sort)
+        buy_inelastic_file_path_list.append(buy_inelastic_sorted_file_paths[-1])  # get the last episode
+    buy_elastic_file_path_list = []
+    for i in range(thread_num):
+        buy_elastic_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_elastic_record.csv')
+        buy_elastic_sorted_file_paths = sorted(buy_elastic_file_paths, key=numerical_sort)
+        buy_elastic_file_path_list.append(buy_elastic_sorted_file_paths[-1])  # get the last episode
+    buy_shifted_file_path_list = []
+    for i in range(thread_num):
+        buy_shifted_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_shifted_record.csv')
+        buy_shifted_sorted_file_paths = sorted(buy_shifted_file_paths, key=numerical_sort)
+        buy_shifted_file_path_list.append(buy_shifted_sorted_file_paths[-1])  # get the last episode
+    buy_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_battery_record.csv')
+        buy_battery_sorted_file_paths = sorted(buy_battery_file_paths, key=numerical_sort)
+        buy_battery_file_path_list.append(buy_battery_sorted_file_paths[-1])  # get the last episode
+    buy_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_ev_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_ev_battery_record.csv')
+        buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
+        buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
+
+    all_ratios = []
+    
+    # Calculate the ratios for each thread
+    for i in range(len(grid_import_file_path_list)):
+        grid_import = pd.read_csv(grid_import_file_path_list[i], index_col=0)
+        total_buy_amount = (pd.read_csv(buy_inelastic_file_path_list[i], index_col=0).sum(axis=1) +
+                            pd.read_csv(buy_elastic_file_path_list[i], index_col=0).sum(axis=1) +
+                            pd.read_csv(buy_shifted_file_path_list[i], index_col=0).sum(axis=1) +
+                            pd.read_csv(buy_battery_file_path_list[i], index_col=0).sum(axis=1) +
+                            pd.read_csv(buy_ev_battery_file_path_list[i], index_col=0).sum(axis=1))
+        ratio_series = 1 - grid_import['Grid import'] / total_buy_amount
+        ratio_series.replace([np.inf, -np.inf], np.nan, inplace=True)
+        ratio_series.index = pd.to_datetime(ratio_series.index)
+        monthly_avg = ratio_series.resample('ME').mean()
+        all_ratios.append(monthly_avg)
+
+    # Concatenate all monthly averages
+    all_ratios_df = pd.concat(all_ratios)
+    
+    # Group by month and calculate mean and standard deviation
+    monthly_avg = all_ratios_df.groupby(all_ratios_df.index.month).mean()
+    monthly_std = all_ratios_df.groupby(all_ratios_df.index.month).std()
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(10, 4))
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    x = range(1, 13)
+
+    ax.errorbar(x, monthly_avg, yerr=monthly_std, marker='o', ecolor='red', linestyle='-', linewidth=1, markersize=8, capsize=4)
+    # ax.set_ylim(0, 1)
+    ax.set_xticks(x)
+    ax.set_xticklabels(months)
+    ax.set_ylabel('Self Sufficiency Ratio [-]')
+    ax.set_title('Self Sufficiency Ratio per Month')
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    plt.tight_layout()
+    plt.savefig(folder_path + '/insight/ssr_per_month.png', dpi=600)
+    plt.savefig(folder_path + '/insight/ssr_per_month.svg')
+    # plt.show()
+
+    print('SSR per month plot with error bars saved.')
     
 
 
