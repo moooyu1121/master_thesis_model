@@ -71,17 +71,17 @@ class Agent:
                   'max_ev_charge_speed': [6.0],  # kW
                   'max_ev_discharge_speed': [3.0],  # kW
                 #   'battery_capacity_list': [10, 15, 20],    # kWh
-                  'battery_capacity_list': [0, 13.5],
-                  'ev_capacity_list': [0, 40],     # kWh
+                  'battery_capacity_list': [13.5],
+                  'ev_capacity_list': [40],     # kWh
                 #   'ev_capacity_list': [0],
-                  'pv_capacity_list': [0, 5],    # kW
+                  'pv_capacity_list': [5],    # kW
                   'dr_boolean_list': [True, False],
                   'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2],
+                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'epsilon_list': [1, 1.5, 2],
+                  'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
-                  'omega_list': [1, 1.5, 2],}
+                  'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],}
         params.update(kwargs)
         shift_limit_list = params['shift_limit_list']
         max_battery_charge_speed = params['max_battery_charge_speed']
