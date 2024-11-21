@@ -61,6 +61,9 @@ class Simulation:
     def load_existing_q_table(self, folder_path):
         self.q.load_q_table(folder_path=folder_path)
 
+    def remove_existing_q_table(self, folder_path):
+        self.q.remove_q_table_saved_data(folder_path=folder_path)
+
     def preprocess(self):
         # Generate agent parameters
         self.agents = Agent(self.num_agent)
@@ -546,6 +549,9 @@ class SimulationNoP2P:
     
     def load_existing_q_table(self, folder_path):
         self.q.load_q_table(folder_path=folder_path)
+
+    def remove_existing_q_table(self, folder_path):
+        self.q.remove_q_table_saved_data(folder_path=folder_path)
 
     def preprocess(self):
         # Generate agent parameters

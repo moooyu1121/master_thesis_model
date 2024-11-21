@@ -9,27 +9,31 @@ import simulation
 
 
 def main(num_agent, parent_dir, episode, load_q=False, train=True, **kwargs):
+    params = {'thread_num': -1}  # dummy initial declaration
+    params.update(kwargs)  # get the actual thread_num
+    thread_num = params['thread_num']
     world = simulation.Simulation(num_agent, parent_dir, episode, train, **kwargs)
     if load_q:
-        params = {'thread_num': -1}
-        params.update(kwargs)
-        thread_num = params['thread_num']
         world.load_existing_q_table(folder_path=f'output/p2p/thread{thread_num}/episode{episode-1}/q_table')
     world.preprocess()
     world.run()
     world.save()
+    if load_q:
+        world.remove_existing_q_table(folder_path=f'output/p2p/thread{thread_num}/episode{episode-1}/q_table')
 
 
 def main_no_p2p(num_agent, parent_dir, episode, load_q=False, train=True, **kwargs):
     world = simulation.SimulationNoP2P(num_agent, parent_dir, episode, train, **kwargs)
-    if load_q:
-        params = {'thread_num': -1}
-        params.update(kwargs)
-        thread_num = params['thread_num']
+    params = {'thread_num': -1}
+    params.update(kwargs)
+    thread_num = params['thread_num']
+    if load_q:        
         world.load_existing_q_table(folder_path=f'output/no_p2p/thread{thread_num}/episode{episode-1}/q_table')
     world.preprocess()
     world.run()
     world.save()
+    if load_q:
+        world.remove_existing_q_table(folder_path=f'output/no_p2p/thread{thread_num}/episode{episode-1}/q_table')
     
 
 def main_wrapper(args):

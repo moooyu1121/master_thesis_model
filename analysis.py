@@ -7,7 +7,6 @@ import glob
 import os
 import re
 import capex_opex
-max_workers = 16
 
 os.makedirs('output/no_p2p/insight', exist_ok=True)
 os.makedirs('output/p2p/insight', exist_ok=True)
@@ -2662,14 +2661,19 @@ def ssr_per_month_plot(thread_num, folder_path):
 
 def supply_demand_margin_plot(thread_num, folder_path):
     """
-    Self Sufficiency Ratio (SSR) per month plot with error bars
+    Supply-Demand Margin plot by boxplot, aggregated in 0-24 hours
     """
-    grid_import_file_path_list = []
     # Collect the file paths for all threads
+    potential_supply_file_path_list = []
     for i in range(thread_num):
-        grid_import_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/grid_import_record.csv')
-        grid_import_sorted_file_paths = sorted(grid_import_file_paths, key=numerical_sort)
-        grid_import_file_path_list.append(grid_import_sorted_file_paths[-1])  # get the last episode
+        potential_supply_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/potential_supply.csv')
+        potential_supply_sorted_file_paths = sorted(potential_supply_file_paths, key=numerical_sort)
+        potential_supply_file_path_list.append(potential_supply_sorted_file_paths[-1])
+    potential_demand_file_path_list = []
+    for i in range(thread_num):
+        potential_demand_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/potential_demand.csv')
+        potential_demand_sorted_file_paths = sorted(potential_demand_file_paths, key=numerical_sort)
+        potential_demand_file_path_list.append(potential_demand_sorted_file_paths[-1])
 
     buy_inelastic_file_path_list = []
     for i in range(thread_num):
@@ -2696,54 +2700,117 @@ def supply_demand_margin_plot(thread_num, folder_path):
         buy_ev_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_ev_battery_record.csv')
         buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
         buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
+    sell_pv_file_path_list = []
+    for i in range(thread_num):
+        sell_pv_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_pv_record.csv')
+        sell_pv_sorted_file_paths = sorted(sell_pv_file_paths, key=numerical_sort)
+        sell_pv_file_path_list.append(sell_pv_sorted_file_paths[-1])
+    sell_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_battery_record.csv')
+        sell_battery_sorted_file_paths = sorted(sell_battery_file_paths, key=numerical_sort)
+        sell_battery_file_path_list.append(sell_battery_sorted_file_paths[-1])
+    sell_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_ev_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_ev_battery_record.csv')
+        sell_ev_battery_sorted_file_paths = sorted(sell_ev_battery_file_paths, key=numerical_sort)
+        sell_ev_battery_file_path_list.append(sell_ev_battery_sorted_file_paths[-1])
 
     all_ratios = []
     
-    # Calculate the ratios for each thread
-    for i in range(len(grid_import_file_path_list)):
-        grid_import = pd.read_csv(grid_import_file_path_list[i], index_col=0)
-        total_buy_amount = (pd.read_csv(buy_inelastic_file_path_list[i], index_col=0).sum(axis=1) +
-                            pd.read_csv(buy_elastic_file_path_list[i], index_col=0).sum(axis=1) +
-                            pd.read_csv(buy_shifted_file_path_list[i], index_col=0).sum(axis=1) +
-                            pd.read_csv(buy_battery_file_path_list[i], index_col=0).sum(axis=1) +
-                            pd.read_csv(buy_ev_battery_file_path_list[i], index_col=0).sum(axis=1))
-        ratio_series = 1 - grid_import['Grid import'] / total_buy_amount
-        ratio_series.replace([np.inf, -np.inf], np.nan, inplace=True)
-        ratio_series.index = pd.to_datetime(ratio_series.index)
-        monthly_avg = ratio_series.resample('ME').mean()
-        all_ratios.append(monthly_avg)
+    # Calculate the total demand and supply for each thread
+    surplus_demand_list = []
+    surplus_supply_list = []
+    for i in range(len(buy_inelastic_file_path_list)):
+        total_demand = (pd.read_csv(buy_inelastic_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(buy_elastic_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(buy_shifted_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(buy_battery_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(buy_ev_battery_file_path_list[i], index_col=0).sum(axis=1))
+        total_supply = (pd.read_csv(sell_pv_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(sell_battery_file_path_list[i], index_col=0).sum(axis=1) +
+                        pd.read_csv(sell_ev_battery_file_path_list[i], index_col=0).sum(axis=1))
+        surplus_demand = (pd.read_csv(potential_demand_file_path_list[i], index_col=0).sum(axis=1) - total_demand).clip(lower=0)
+        surplus_supply = (pd.read_csv(potential_supply_file_path_list[i], index_col=0).sum(axis=1) - total_supply).clip(lower=0)
+        surplus_demand_list.append(surplus_demand)
+        surplus_supply_list.append(surplus_supply)
+    # Concatenate all surplus data into single Series by getting average of each timeslot
+    # Reset index to avoid potential duplicates or conflicts
+    surplus_demand_all = pd.concat(surplus_demand_list, axis=1)
+    surplus_supply_all = pd.concat(surplus_supply_list, axis=1)
+    surplus_demand_average = surplus_demand_all.mean(axis=1)
+    surplus_supply_average = surplus_supply_all.mean(axis=1)
 
-    # Concatenate all monthly averages
-    all_ratios_df = pd.concat(all_ratios)
+    # Ensure the index is in datetime format
+    surplus_demand_average.index = pd.to_datetime(surplus_demand_average.index)
+    surplus_supply_average.index = pd.to_datetime(surplus_supply_average.index)
     
-    # Group by month and calculate mean and standard deviation
-    monthly_avg = all_ratios_df.groupby(all_ratios_df.index.month).mean()
-    monthly_std = all_ratios_df.groupby(all_ratios_df.index.month).std()
+    surplus_demand_average_by_hour = surplus_demand.groupby(surplus_demand_average.index.hour)
+    surplus_supply_average_by_hour = surplus_supply.groupby(surplus_supply_average.index.hour)
 
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 4))
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    x = range(1, 13)
-
-    ax.errorbar(x, monthly_avg, yerr=monthly_std, marker='o', ecolor='red', linestyle='-', linewidth=1, markersize=8, capsize=4)
-    # ax.set_ylim(0, 1)
-    ax.set_xticks(x)
-    ax.set_xticklabels(months)
-    ax.set_ylabel('Self Sufficiency Ratio [-]')
-    ax.set_title('Self Sufficiency Ratio per Month')
-    ax.grid(True)
+    # Calculate statistics
+    demand_mean_by_hour = surplus_demand_average_by_hour.mean()
+    supply_mean_by_hour = surplus_supply_average_by_hour.mean()
+    demand_std_by_hour = surplus_demand_average_by_hour.std()
+    supply_std_by_hour = surplus_supply_average_by_hour.std()
+    demand_median_by_hour = surplus_demand_average_by_hour.median()
+    supply_median_by_hour = surplus_supply_average_by_hour.median()
+    
+    fig, ax = plt.subplots(figsize=(20, 10))
+    boxprops = dict(color='black', linewidth=1.5)
+    medianprops = dict(color='red', linewidth=2)
+    meanpointprops = dict(marker='D', markeredgecolor='black', markerfacecolor='blue', markersize=8)
+    bplot = ax.boxplot([surplus_demand_average_by_hour.get_group(i).values for i in range(24)], patch_artist=True, showmeans=True,
+                          boxprops=boxprops, medianprops=medianprops, meanprops=meanpointprops)
+    # Set all boxplot colors to gray
+    gray_color = '#808080'
+    for patch in bplot['boxes']:
+        patch.set_facecolor(gray_color)
+    ax.set_xticklabels([f'{i:02}:00' for i in range(24)])
+    ax.set_ylabel('Surplus Demand [kWh]')
+    ax.set_title('Surplus Demand by Hour')
+    ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-
+    for i in range(24):
+        ax.text(i + 1, demand_median_by_hour[i], f'Mean: {demand_mean_by_hour[i]:.2f}\nStd: {demand_std_by_hour[i]:.2f}\nMed: {demand_median_by_hour[i]:.2f}', ha='center', va='center',
+                bbox=dict(facecolor='white', alpha=0.5))
     plt.tight_layout()
-    plt.savefig(folder_path + '/insight/ssr_per_month.png', dpi=600)
-    plt.savefig(folder_path + '/insight/ssr_per_month.svg')
+    plt.savefig(folder_path + '/insight/surplus_demand_by_hour.png', dpi=600)
+    plt.savefig(folder_path + '/insight/surplus_demand_by_hour.svg')
     # plt.show()
+    print('Surplus Demand by Hour plot saved.')
+    plt.close()
 
-    print('SSR per month plot with error bars saved.')
-    
+    fig, ax = plt.subplots(figsize=(20, 10))
+    boxprops = dict(color='black', linewidth=1.5)
+    medianprops = dict(color='red', linewidth=2)
+    meanpointprops = dict(marker='D', markeredgecolor='black', markerfacecolor='blue', markersize=8)
+    bplot = ax.boxplot([surplus_supply_average_by_hour.get_group(i).values for i in range(24)], patch_artist=True, showmeans=True,
+                          boxprops=boxprops, medianprops=medianprops, meanprops=meanpointprops)
+    # Set all boxplot colors to gray
+    gray_color = '#808080'
+    for patch in bplot['boxes']:
+        patch.set_facecolor(gray_color)
+    ax.set_xticklabels([f'{i:02}:00' for i in range(24)])
+    ax.set_ylabel('Surplus Supply [kWh]')
+    ax.set_title('Surplus Supply by Hour')
+    ax.yaxis.grid(True)
+    ax.set_axisbelow(True)
+    for i in range(24):
+        ax.text(i + 1, supply_median_by_hour[i], f'Mean: {supply_mean_by_hour[i]:.2f}\nStd: {supply_std_by_hour[i]:.2f}\nMed: {supply_median_by_hour[i]:.2f}', ha='center', va='center',
+                bbox=dict(facecolor='white', alpha=0.5))
+    plt.tight_layout()
+    plt.savefig(folder_path + '/insight/surplus_supply_by_hour.png', dpi=600)
+    plt.savefig(folder_path + '/insight/surplus_supply_by_hour.svg')
+    # plt.show()
+    print('Surplus Supply by Hour plot saved.')
+    plt.close()
+
+
 
 
 if __name__ == '__main__':
+    max_workers = 16
     print('Start plotting analysis figures for no_p2p...')
     # agent_num = pd.read_csv('output/thread0/episode1/agent_params.csv', index_col=0).shape[0]
     agent_num = pd.read_csv('output/no_p2p/test/thread0/episode10/agent_params.csv', index_col=0).shape[0]
@@ -2780,6 +2847,8 @@ if __name__ == '__main__':
 # ==================================================================================================
     sor_per_month_plot(thread_num=max_workers, folder_path='output/no_p2p')
     ssr_per_month_plot(thread_num=max_workers, folder_path='output/no_p2p')
+    supply_demand_margin_plot(thread_num=max_workers, folder_path='output/no_p2p')
+
 
 
     print('Start plotting analysis figures for p2p...')
@@ -2817,4 +2886,5 @@ if __name__ == '__main__':
 # ==================================================================================================
     sor_per_month_plot(thread_num=max_workers, folder_path='output/p2p')
     ssr_per_month_plot(thread_num=max_workers, folder_path='output/p2p')
+    supply_demand_margin_plot(thread_num=max_workers, folder_path='output/p2p')
     
