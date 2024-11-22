@@ -18,7 +18,7 @@ def main(num_agent, parent_dir, episode, load_q=False, train=True, **kwargs):
     world.preprocess()
     world.run()
     world.save()
-    if load_q:
+    if load_q and episode % 10 != 0:
         world.remove_existing_q_table(folder_path=f'output/p2p/thread{thread_num}/episode{episode-1}/q_table')
 
 
@@ -32,7 +32,7 @@ def main_no_p2p(num_agent, parent_dir, episode, load_q=False, train=True, **kwar
     world.preprocess()
     world.run()
     world.save()
-    if load_q:
+    if load_q and episode % 10 != 0:
         world.remove_existing_q_table(folder_path=f'output/no_p2p/thread{thread_num}/episode{episode-1}/q_table')
     
 
