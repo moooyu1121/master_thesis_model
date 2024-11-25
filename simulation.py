@@ -12,6 +12,7 @@ from preprocess import Preprocess
 from market import Market, UniformPrice
 from agent import Agent
 from q import Q
+import capex_opex
 import logging
 logger = logging.getLogger('Logging')
 logger.setLevel(10)
@@ -41,9 +42,9 @@ class Simulation:
                   'ev_discharge_efficiency': 0.9,
                   'ev_efficiency': 7,  # km/kWh
                   'car_movement_speed': 30,  # km/h
-                  'battery_capacity_list': [0, 5, 10],
+                  'battery_capacity_list': [0, 5, 10, 20],
                   'ev_capacity_list': [0, 20, 40],
-                  'pv_capacity_list': [0, 5, 10],
+                  'pv_capacity_list': [0, 5, 10, 20],
                   'discount_rate': 0.99,
                   'learning_rate': 0.1,
                   'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
@@ -395,7 +396,7 @@ class Simulation:
                         if t+1 !=len(self.demand_df):
                             self.ev_battery_record_arr[t+1, user] += value * self.ev_charge_efficiency
                             self.ev_battery_soc_record_arr[t+1, user] = self.ev_battery_record_arr[t+1, user] / self.agents[user]['ev_capacity']
-                            reward[user] -= value * price
+                            reward[user] -= value * price / 100  # reward cost in dollar, not cents
                             # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] - value) *
                             #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
                             #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
@@ -426,7 +427,7 @@ class Simulation:
                         # PV発電供給量を記録
                         value = transactions_df[transactions_df['bid']==bid_num]['quantity'].values[0]
                         self.sell_pv_record_arr[t, user] = value
-                        reward[user] += value * price
+                        reward[user] += value * price / 100  # reward cost in dollar, not cents
                         cost[user] -= value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: pv, {value}, {price}')
@@ -442,13 +443,24 @@ class Simulation:
                                 if t-k+7-1>= 0:
                                     self.shift_arr[t-k+7-1, user] -= value
             
-            # EV SoCが0未満になっている場合は0にする、報酬に-10000を反映
+            # EV SoCが0未満になっている場合は0にする、報酬に-1000を反映
+            # capex, opexを1時間あたりの値にしてrewardから差し引く(より大きい設備を導入するとcapex, opexが増える)
             for i in range(self.num_agent):
                 if t+1 != len(self.demand_df):
                     if self.ev_battery_soc_record_arr[t+1, i] < 0:
                         self.ev_battery_soc_record_arr[t+1, i] = 0
                         self.ev_battery_record_arr[t+1, i] = 0
-                        reward[i] -= 10000
+                        reward[i] -= 1000
+                pv_size = self.agents[i]['pv_capacity']
+                battery_size = self.agents[i]['battery_capacity']
+                pv_capex = capex_opex.pv_capex_func(pv_size)
+                pv_opex = capex_opex.pv_opex_func(pv_size)
+                battery_capex = capex_opex.battery_capex_func(battery_size, pv_size)
+                # CAPEX of PV and BES are calculated by Straight Line Method. (定額法)
+                # PVの法定耐用年数は17年、BESの法定耐用年数は6年.
+                # The statutory useful life of the depreciable assets for PV is 17 years.
+                # The statutory useful life of the depreciable assets for BES is 6 years.
+                reward[i] -= (pv_capex / 17 + pv_opex + battery_capex / 6) / 8760  # reward cost in dollar, not cents
 
             self.microgrid_price_record_arr[t] = transactions_df['price'].values[0]
 
@@ -557,6 +569,23 @@ class SimulationNoP2P:
                   'ev_discharge_efficiency': 0.9,
                   'ev_efficiency': 7,  # km/kWh
                   'car_movement_speed': 30,  # km/h
+                  'battery_capacity_list': [0, 5, 10, 20],
+                  'ev_capacity_list': [0, 20, 40],
+                  'pv_capacity_list': [0, 5, 10, 20],
+                  'discount_rate': 0.99,
+                  'learning_rate': 0.1,
+                  'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
+                  'max_battery_charge_speed': [3.0],  # kW
+                  'max_battery_discharge_speed': [3.0],  # kW
+                  'max_ev_charge_speed': [6.0],  # kW
+                  'max_ev_discharge_speed': [3.0],  # kW
+                  'dr_boolean_list': [True, False],
+                  'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                  'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                  'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                  'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
+                  'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
         }
         params.update(kwargs)
         self.thread_num = params['thread_num']
@@ -569,6 +598,11 @@ class SimulationNoP2P:
         self.ev_discharge_efficiency = params['ev_discharge_efficiency']
         self.ev_efficiency = params['ev_efficiency']
         self.car_movement_speed = params['car_movement_speed']
+        self.battery_capacity_list = params['battery_capacity_list']
+        self.ev_capacity_list = params['ev_capacity_list']
+        self.pv_capacity_list = params['pv_capacity_list']
+        self.discount_rate = params['discount_rate']
+        self.learning_rate = params['learning_rate']
 
         # Initialize Q table
         self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20, num_elastic_ratio_pattern=3)
@@ -583,6 +617,9 @@ class SimulationNoP2P:
         # Generate agent parameters
         self.agents = Agent(self.num_agent)
         self.agents.generate_params(seed=self.thread_num)
+        for agent_id in range(self.num_agent):
+            battery_capacity, ev_capacity, pv_capacity = self.q.get_facility_capacities(agent_id, episode=self.episode-1, is_train=self.train)
+            self.agents.set_one_agent(agent_id, battery_capacity=battery_capacity, ev_capacity=ev_capacity, pv_capacity=pv_capacity)
         
         # Preprocess and generate demand, price, and car_movement(boolean) data
         preprocess = Preprocess(seed=self.thread_num)
@@ -661,8 +698,6 @@ class SimulationNoP2P:
 
     def run(self, BID_SAVE=False):
         for t in tqdm(range(len(self.demand_df))):
-            # if t == 24:
-                # break
             potential_demand = 0
             potential_supply = 0
             wholesale_price = self.price_df.at[t, 'Price'] + self.wheeling_charge
@@ -673,11 +708,11 @@ class SimulationNoP2P:
             cost = np.full(self.num_agent, 0.0)
             for i in range(self.num_agent): 
                 #============================================================================================================================================================
-                dr_states, battery_states, ev_battery_states, pv_states = self.q.set_digitized_states(agent_id=i,
-                                                                                                      pv_ratio=self.pv_ratio_arr[t],
-                                                                                                      battery_soc=self.battery_soc_record_arr[t, i],
-                                                                                                      ev_battery_soc=self.ev_battery_soc_record_arr[t, i],
-                                                                                                      elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
+                self.q.set_digitized_states(agent_id=i, agent_params=self.agents[i], 
+                                            pv_ratio=self.pv_ratio_arr[t], 
+                                            battery_soc=self.battery_soc_record_arr[t, i], 
+                                            ev_battery_soc=self.ev_battery_soc_record_arr[t, i], 
+                                            elastic_ratio=self.elastic_ratio_df.at[t, "elastic_ratio"])
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
@@ -938,13 +973,7 @@ class SimulationNoP2P:
                         else:
                             self.ev_battery_soc_record_arr[t+1, i] = 0.0
                         reward[i] -= ev_charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
-                        reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
-                                    self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
                     ev_charge_residue = 0
-                else:
-                    if t+1 != len(self.demand_df):
-                        reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
-                                      self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
 
                 # Check if the battery charge is available according to the wholesale price
                 if price_buy_battery >= wholesale_price:
@@ -958,13 +987,15 @@ class SimulationNoP2P:
                         else:
                             self.battery_soc_record_arr[t+1, i] = 0.0
                         reward[i] -= charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
-                        reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
-                                      self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
                     charge_residue = 0
-                else:
-                    if t+1 != len(self.demand_df):
-                        reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
+                
+                # Add reward for the battery and EV battery SOC
+                if t+1 != len(self.demand_df):
+                    reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
+                                        self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
+                    reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
                                       self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
+                    
 
                 # Check if the shifted demand is available according to the wholesale price and handle one by one
                 for k in range(t-int(self.agents[i]['shift_limit']), t):
@@ -992,16 +1023,28 @@ class SimulationNoP2P:
             # print(self.shift_arr)
             # input()
             
-            # EV SoCが0未満になっている場合は0にする、報酬に-10000を反映
+            # EV SoCが0未満になっている場合は0にする、報酬に-1000を反映
+            # capex, opexを1時間あたりの値にしてrewardから差し引く(より大きい設備を導入するとcapex, opexが増える)
             for i in range(self.num_agent):
                 if t+1 != len(self.demand_df):
                     if self.ev_battery_soc_record_arr[t+1, i] < 0:
                         self.ev_battery_soc_record_arr[t+1, i] = 0
                         self.ev_battery_record_arr[t+1, i] = 0
-                        reward[i] -= 10000
+                        reward[i] -= 1000
+                pv_size = self.agents[i]['pv_capacity']
+                battery_size = self.agents[i]['battery_capacity']
+                pv_capex = capex_opex.pv_capex_func(pv_size)
+                pv_opex = capex_opex.pv_opex_func(pv_size)
+                battery_capex = capex_opex.battery_capex_func(battery_size, pv_size)
+                # CAPEX of PV and BES are calculated by Straight Line Method. (定額法)
+                # PVの法定耐用年数は17年、BESの法定耐用年数は6年.
+                # The statutory useful life of the depreciable assets for PV is 17 years.
+                # The statutory useful life of the depreciable assets for BES is 6 years.
+                reward[i] -= (pv_capex / 17 + pv_opex + battery_capex / 6) / 8760  # reward cost in dollar, not cents
+
 
             # Q学習
-            dr_states, battery_states, ev_battery_states, pv_states = self.q.get_states_
+            dr_states, battery_states, ev_battery_states, pv_states, battery_patterns, ev_battery_patterns, pv_patterns  = self.q.get_states_
             actions_arr = self.q.get_actions_
             if t == 0:
                 previous_states = []

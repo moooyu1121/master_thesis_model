@@ -57,6 +57,8 @@ def pv_capex_func(pv_size_kw, mode='mmp'):
     electrician_labor_cost = electrician_labor_hour_per_m2 * pv_size_m2 * electrician_labor_per_hour
     profit_cost = profit * (module_cost + inverter_cost + structual_bos_cost + electrical_bos_cost + sales_tax_cost + construction_labor_cost + electrician_labor_cost + pii)
     capex = module_cost + inverter_cost + structual_bos_cost + electrical_bos_cost + sales_tax_cost + construction_labor_cost + electrician_labor_cost + pii + sales_marketing + overhead + profit_cost
+    if pv_size_kw == 0:
+        capex = 0
     return capex
 
 
@@ -69,10 +71,12 @@ def pv_opex_func(pv_size_kw, mode='mmp'):
         opex = opex_per_kwdc * pv_size_kw
     else:
         raise ValueError('Invalid mode')
+    if pv_size_kw == 0:
+        opex = 0
     return opex
 
 
-def battery_capex(battery_size_kwh, pv_size_kw, mode='mmp'):
+def battery_capex_func(battery_size_kwh, pv_size_kw, mode='mmp'):
     battery_pack_footprint_kWh_per_m2 = 8.3
     if mode == 'msp':
         battery_price_per_kwh = 235
@@ -107,10 +111,12 @@ def battery_capex(battery_size_kwh, pv_size_kw, mode='mmp'):
     else:
         raise ValueError('Invalid mode')
     # print(battery_price, battery_based_inverter_cost, BOS_cost, supply_chain_cost, sales_tax, direct_labor_cost, engineering_fee, pii, sales_and_marketing, overhead+profit)
+    if battery_size_kwh == 0:
+        capex = 0
     return capex
 
 
-def battery_opex(mode='mmp'):
+def battery_opex_func(mode='mmp'):
     """
     battery opex is not provided in the NREL report
     """
@@ -126,7 +132,7 @@ if __name__ == "__main__":
     pv_opex = pv_opex_func(pv_size_kw, mode)
     print(f'PV Opex: {pv_opex}')
 
-    battery_size = 13.5
-    battery_capex = battery_capex(battery_size, pv_size_kw, mode)
+    battery_size = 10
+    battery_capex = battery_capex_func(battery_size, pv_size_kw, mode)
     print(f'Battery Capex: {battery_capex}')
 

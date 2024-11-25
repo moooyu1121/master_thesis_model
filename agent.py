@@ -118,7 +118,32 @@ class Agent:
 
 if __name__ == '__main__':
     agents = Agent(20)
-    agents.generate_params(seed=42)
+    params = {'price_max': 120,
+              'price_min': 10,
+              'wheeling_charge': 10,
+              'battery_charge_efficiency': 0.9,
+              'battery_discharge_efficiency': 0.9,
+              'ev_charge_efficiency': 0.9,
+              'ev_discharge_efficiency': 0.9,
+              'battery_capacity_list': [0, 5, 10, 20],
+              'ev_capacity_list': [0, 20, 40, 80],
+              'pv_capacity_list': [0, 5, 10, 20],
+              'discount_rate': 0.99,
+              'learning_rate': 0.1,
+              'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
+              'max_battery_charge_speed': [3.0],  # kW
+              'max_battery_discharge_speed': [3.0],  # kW
+              'max_ev_charge_speed': [6.0],  # kW
+              'max_ev_discharge_speed': [3.0],  # kW
+              'dr_boolean_list': [True, False],
+              'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+              'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+              'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+              'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+              'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
+              'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+    }
+    agents.generate_params(seed=42, params=params)
     params_df = agents.get_agents_params_df_
     print(params_df)
     agent_car_categories = ['7000-9000', '-3000', '3000-5000', '3000-5000', '7000-9000', '7000-9000', '9000-11000', '-3000', '5000-7000', '-3000', '3000-5000', '5000-7000', '-3000', '3000-5000', '7000-9000', '5000-7000', '3000-5000', '5000-7000', '9000-11000', '-3000']

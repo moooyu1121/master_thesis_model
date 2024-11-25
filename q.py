@@ -300,9 +300,9 @@ if __name__ == '__main__':
               'battery_discharge_efficiency': 0.9,
               'ev_charge_efficiency': 0.9,
               'ev_discharge_efficiency': 0.9,
-              'battery_capacity_list': [0, 5, 10],
-              'ev_capacity_list': [0, 20, 40],
-              'pv_capacity_list': [0, 5, 10],
+              'battery_capacity_list': [0, 5, 10, 20],
+              'ev_capacity_list': [0, 20, 40, 80],
+              'pv_capacity_list': [0, 5, 10, 20],
               'discount_rate': 0.99,
               'learning_rate': 0.1,
               'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
@@ -339,7 +339,7 @@ if __name__ == '__main__':
 
     next_action_list = q.set_actions(agent_id=0, episode=0, is_train=True)
     print(next_action_list)
-    q.save_q_table(folder_path='output/', train=True)
+    q.save_q_table(folder_path='output/', train=False)
     battery_capacity, ev_capacity, pv_capacity = q.get_facility_capacities(agent_id=0, episode=1, is_train=True)
     print(battery_capacity)
     print(ev_capacity)
