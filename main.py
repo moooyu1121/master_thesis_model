@@ -113,6 +113,8 @@ if __name__ == "__main__":
                     print(f'Test @ episode {episode} finished.')
         print('All episodes finished.')
 
+    print('No-P2P scenario finished.')
+
     # P2P <--- This is the main scenario
     if not os.path.exists('output'):
         values = [{'num_agent': 100, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
@@ -178,4 +180,4 @@ if __name__ == "__main__":
 
                     print(f'Test @ episode {episode} finished.')
         print('All episodes finished.')
-
+    print('P2P scenario finished.')
