@@ -147,6 +147,7 @@ class Q:
             # next_action_list.append(np.argmax(self.ev_battery_sell_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
             sliced_pv_sell_qtb = self.pv_sell_qtb_list[agent_id][:, :, int(self.pv_patterns[agent_id])]
             next_action_list.append(np.argmax(sliced_pv_sell_qtb[int(self.pv_states[agent_id])]) + int(self.params['price_min']))
+            self.next_actions[agent_id] = next_action_list
             return next_action_list
 
     def get_facility_capacities(self, agent_id, episode, is_train):
@@ -337,9 +338,9 @@ if __name__ == '__main__':
     print(ev_battery_patterns)
     print(pv_patterns)
 
-    next_action_list = q.set_actions(agent_id=0, episode=0, is_train=True)
+    next_action_list = q.set_actions(agent_id=0, episode=0, is_train=False)
     print(next_action_list)
-    q.save_q_table(folder_path='output/', train=False)
+    # q.save_q_table(folder_path='output/', train=False)
     battery_capacity, ev_capacity, pv_capacity = q.get_facility_capacities(agent_id=0, episode=1, is_train=True)
     print(battery_capacity)
     print(ev_capacity)

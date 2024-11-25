@@ -308,13 +308,13 @@ class Simulation:
             market = Market(demand_list, supply_list, wholesale_price)
             market.bid()
             bids_df = market.market.bm.get_df()
+            # print(bids_df)
             
             # if episode == 0 or episode == num_episode-1 or episode%10 == 9:
             if self.BID_SAVE:
                 timestamp = pd.read_csv('data/demand.csv').iat[t, 0]
                 market.plot(title=timestamp, number=t, parent_dir=self.parent_dir)
             transactions_df, _ = market.run(mechanism='uniform')
-            # print(bids_df)
             # print(transactions_df)
             # input()
             
