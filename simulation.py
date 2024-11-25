@@ -588,6 +588,7 @@ class SimulationNoP2P:
                   'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
         }
         params.update(kwargs)
+        self.params = params
         self.thread_num = params['thread_num']
         self.price_max = params['price_max']
         self.price_min = params['price_min']
@@ -616,7 +617,7 @@ class SimulationNoP2P:
     def preprocess(self):
         # Generate agent parameters
         self.agents = Agent(self.num_agent)
-        self.agents.generate_params(seed=self.thread_num)
+        self.agents.generate_params(self.params, seed=self.thread_num)
         for agent_id in range(self.num_agent):
             battery_capacity, ev_capacity, pv_capacity = self.q.get_facility_capacities(agent_id, episode=self.episode-1, is_train=self.train)
             self.agents.set_one_agent(agent_id, battery_capacity=battery_capacity, ev_capacity=ev_capacity, pv_capacity=pv_capacity)
