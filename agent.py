@@ -46,42 +46,13 @@ class Agent:
         self.agent_params_df['omega'] = kwargs['omega']
 
     def set_one_agent(self, agent_id, **kwargs):
-        self.agent_params_df.at[agent_id, 'shift_limit'] = kwargs['shift_limit']
-        self.agent_params_df.at[agent_id, 'max_battery_charge_speed'] = kwargs['max_battery_charge_speed']
-        self.agent_params_df.at[agent_id, 'max_battery_discharge_speed'] = kwargs['max_battery_discharge_speed']
-        self.agent_params_df.at[agent_id, 'max_ev_charge_speed'] = kwargs['max_ev_charge_speed']
-        self.agent_params_df.at[agent_id, 'max_ev_discharge_speed'] = kwargs['max_ev_discharge_speed']
-        self.agent_params_df.at[agent_id, 'battery_capacity'] = kwargs['battery_capacity']
-        self.agent_params_df.at[agent_id, 'ev_capacity'] = kwargs['ev_capacity']
-        self.agent_params_df.at[agent_id, 'pv_capacity'] = kwargs['pv_capacity']
-        self.agent_params_df.at[agent_id, 'dr_boolean'] = kwargs['dr_boolean']
-        self.agent_params_df.at[agent_id, 'alpha'] = kwargs['alpha']
-        self.agent_params_df.at[agent_id, 'beta'] = kwargs['beta']
-        self.agent_params_df.at[agent_id, 'gamma'] = kwargs['gamma']
-        self.agent_params_df.at[agent_id, 'epsilon'] = kwargs['epsilon']
-        self.agent_params_df.at[agent_id, 'psi'] = kwargs['psi']
-        self.agent_params_df.at[agent_id, 'omega'] = kwargs['omega']
+        for param, value in kwargs.items():
+            if param in self.agent_params_df.columns:
+                self.agent_params_df.at[agent_id, param] = value
 
-    def generate_params(self, seed=42, **kwargs):
+    def generate_params(self, params, seed=42, **kwargs):
         # シード値を設定
         np.random.seed(seed)
-        params = {'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
-                  'max_battery_charge_speed': [3.0],  # kW
-                  'max_battery_discharge_speed': [3.0],  # kW
-                  'max_ev_charge_speed': [6.0],  # kW
-                  'max_ev_discharge_speed': [3.0],  # kW
-                #   'battery_capacity_list': [10, 15, 20],    # kWh
-                  'battery_capacity_list': [13.5],
-                  'ev_capacity_list': [40],     # kWh
-                #   'ev_capacity_list': [0],
-                  'pv_capacity_list': [5],    # kW
-                  'dr_boolean_list': [True, False],
-                  'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
-                  'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],}
         params.update(kwargs)
         shift_limit_list = params['shift_limit_list']
         max_battery_charge_speed = params['max_battery_charge_speed']

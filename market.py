@@ -243,6 +243,8 @@ if __name__ == "__main__":
     mar.accept_bid(35, 31,4,True) #IntelliWatt 9 
     mar.accept_bid(25, 24,0,True) # CleanRetail 10 
     mar.accept_bid(10, 21,1,True) #El4You 11
+    mar.accept_bid(0, 10,2,True) #zero dummy bid
+    mar.accept_bid(0, 1000,3,True) #zero dummy bid
 
     sellers_names=['RT','WeTrustInWind','BlueHydro','KøbenhavnCHP','DirtyPower','SafePeak']
     mar.accept_bid(120, 0,5,False) #RT 12 
