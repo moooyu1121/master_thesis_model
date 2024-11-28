@@ -535,7 +535,8 @@ class Simulation:
             # This data is recorded as net cost
             net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
-            self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
+            self.car_charge_df.to_csv(self.parent_dir + '/car_charge_bool.csv', index=True)
+            self.car_move_consumption_df.to_csv(self.parent_dir + '/car_move_consumption.csv', index=True)
 
             vis = visualize.Visualize(folder_path=self.parent_dir)
             vis.plot_consumption()
@@ -1110,7 +1111,8 @@ class SimulationNoP2P:
             # This data is recorded as net cost
             net_electricity_cost_df = pd.DataFrame(self.electricity_cost_arr, index=timestamp, columns=self.demand_df.columns)
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
-            self.car_movement_df.to_csv(self.parent_dir + '/car_movement.csv', index=True)
+            self.car_charge_df.to_csv(self.parent_dir + '/car_charge_bool.csv', index=True)
+            self.car_move_consumption_df.to_csv(self.parent_dir + '/car_move_consumption.csv', index=True)
 
             vis = visualize.Visualize(folder_path=self.parent_dir)
             vis.plot_consumption()
