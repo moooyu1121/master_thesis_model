@@ -16,10 +16,11 @@ class Agent:
                                                                                       'dr_boolean',
                                                                                       'alpha', 
                                                                                       'beta',
-                                                                                      'gamma', 
-                                                                                      'epsilon',
-                                                                                      'psi',
-                                                                                      'omega',])
+                                                                                    #   'gamma', 
+                                                                                    #   'epsilon',
+                                                                                    #   'psi',
+                                                                                    #   'omega',
+                                                                                    ])
         
         
     def __getitem__(self, index):
@@ -40,10 +41,10 @@ class Agent:
         self.agent_params_df['dr_boolean'] = kwargs['dr_boolean']
         self.agent_params_df['alpha'] = kwargs['alpha']
         self.agent_params_df['beta'] = kwargs['beta']
-        self.agent_params_df['gamma'] = kwargs['gamma']
-        self.agent_params_df['epsilon'] = kwargs['epsilon']
-        self.agent_params_df['psi'] = kwargs['psi']
-        self.agent_params_df['omega'] = kwargs['omega']
+        # self.agent_params_df['gamma'] = kwargs['gamma']
+        # self.agent_params_df['epsilon'] = kwargs['epsilon']
+        # self.agent_params_df['psi'] = kwargs['psi']
+        # self.agent_params_df['omega'] = kwargs['omega']
 
     def set_one_agent(self, agent_id, **kwargs):
         for param, value in kwargs.items():
@@ -65,10 +66,10 @@ class Agent:
         dr_boolean_list = params['dr_boolean_list']
         alpha_list = params['alpha_list']
         beta_list = params['beta_list']
-        gamma_list = params['gamma_list']
-        epsilon_list = params['epsilon_list']
-        psi_list = params['psi_list']
-        omega_list = params['omega_list']
+        # gamma_list = params['gamma_list']
+        # epsilon_list = params['epsilon_list']
+        # psi_list = params['psi_list']
+        # omega_list = params['omega_list']
 
         self.agent_params_df['shift_limit'] = self.agent_params_df.apply(
             lambda row: shift_limit_list[np.random.randint(0, len(shift_limit_list))], axis=1)
@@ -92,18 +93,18 @@ class Agent:
             lambda row: alpha_list[np.random.randint(0, len(alpha_list))], axis=1)
         self.agent_params_df['beta'] = self.agent_params_df.apply(
             lambda row: beta_list[np.random.randint(0, len(beta_list))], axis=1)
-        self.agent_params_df['gamma'] = self.agent_params_df.apply(
-            lambda row: gamma_list[np.random.randint(0, len(gamma_list))], axis=1)
-        self.agent_params_df['epsilon'] = self.agent_params_df.apply(
-            lambda row: epsilon_list[np.random.randint(0, len(epsilon_list))], axis=1)
-        self.agent_params_df['psi'] = self.agent_params_df.apply(
-            lambda row: psi_list[np.random.randint(0, len(psi_list))], axis=1)
-        self.agent_params_df['omega'] = self.agent_params_df.apply(
-            lambda row: omega_list[np.random.randint(0, len(omega_list))], axis=1)
+        # self.agent_params_df['gamma'] = self.agent_params_df.apply(
+        #     lambda row: gamma_list[np.random.randint(0, len(gamma_list))], axis=1)
+        # self.agent_params_df['epsilon'] = self.agent_params_df.apply(
+        #     lambda row: epsilon_list[np.random.randint(0, len(epsilon_list))], axis=1)
+        # self.agent_params_df['psi'] = self.agent_params_df.apply(
+        #     lambda row: psi_list[np.random.randint(0, len(psi_list))], axis=1)
+        # self.agent_params_df['omega'] = self.agent_params_df.apply(
+        #     lambda row: omega_list[np.random.randint(0, len(omega_list))], axis=1)
         return params
     
-    def set_car_movement_categories(self, agent_car_categories):
-        self.agent_params_df['car_movement'] = agent_car_categories
+    # def set_car_movement_categories(self, agent_car_categories):
+    #     self.agent_params_df['car_movement'] = agent_car_categories
     
     def get_agent_params(self, agent_id):
         return self.agent_params_df.loc[agent_id]
@@ -137,17 +138,17 @@ if __name__ == '__main__':
               'max_ev_discharge_speed': [3.0],  # kW
               'dr_boolean_list': [True, False],
               'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-              'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-              'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-              'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-              'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
-              'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+              'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+            #   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+            #   'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+            #   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
+            #   'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
     }
     agents.generate_params(seed=42, params=params)
     params_df = agents.get_agents_params_df_
     print(params_df)
-    agent_car_categories = ['7000-9000', '-3000', '3000-5000', '3000-5000', '7000-9000', '7000-9000', '9000-11000', '-3000', '5000-7000', '-3000', '3000-5000', '5000-7000', '-3000', '3000-5000', '7000-9000', '5000-7000', '3000-5000', '5000-7000', '9000-11000', '-3000']
-    agents.set_car_movement_categories(agent_car_categories)
+    # agent_car_categories = ['7000-9000', '-3000', '3000-5000', '3000-5000', '7000-9000', '7000-9000', '9000-11000', '-3000', '5000-7000', '-3000', '3000-5000', '5000-7000', '-3000', '3000-5000', '7000-9000', '5000-7000', '3000-5000', '5000-7000', '9000-11000', '-3000']
+    # agents.set_car_movement_categories(agent_car_categories)
     print(agents.get_agents_params_df_)
 
     for i in range(5):

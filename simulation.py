@@ -40,10 +40,8 @@ class Simulation:
                   'battery_discharge_efficiency': 0.9,
                   'ev_charge_efficiency': 0.9,
                   'ev_discharge_efficiency': 0.9,
-                  'ev_efficiency': 7,  # km/kWh
-                  'car_movement_speed': 30,  # km/h
-                  'battery_capacity_list': [0, 5, 10, 20],
-                  'ev_capacity_list': [0, 20, 40],
+                  'battery_capacity_list': [0, 10, 15, 20],
+                  'ev_capacity_list': [0, 24, 40, 60],
                   'pv_capacity_list': [0, 5, 10, 20],
                   'discount_rate': 0.99,
                   'learning_rate': 0.1,
@@ -54,11 +52,11 @@ class Simulation:
                   'max_ev_discharge_speed': [3.0],  # kW
                   'dr_boolean_list': [True, False],
                   'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
-                  'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                #   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                #   'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                #   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
+                #   'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
         }
         params.update(kwargs)
         self.params = params
@@ -71,8 +69,6 @@ class Simulation:
         self.battery_discharge_efficiency = params['battery_discharge_efficiency']
         self.ev_charge_efficiency = params['ev_charge_efficiency']
         self.ev_discharge_efficiency = params['ev_discharge_efficiency']
-        self.ev_efficiency = params['ev_efficiency']
-        self.car_movement_speed = params['car_movement_speed']
         self.battery_capacity_list = params['battery_capacity_list']
         self.ev_capacity_list = params['ev_capacity_list']
         self.pv_capacity_list = params['pv_capacity_list']
@@ -95,32 +91,31 @@ class Simulation:
         for agent_id in range(self.num_agent):
             battery_capacity, ev_capacity, pv_capacity = self.q.get_facility_capacities(agent_id, episode=self.episode-1, is_train=self.train)
             self.agents.set_one_agent(agent_id, battery_capacity=battery_capacity, ev_capacity=ev_capacity, pv_capacity=pv_capacity)
-        
+        self.agents.save(self.parent_dir)
+        agent_params_df = self.agents.get_agents_params_df_
+
         # Preprocess and generate demand, price, and car_movement(boolean) data
         preprocess = Preprocess(seed=self.thread_num)
         preprocess.set(
             pd.read_csv('data/demand.csv'),
             pd.read_csv('data/supply.csv'),
             pd.read_csv('data/price.csv'),
-            pd.read_csv('data/car_movement.csv')
+            pd.read_csv('data/ev_charging_bool.csv'),
+            pd.read_csv('data/ev_move_consumption.csv'),
+            pd.read_csv('data/elastic_ratio.csv')
         )
         # preprocess.generate_d_s(self.num_agent)
         preprocess.generate_demand(self.num_agent)
-        _, agent_car_categories = preprocess.generate_car_movement(self.num_agent)
-
-        # Save car movement categories data to agent_params_df
-        self.agents.set_car_movement_categories(agent_car_categories)
-        self.agents.save(self.parent_dir)
-        agent_params_df = self.agents.get_agents_params_df_
-
         pv_capacity_list = agent_params_df['pv_capacity'].values
         # Generate supply data
         preprocess.generate_supply_flex_pv_size(self.num_agent, pv_capacity_list)
+        # Generate car charge data
+        preprocess.generate_car_charge(self.num_agent)
         preprocess.save(self.parent_dir)
         preprocess.drop_index_  # drop timestamp index
-        self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df = preprocess.get_dfs_
+        self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_move_consumption_df, self.elastic_ratio_df = preprocess.get_dfs_
 
-        # get average pv production ratio to get state in Q table
+        # get average pv production ratio to get state in Q table, indicating the solar radiation
         # data is stored as kWh/kW, which means, the values are within 0~1
         pv_ratio_df = pd.read_csv('data/supply.csv', index_col=0)
         pv_ratio_df['mean'] = pv_ratio_df.mean(axis=1)
@@ -130,9 +125,9 @@ class Simulation:
         self.grid_import_record_arr = np.full(len(self.price_df), 0.0)
         self.microgrid_price_record_arr = np.full(len(self.price_df), 0.0)
         self.ev_battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
+        self.ev_battery_soc_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.battery_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.battery_soc_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
-        self.ev_battery_soc_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.buy_inelastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.buy_elastic_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
         self.buy_shifted_record_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
@@ -190,20 +185,18 @@ class Simulation:
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
-                # car_movement_dfがTrueの場合は1時間走行したとして消費したバッテリー量を時刻t+1に記録
-                # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-10000を報酬に反映
+                # t+1でのcar_charge_dfがFalseのとき、car_move_consumption_dfの値を引く
+                # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-1000を報酬に反映
                 if t+1 != len(self.demand_df):
                     self.battery_record_arr[t+1, i] = self.battery_record_arr[t, i]
                     if self.agents[i]['battery_capacity'] != 0:
                         self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                     else:
                         self.battery_soc_record_arr[t+1, i] = 0.0
-
-                    if self.car_movement_df.at[t, f'{i}'] and self.agents[i]['ev_capacity'] != 0:
-                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_movement_speed / self.ev_efficiency
-                    else:
-                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i]
                     if self.agents[i]['ev_capacity'] != 0:
+                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i]
+                        if ~self.car_charge_df.at[t+1, f'{i}']:
+                            self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_move_consumption_df.at[t+1, f'{i}']
                         self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                     else:
                         self.ev_battery_soc_record_arr[t+1, i] = 0.0
@@ -263,7 +256,7 @@ class Simulation:
                     ev_discharge_amount = ev_battery_amount * self.ev_discharge_efficiency
                 else:
                     ev_discharge_amount = self.agents[i]['max_ev_discharge_speed']
-                if self.car_movement_df.at[t, f'{i}']:
+                if ~self.car_charge_df.at[t, f'{i}']:
                     ev_charge_amount = 0
                     ev_discharge_amount = 0
 
@@ -366,8 +359,8 @@ class Simulation:
                             # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] - value) * 
                             #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
                             #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                            reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
-                                            self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
+                            # reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
+                            #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: battery charge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
@@ -383,8 +376,8 @@ class Simulation:
                             # reward[user] -= ((self.agents[int(user)]['max_battery_charge_speed'] + value) * 
                             #                 (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t, user]))**2 + 
                             #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t, user]))))
-                            reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
-                                            self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
+                            # reward[user] -= (self.agents[int(user)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, user]))**2 + 
+                            #                 self.agents[int(user)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, user])))
                         cost[user] -= -value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: battery discharge, {value}, {price}, {self.battery_soc_record_arr[t, user]}')
@@ -400,8 +393,8 @@ class Simulation:
                             # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] - value) *
                             #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
                             #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                            reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
-                                            self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
+                            # reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
+                            #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
                         cost[user] += value * price
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: ev charge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
@@ -417,8 +410,8 @@ class Simulation:
                             # reward[user] -= ((self.agents[int(user)]['max_ev_charge_speed'] + value) *
                             #                 (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t, user]))**2 + 
                             #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t, user]))))
-                            reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
-                                            self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
+                            # reward[user] -= (self.agents[int(user)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, user]))**2 + 
+                            #                 self.agents[int(user)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, user])))
                         cost[user] -= value * price 
                         if np.isnan(reward[user]):
                             logger.error(f'Numpy nan is detected: ev discharge, {value}, {price}, {self.ev_battery_soc_record_arr[t, user]}')
@@ -569,8 +562,8 @@ class SimulationNoP2P:
                   'ev_discharge_efficiency': 0.9,
                   'ev_efficiency': 7,  # km/kWh
                   'car_movement_speed': 30,  # km/h
-                  'battery_capacity_list': [0, 5, 10, 20],
-                  'ev_capacity_list': [0, 20, 40],
+                  'battery_capacity_list': [0, 10, 15, 20],
+                  'ev_capacity_list': [0, 24, 40, 60],
                   'pv_capacity_list': [0, 5, 10, 20],
                   'discount_rate': 0.99,
                   'learning_rate': 0.1,
@@ -581,11 +574,11 @@ class SimulationNoP2P:
                   'max_ev_discharge_speed': [3.0],  # kW
                   'dr_boolean_list': [True, False],
                   'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
-                  'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                #   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                #   'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+                #   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
+                #   'omega_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
         }
         params.update(kwargs)
         self.params = params
@@ -597,8 +590,6 @@ class SimulationNoP2P:
         self.battery_discharge_efficiency = params['battery_discharge_efficiency']
         self.ev_charge_efficiency = params['ev_charge_efficiency']
         self.ev_discharge_efficiency = params['ev_discharge_efficiency']
-        self.ev_efficiency = params['ev_efficiency']
-        self.car_movement_speed = params['car_movement_speed']
         self.battery_capacity_list = params['battery_capacity_list']
         self.ev_capacity_list = params['ev_capacity_list']
         self.pv_capacity_list = params['pv_capacity_list']
@@ -621,6 +612,8 @@ class SimulationNoP2P:
         for agent_id in range(self.num_agent):
             battery_capacity, ev_capacity, pv_capacity = self.q.get_facility_capacities(agent_id, episode=self.episode-1, is_train=self.train)
             self.agents.set_one_agent(agent_id, battery_capacity=battery_capacity, ev_capacity=ev_capacity, pv_capacity=pv_capacity)
+        self.agents.save(self.parent_dir)
+        agent_params_df = self.agents.get_agents_params_df_
         
         # Preprocess and generate demand, price, and car_movement(boolean) data
         preprocess = Preprocess(seed=self.thread_num)
@@ -628,23 +621,20 @@ class SimulationNoP2P:
             pd.read_csv('data/demand.csv'),
             pd.read_csv('data/supply.csv'),
             pd.read_csv('data/price.csv'),
-            pd.read_csv('data/car_movement.csv')
+            pd.read_csv('data/ev_charging_bool.csv'),
+            pd.read_csv('data/ev_move_consumption.csv'),
+            pd.read_csv('data/elastic_ratio.csv')
         )
         # preprocess.generate_d_s(self.num_agent)
         preprocess.generate_demand(self.num_agent)
-        _, agent_car_categories = preprocess.generate_car_movement(self.num_agent)
-
-        # Save car movement categories data to agent_params_df
-        self.agents.set_car_movement_categories(agent_car_categories)
-        self.agents.save(self.parent_dir)
-        agent_params_df = self.agents.get_agents_params_df_
-
         pv_capacity_list = agent_params_df['pv_capacity'].values
         # Generate supply data
         preprocess.generate_supply_flex_pv_size(self.num_agent, pv_capacity_list)
+        # Generate car charge data
+        preprocess.generate_car_charge(self.num_agent)
         preprocess.save(self.parent_dir)
         preprocess.drop_index_  # drop timestamp index
-        self.demand_df, self.supply_df, self.price_df, self.car_movement_df, self.elastic_ratio_df = preprocess.get_dfs_
+        self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_move_consumption_df, self.elastic_ratio_df = preprocess.get_dfs_
 
         # get average pv production ratio to get state in Q table
         # data is stored as kWh/kW, which means, the values are within 0~1
@@ -697,7 +687,7 @@ class SimulationNoP2P:
         # shift_df = pd.DataFrame(0.0, index=demand_df.index, columns=demand_df.columns)
         self.shift_arr = np.full((len(self.demand_df), self.num_agent), 0.0)
 
-    def run(self, BID_SAVE=False):
+    def run(self):
         for t in tqdm(range(len(self.demand_df))):
             potential_demand = 0
             potential_supply = 0
@@ -717,20 +707,18 @@ class SimulationNoP2P:
                 # Qテーブルから行動を取得, ε-greedy法で徐々に最適行動を選択する式が、エピソード0から始まるように定義されているので、エピソード-1を引数に渡す
                 self.q.set_actions(agent_id=i, episode=self.episode-1, is_train=self.train)
                 # 時刻tでのバッテリー残量を時刻t+1にコピー、取引が行われる場合あとでバッテリー残量をさらに更新
-                # car_movement_dfがTrueの場合は1時間走行したとして消費したバッテリー量を時刻t+1に記録
-                # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-10000を報酬に反映
+                # t+1でのcar_charge_dfがFalseのとき、car_move_consumption_dfの値を引く
+                # EVバッテリー残量が負の値になる場合もここではそのままにして、報酬を計算するフェーズで対応、0に更新するとともに-1000を報酬に反映
                 if t+1 != len(self.demand_df):
                     self.battery_record_arr[t+1, i] = self.battery_record_arr[t, i]
                     if self.agents[i]['battery_capacity'] != 0:
                         self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                     else:
                         self.battery_soc_record_arr[t+1, i] = 0.0
-
-                    if self.car_movement_df.at[t, f'{i}'] and self.agents[i]['ev_capacity'] != 0:
-                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_movement_speed / self.ev_efficiency
-                    else:
-                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i]
                     if self.agents[i]['ev_capacity'] != 0:
+                        self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i]
+                        if ~self.car_charge_df.at[t+1, f'{i}']:
+                            self.ev_battery_record_arr[t+1, i] = self.ev_battery_record_arr[t, i] - self.car_move_consumption_df.at[t+1, f'{i}']
                         self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                     else:
                         self.ev_battery_soc_record_arr[t+1, i] = 0.0
@@ -789,7 +777,7 @@ class SimulationNoP2P:
                     ev_discharge_amount = ev_battery_amount * self.ev_discharge_efficiency
                 else:
                     ev_discharge_amount = self.agents[i]['max_ev_discharge_speed']
-                if self.car_movement_df.at[t, f'{i}']:
+                if ~self.car_charge_df.at[t, f'{i}']:
                     ev_charge_amount = 0
                     ev_discharge_amount = 0
 
@@ -991,11 +979,11 @@ class SimulationNoP2P:
                     charge_residue = 0
                 
                 # Add reward for the battery and EV battery SOC
-                if t+1 != len(self.demand_df):
-                    reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
-                                        self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
-                    reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
-                                      self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
+                # if t+1 != len(self.demand_df):
+                #     reward[i] -= (self.agents[int(i)]['psi']/2 * (1 * (1-self.ev_battery_soc_record_arr[t+1, i]))**2 + 
+                #                         self.agents[int(i)]['omega']*(1 * (1-self.ev_battery_soc_record_arr[t+1, i])))
+                #     reward[i] -= (self.agents[int(i)]['gamma']/2 * (1 * (1-self.battery_soc_record_arr[t+1, i]))**2 + 
+                #                       self.agents[int(i)]['epsilon']*(1 * (1-self.battery_soc_record_arr[t+1, i])))
                     
 
                 # Check if the shifted demand is available according to the wholesale price and handle one by one
