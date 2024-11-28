@@ -96,6 +96,10 @@ class Q:
         self.next_actions = np.full((self.agent_num, 6), np.nan)
     
     def set_actions(self, agent_id, episode, is_train):
+        """
+        dr_buy, battery_buy, battery_sell, ev_battery_buy, ev_battery_sell, pv_sellの順でsetする
+        battery_sell, ev_battery_sellはそれぞれのbuyよりも高い価格で入札させるため、buy入札価格からの差分を学習対象とする
+        """
         # The seed must be set to None to avoid the same random numbers being generated
         np.random.seed(None)
         if is_train:
@@ -103,28 +107,46 @@ class Q:
             epsilon = 0.5 * (1 / (episode + 1))
             next_action_list = []
             if epsilon <= np.random.uniform(0, 1):
-                next_action_list.append(np.argmax(self.dr_buy_qtb_list[agent_id][int(self.dr_states[agent_id])]) + int(self.params['price_min']))
+                dr_buy_price = np.argmax(self.dr_buy_qtb_list[agent_id][int(self.dr_states[agent_id])]) + int(self.params['price_min'])
+                next_action_list.append(dr_buy_price)
                 sliced_battery_buy_qtb = self.battery_buy_qtb_list[agent_id][:, :, int(self.battery_patterns[agent_id])]
-                next_action_list.append(np.argmax(sliced_battery_buy_qtb[int(self.battery_states[agent_id])]) + int(self.params['price_min']))
+                battery_buy_price = np.argmax(sliced_battery_buy_qtb[int(self.battery_states[agent_id])]) + int(self.params['price_min'])
+                next_action_list.append(battery_buy_price)
                 sliced_battery_sell_qtb = self.battery_sell_qtb_list[agent_id][:, :, int(self.battery_patterns[agent_id])]
                 reversed_battery_sell_qtb = sliced_battery_sell_qtb[int(self.battery_states[agent_id])][::-1]
                 max_index = len(sliced_battery_sell_qtb[int(self.battery_states[agent_id])]) - 1 - np.argmax(reversed_battery_sell_qtb)
-                next_action_list.append(max_index + int(self.params['price_min']))
+                battery_sell_price = max_index + battery_buy_price
+                if battery_sell_price > int(self.params['price_max']):
+                    battery_sell_price = int(self.params['price_max'])
+                next_action_list.append(battery_sell_price)
                 # next_action_list.append(np.argmax(self.battery_sell_qtb_list[agent_id][int(self.battery_states[agent_id])]) + int(self.params['price_min']))
                 sliced_ev_battery_buy_qtb = self.ev_battery_buy_qtb_list[agent_id][:, :, int(self.ev_battery_patterns[agent_id])]
-                next_action_list.append(np.argmax(sliced_ev_battery_buy_qtb[int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
+                ev_battery_buy_price = np.argmax(sliced_ev_battery_buy_qtb[int(self.ev_battery_states[agent_id])]) + int(self.params['price_min'])
+                next_action_list.append(ev_battery_buy_price)
                 sliced_ev_battery_sell_qtb = self.ev_battery_sell_qtb_list[agent_id][:, :, int(self.ev_battery_patterns[agent_id])]
                 reversed_ev_battery_sell_qtb = sliced_ev_battery_sell_qtb[int(self.ev_battery_states[agent_id])][::-1]
                 max_index = len(sliced_ev_battery_sell_qtb[int(self.ev_battery_states[agent_id])]) - 1 - np.argmax(reversed_ev_battery_sell_qtb)
-                next_action_list.append(max_index + int(self.params['price_min']))
+                ev_battery_sell_price = max_index + ev_battery_buy_price
+                if ev_battery_sell_price > int(self.params['price_max']):
+                    ev_battery_sell_price = int(self.params['price_max'])
+                next_action_list.append(ev_battery_sell_price)
                 # next_action_list.append(np.argmax(self.ev_battery_sell_qtb_list[agent_id][int(self.ev_battery_states[agent_id])]) + int(self.params['price_min']))
                 sliced_pv_sell_qtb = self.pv_sell_qtb_list[agent_id][:, :, int(self.pv_patterns[agent_id])]
-                next_action_list.append(np.argmax(sliced_pv_sell_qtb[int(self.pv_states[agent_id])]) + int(self.params['price_min']))
+                pv_sell_price = np.argmax(sliced_pv_sell_qtb[int(self.pv_states[agent_id])]) + int(self.params['price_min'])
+                next_action_list.append(pv_sell_price)
             else:
-                for i in range(6):
-                    next_action_list.append(np.random.choice(
-                        range(int(self.params['price_min']), int(self.params['price_max']) + 1)
-                        ))
+                dr_buy_price = np.random.choice(range(int(self.params['price_min']), int(self.params['price_max']) + 1))
+                next_action_list.append(dr_buy_price)
+                battery_buy_price = np.random.choice(range(int(self.params['price_min']), int(self.params['price_max']) + 1))
+                next_action_list.append(battery_buy_price)
+                battery_sell_price = np.random.choice(range(battery_buy_price, int(self.params['price_max']) + 1))
+                next_action_list.append(battery_sell_price)
+                ev_battery_buy_price = np.random.choice(range(int(self.params['price_min']), int(self.params['price_max']) + 1))
+                next_action_list.append(ev_battery_buy_price)
+                ev_battery_sell_price = np.random.choice(range(ev_battery_buy_price, int(self.params['price_max']) + 1))
+                next_action_list.append(ev_battery_sell_price)
+                pv_sell_price = np.random.choice(range(int(self.params['price_min']), int(self.params['price_max']) + 1))
+                next_action_list.append(pv_sell_price)
             self.next_actions[agent_id] = next_action_list
             return next_action_list
         # テスト時は最適行動のみをとる
