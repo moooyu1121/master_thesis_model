@@ -39,11 +39,11 @@ class Preprocess:
 
     @property
     def get_dfs_(self):
-        return self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_charge_start_soc_df, self.elastic_ratio_df
+        return self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_move_consumption_df, self.elastic_ratio_df
     
     @property
     def get_nparrays_(self):
-        return self.demand_df.to_numpy(), self.supply_df.to_numpy(), self.price_df.to_numpy(), self.car_charge_df.to_numpy(), self.car_charge_start_soc_df, self.elastic_ratio_df.to_numpy()
+        return self.demand_df.to_numpy(), self.supply_df.to_numpy(), self.price_df.to_numpy(), self.car_charge_df.to_numpy(), self.car_move_consumption_df, self.elastic_ratio_df.to_numpy()
     
     def generate_demand(self, n):
         num_columns = self.demand_df.shape[1]
@@ -78,9 +78,9 @@ class Preprocess:
         columns = generate_random_integers(num_columns, n, seed=self.seed)
         self.car_charge_df = self.ev_charging_bool_df.iloc[:, columns]
         self.car_charge_df.columns = [f'{i}' for i in range(n)]
-        self.car_charge_start_soc_df = self.ev_move_consumption.iloc[:, columns]
-        self.car_charge_start_soc_df.columns = [f'{i}' for i in range(n)]
-        return self.car_charge_df, self.car_charge_start_soc_df
+        self.car_move_consumption_df = self.ev_move_consumption.iloc[:, columns]
+        self.car_move_consumption_df.columns = [f'{i}' for i in range(n)]
+        return self.car_charge_df, self.car_move_consumption_df
     
     @property
     def drop_index_(self):
@@ -88,16 +88,16 @@ class Preprocess:
         self.supply_df.reset_index(inplace=True, drop=True)
         self.price_df.reset_index(inplace=True, drop=True)
         self.car_charge_df.reset_index(inplace=True, drop=True)
-        self.car_charge_start_soc_df.reset_index(inplace=True, drop=True)
+        self.car_move_consumption_df.reset_index(inplace=True, drop=True)
         self.elastic_ratio_df.reset_index(inplace=True, drop=True)
-        return self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_charge_start_soc_df, self.elastic_ratio_df
+        return self.demand_df, self.supply_df, self.price_df, self.car_charge_df, self.car_move_consumption_df, self.elastic_ratio_df
     
     def save(self, folder_path):
         self.demand_df.to_csv(f'{folder_path}/demand.csv', index=True)
         self.supply_df.to_csv(f'{folder_path}/supply.csv', index=True)
         self.price_df.to_csv(f'{folder_path}/price.csv', index=True)
         self.car_charge_df.to_csv(f'{folder_path}/car_charge_bool.csv', index=True)
-        self.car_charge_start_soc_df.to_csv(f'{folder_path}/car_charge_soc_start.csv', index=True)
+        self.car_move_consumption_df.to_csv(f'{folder_path}/car_move_consumption.csv', index=True)
         self.elastic_ratio_df.to_csv(f'{folder_path}/elastic_ratio.csv', index=True)
 
 
