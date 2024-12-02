@@ -33,9 +33,9 @@ class Simulation:
         # Update market and uniform parameters
         params = {'thread_num': -1,
                   'BID_SAVE': False,
-                  'price_max': 120,
+                  'price_max': 110,
                   'price_min': 10,
-                  'wheeling_charge': 10,
+                  'wheeling_charge': 0,
                   'battery_charge_efficiency': 0.9,
                   'battery_discharge_efficiency': 0.9,
                   'ev_charge_efficiency': 0.9,
@@ -43,8 +43,8 @@ class Simulation:
                   'battery_capacity_list': [0, 10, 15, 20],
                   'ev_capacity_list': [0, 24, 40, 60],
                   'pv_capacity_list': [0, 5, 10, 20],
-                  'discount_rate': 0.99,
-                  'learning_rate': 0.1,
+                  'discount_rate': 1.0,
+                  'learning_rate': 0.01,
                   'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
                   'max_battery_charge_speed': [3.0],  # kW
                   'max_battery_discharge_speed': [3.0],  # kW
@@ -76,7 +76,7 @@ class Simulation:
         self.learning_rate = params['learning_rate']
 
         # Initialize Q table
-        self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=20, num_dizitized_soc=20, num_elastic_ratio_pattern=3)
+        self.q = Q(params, agent_num=num_agent, num_dizitized_pv_ratio=5, num_dizitized_soc=5, num_elastic_ratio_pattern=3)
     
     def load_existing_q_table(self, folder_path):
         self.q.load_q_table(folder_path=folder_path)

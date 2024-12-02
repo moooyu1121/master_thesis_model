@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # No P2P <--- This is the BAU scenario
     if simulation_no_p2p:
         if not os.path.exists('output'):
-            values = [{'num_agent': 100, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/no_p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
+            values = [{'num_agent': 100, 'episode': 1, 'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/no_p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
             p.map(main_no_p2p_wrapper, values)
 
             p.close()
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
             for episode in range(2, 101):
                 p = Pool(max_workers)
-                values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
+                values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
                 p.map(main_no_p2p_wrapper, values)
 
                 p.close()
@@ -73,7 +73,10 @@ if __name__ == "__main__":
                 if episode % 10 == 0:
                     print('Running test...')
                     p = Pool(max_workers)
-                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    if episode == 100:
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    else:
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_no_p2p_wrapper, values)
 
                     p.close()
@@ -96,7 +99,7 @@ if __name__ == "__main__":
                 if episode not in existing_episodes:
                     episide = episode -1  # Load the previous episode, because the current episode has not finished yet.
                     p = Pool(max_workers)
-                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_no_p2p_wrapper, values)
 
                     p.close()
@@ -107,7 +110,10 @@ if __name__ == "__main__":
                     if episode % 10 == 0:
                         print('Running test...')
                         p = Pool(max_workers)
-                        values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        if episode == 100:
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        else:
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                         p.map(main_no_p2p_wrapper, values)
 
                         p.close()
@@ -121,7 +127,7 @@ if __name__ == "__main__":
     # P2P <--- This is the main scenario
     if simulation_p2p:
         if not os.path.exists('output'):
-            values = [{'num_agent': 100, 'episode': 1, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
+            values = [{'num_agent': 100, 'episode': 1,'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
             p.map(main_wrapper, values)
 
             p.close()
@@ -131,7 +137,7 @@ if __name__ == "__main__":
 
             for episode in range(2, 101):
                 p = Pool(max_workers)
-                values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
+                values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
                 p.map(main_wrapper, values)
 
                 p.close()
@@ -142,7 +148,10 @@ if __name__ == "__main__":
                 if episode % 10 == 0:
                     print('Running test...')
                     p = Pool(max_workers)
-                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    if episode == 100:
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    else:
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_wrapper, values)
 
                     p.close()
@@ -165,7 +174,7 @@ if __name__ == "__main__":
                 if episode not in existing_episodes:
                     episide = episode -1  # Load the previous episode, because the current episode has not finished yet.
                     p = Pool(max_workers)
-                    values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
+                    values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': True, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_wrapper, values)
 
                     p.close()
@@ -176,7 +185,10 @@ if __name__ == "__main__":
                     if episode % 10 == 0:
                         print('Running test...')
                         p = Pool(max_workers)
-                        values = [{'num_agent': 100, 'episode': episode, 'price_min': 10, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        if episode == 100:
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        else:
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                         p.map(main_wrapper, values)
 
                         p.close()
