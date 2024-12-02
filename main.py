@@ -48,6 +48,34 @@ if __name__ == "__main__":
     max_workers = 16
     simulation_p2p = True
     simulation_no_p2p = False
+
+    # params = {'thread_num': -1,
+    #           'BID_SAVE': False,
+    #           'price_max': 110,
+    #           'price_min': 10,
+    #           'wheeling_charge': 0,
+    #           'battery_charge_efficiency': 0.9,
+    #           'battery_discharge_efficiency': 0.9,
+    #           'ev_charge_efficiency': 0.9,
+    #           'ev_discharge_efficiency': 0.9,
+    #           'battery_capacity_list': [0, 10, 15, 20],
+    #           'ev_capacity_list': [40],
+    #           'pv_capacity_list': [0, 5, 10],
+    #           'discount_rate': 1.0,
+    #           'learning_rate': 0.01,
+    #           'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
+    #           'max_battery_charge_speed': [3.0],  # kW
+    #           'max_battery_discharge_speed': [3.0],  # kW
+    #           'max_ev_charge_speed': [6.0],  # kW
+    #           'max_ev_discharge_speed': [3.0],  # kW
+    #           'dr_boolean_list': [True, False],
+    #           'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
+    #           'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+    #         }
+
+    print('p2p:', simulation_p2p)
+    print('no_p2p:', simulation_no_p2p)
+
     p = Pool(max_workers)
     # No P2P <--- This is the BAU scenario
     if simulation_no_p2p:
@@ -58,7 +86,7 @@ if __name__ == "__main__":
             p.close()
             p.join()
 
-            print('episode 1 finished.')
+            print('no_p2p episode 1 finished.')
 
             for episode in range(2, 101):
                 p = Pool(max_workers)
@@ -68,7 +96,7 @@ if __name__ == "__main__":
                 p.close()
                 p.join()
 
-                print(f'episode {episode} finished.')
+                print(f'no_p2p episode {episode} finished.')
 
                 if episode % 10 == 0:
                     print('Running test...')
@@ -105,7 +133,7 @@ if __name__ == "__main__":
                     p.close()
                     p.join()
 
-                    print(f'episode {episode} finished.')
+                    print(f'no_p2p episode {episode} finished.')
 
                     if episode % 10 == 0:
                         print('Running test...')
@@ -133,7 +161,7 @@ if __name__ == "__main__":
             p.close()
             p.join()
 
-            print('episode 1 finished.')
+            print('p2p episode 1 finished.')
 
             for episode in range(2, 101):
                 p = Pool(max_workers)
@@ -143,7 +171,7 @@ if __name__ == "__main__":
                 p.close()
                 p.join()
 
-                print(f'episode {episode} finished.')
+                print(f'p2p episode {episode} finished.')
 
                 if episode % 10 == 0:
                     print('Running test...')
@@ -180,7 +208,7 @@ if __name__ == "__main__":
                     p.close()
                     p.join()
 
-                    print(f'episode {episode} finished.')
+                    print(f'p2p episode {episode} finished.')
 
                     if episode % 10 == 0:
                         print('Running test...')
