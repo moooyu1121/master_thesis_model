@@ -177,9 +177,9 @@ if __name__ == "__main__":
                     print('Running test...')
                     p = Pool(max_workers)
                     if episode == 100:
-                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                     else:
-                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                        values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                     p.map(main_wrapper, values)
 
                     p.close()
@@ -214,9 +214,9 @@ if __name__ == "__main__":
                         print('Running test...')
                         p = Pool(max_workers)
                         if episode == 100:
-                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': True, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                         else:
-                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/no_p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
+                            values = [{'num_agent': 100, 'episode': episode, 'BID_SAVE': False, 'train': False, 'thread_num': x, 'load_q': True, 'parent_dir': f'output/p2p/test/thread{x}/episode{episode}'} for x in range(max_workers)]
                         p.map(main_wrapper, values)
 
                         p.close()
