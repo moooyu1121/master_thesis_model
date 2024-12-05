@@ -1838,17 +1838,27 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num, folder_path, include_c
             pv_capacity = agent_params_df.loc[j, 'pv_capacity']
             dr_boolean = agent_params_df.loc[j, 'dr_boolean']
 
-            cost = (buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100 
-            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-            + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
-            + capex_opex.battery_capex_func_func(battery_capacity, pv_capacity) / bes_lifetime
-            + capex_opex.pv_opex_func(pv_capacity)
+            if include_capex_opex:
+                cost = (buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100 
+                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
+                + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime
+                + capex_opex.pv_opex_func(pv_capacity)
+            else:
+                cost = (buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100 
+                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
             
             amount = buy_inelastic.loc[:, f'{j}'].sum()
             + buy_elastic.loc[:, f'{j}'].sum()
@@ -3061,7 +3071,9 @@ if __name__ == '__main__':
         bes_capacity_avg, pv_capacity_avg = bes_pv_installed_capacity(thread_num=max_workers, folder_path='output/no_p2p')
         print(f'BES installed capacity: {bes_capacity_avg:.2f} kWh')
         print(f'PV installed capacity: {pv_capacity_avg:.2f} kW')
+        net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=True)
 
+# ==================================================================================================
     if os.path.exists('output/p2p/test/thread0/episode10/agent_params.csv'): 
         os.makedirs('output/p2p/insight', exist_ok=True)
         print('Start plotting analysis figures for p2p...')
@@ -3105,3 +3117,5 @@ if __name__ == '__main__':
         bes_capacity_avg, pv_capacity_avg = bes_pv_installed_capacity(thread_num=max_workers, folder_path='output/p2p')
         print(f'BES installed capacity: {bes_capacity_avg:.2f} kWh')
         print(f'PV installed capacity: {pv_capacity_avg:.2f} kW')
+        net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
+        

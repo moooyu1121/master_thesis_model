@@ -32,12 +32,12 @@ class Q:
         self.ev_battery_pattern_list = self.possible_params['ev_capacity_list']
         self.pv_pattern_list = self.possible_params['pv_capacity_list']
         # MARLのため、エージェントごとにQテーブルを用意する
-        self.dr_buy_qtb_list = [np.full((dr_buy_rows, cols), 1000.0) for _ in range(self.agent_num)]
-        self.battery_buy_qtb_list = [np.full((battery_buy_rows, cols, len(self.battery_pattern_list)), 1000.0) for _ in range(self.agent_num)]
-        self.battery_sell_qtb_list = [np.full((battery_sell_rows, cols, len(self.battery_pattern_list)), 1000.0) for _ in range(self.agent_num)]
-        self.ev_battery_buy_qtb_list = [np.full((ev_battery_buy_rows, cols, len(self.ev_battery_pattern_list)), 1000.0) for _ in range(self.agent_num)]
-        self.ev_battery_sell_qtb_list = [np.full((ev_battery_sell_rows, cols, len(self.ev_battery_pattern_list)), 1000.0) for _ in range(self.agent_num)]
-        self.pv_sell_qtb_list = [np.full((pv_sell_rows, cols, len(self.pv_pattern_list)), 1000.0) for _ in range(self.agent_num)]
+        self.dr_buy_qtb_list = [np.full((dr_buy_rows, cols), 0.0) for _ in range(self.agent_num)]
+        self.battery_buy_qtb_list = [np.full((battery_buy_rows, cols, len(self.battery_pattern_list)), 0.0) for _ in range(self.agent_num)]
+        self.battery_sell_qtb_list = [np.full((battery_sell_rows, cols, len(self.battery_pattern_list)), 0.0) for _ in range(self.agent_num)]
+        self.ev_battery_buy_qtb_list = [np.full((ev_battery_buy_rows, cols, len(self.ev_battery_pattern_list)), 0.0) for _ in range(self.agent_num)]
+        self.ev_battery_sell_qtb_list = [np.full((ev_battery_sell_rows, cols, len(self.ev_battery_pattern_list)), 0.0) for _ in range(self.agent_num)]
+        self.pv_sell_qtb_list = [np.full((pv_sell_rows, cols, len(self.pv_pattern_list)), 0.0) for _ in range(self.agent_num)]
 
     @property
     def get_qtbs_(self):
