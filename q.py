@@ -201,21 +201,58 @@ class Q:
                 pv_capacity = np.random.choice(self.possible_params['pv_capacity_list'])
             return battery_capacity, ev_capacity, pv_capacity
         else:
-            # 各スライスごとに平均値を計算
-            battery_buy_avg_values = [np.mean(self.battery_buy_qtb_list[agent_id][:, :, i]) for i in range(self.battery_buy_qtb_list[agent_id].shape[2])]
-            battery_sell_avg_values = [np.mean(self.battery_sell_qtb_list[agent_id][:, :, i]) for i in range(self.battery_sell_qtb_list[agent_id].shape[2])]
+            # 各スライスごとに平均値を計算(初期値のままのセルは平均値計算から除外)
+            exclude_value = 0
+            battery_buy_avg_values = [
+                np.mean(
+                    np.ma.masked_where(
+                        self.battery_buy_qtb_list[agent_id][:, :, i] == exclude_value,
+                        self.battery_buy_qtb_list[agent_id][:, :, i]
+                    )
+                )
+                for i in range(self.battery_buy_qtb_list[agent_id].shape[2])
+            ]
+            battery_sell_avg_values = [
+                np.mean(
+                    np.ma.masked_where(
+                        self.battery_sell_qtb_list[agent_id][:, :, i] == exclude_value,
+                        self.battery_sell_qtb_list[agent_id][:, :, i]
+                    )
+                )
+                for i in range(self.battery_sell_qtb_list[agent_id].shape[2])
+            ]
+            # battery_buy_avg_values = [np.mean(self.battery_buy_qtb_list[agent_id][:, :, i]) for i in range(self.battery_buy_qtb_list[agent_id].shape[2])]
+            # battery_sell_avg_values = [np.mean(self.battery_sell_qtb_list[agent_id][:, :, i]) for i in range(self.battery_sell_qtb_list[agent_id].shape[2])]
             sums = np.array(battery_buy_avg_values) + np.array(battery_sell_avg_values)
             # Qテーブルの平均値が最大となるindexを取得
             battery_capacity_index = np.argmax(sums)
             battery_capacity = self.possible_params['battery_capacity_list'][battery_capacity_index]
 
-            ev_battery_buy_avg_values = [np.mean(self.ev_battery_buy_qtb_list[agent_id][:, :, i]) for i in range(self.ev_battery_buy_qtb_list[agent_id].shape[2])]
-            ev_battery_sell_avg_values = [np.mean(self.ev_battery_sell_qtb_list[agent_id][:, :, i]) for i in range(self.ev_battery_sell_qtb_list[agent_id].shape[2])]
+            ev_battery_buy_avg_values = [
+                np.mean(
+                    np.ma.masked_where(
+                        self.ev_battery_buy_qtb_list[agent_id][:, :, i] == exclude_value,
+                        self.ev_battery_buy_qtb_list[agent_id][:, :, i]
+                    )
+                )
+                for i in range(self.ev_battery_buy_qtb_list[agent_id].shape[2])
+            ]
+            # ev_battery_buy_avg_values = [np.mean(self.ev_battery_buy_qtb_list[agent_id][:, :, i]) for i in range(self.ev_battery_buy_qtb_list[agent_id].shape[2])]
+            # ev_battery_sell_avg_values = [np.mean(self.ev_battery_sell_qtb_list[agent_id][:, :, i]) for i in range(self.ev_battery_sell_qtb_list[agent_id].shape[2])]
             sums = np.array(ev_battery_buy_avg_values) + np.array(ev_battery_sell_avg_values)
             ev_capacity_index = np.argmax(sums)
             ev_capacity = self.possible_params['ev_capacity_list'][ev_capacity_index]
 
-            pv_sell_avg_values = [np.mean(self.pv_sell_qtb_list[agent_id][:, :, i]) for i in range(self.pv_sell_qtb_list[agent_id].shape[2])]
+            pv_sell_avg_values = [
+                np.mean(
+                    np.ma.masked_where(
+                        self.pv_sell_qtb_list[agent_id][:, :, i] == exclude_value,
+                        self.pv_sell_qtb_list[agent_id][:, :, i]
+                    )
+                )
+                for i in range(self.pv_sell_qtb_list[agent_id].shape[2])
+            ]
+            # pv_sell_avg_values = [np.mean(self.pv_sell_qtb_list[agent_id][:, :, i]) for i in range(self.pv_sell_qtb_list[agent_id].shape[2])]
             pv_capacity_index = np.argmax(pv_sell_avg_values)
             pv_capacity = self.possible_params['pv_capacity_list'][pv_capacity_index]
             return battery_capacity, ev_capacity, pv_capacity
