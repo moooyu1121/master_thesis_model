@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np 
+import json
 
 
 class Visualize:
@@ -32,6 +33,12 @@ class Visualize:
         self.timestamps = timestamp_df['timestamp']
         self.original_demand_df = pd.read_csv(folder_path + '/demand.csv', index_col=0)
         self.original_pv_supply_df = pd.read_csv(folder_path + '/supply.csv', index_col=0)
+
+        # JSON形式のファイルを読み込み
+        file_name = folder_path + "params.json"
+        with open(file_name, 'r') as file:
+            params = json.load(file)
+            self.wheeling_charge = params['wheeling_charge']
 
     def plot_consumption(self):
         # fig = go.Figure()
@@ -252,7 +259,7 @@ class Visualize:
             ), row=2, col=1)
         
         fig.add_trace(go.Scatter(
-            x=self.timestamps, y=self.grid_price_df['Price'] + 10,
+            x=self.timestamps, y=self.grid_price_df['Price'] + self.wheeling_charge,
             mode='lines',
             name='Grid price',
             line=dict(dash='dash'),

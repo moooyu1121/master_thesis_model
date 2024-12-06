@@ -1,5 +1,6 @@
 import numpy as np 
 import pandas as pd
+import json
 import os
 import matplotlib.pyplot as plt
 import pymarket as pm
@@ -1111,6 +1112,11 @@ class SimulationNoP2P:
             net_electricity_cost_df.to_csv(self.parent_dir + '/net_electricity_cost.csv', index=True)
             self.car_charge_df.to_csv(self.parent_dir + '/car_charge_bool.csv', index=True)
             self.car_move_consumption_df.to_csv(self.parent_dir + '/car_move_consumption.csv', index=True)
+
+            # JSON形式でパラメータを保存
+            file_name = self.parent_dir + "params.json"
+            with open(file_name, 'w') as file:
+                json.dump(self.params, file, indent=4)
 
             vis = visualize.Visualize(folder_path=self.parent_dir)
             vis.plot_consumption()
