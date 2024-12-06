@@ -460,4 +460,9 @@ if __name__ == '__main__':
     print(battery_capacity)
     print(ev_capacity)
     print(pv_capacity)
+
+    battery_capacity, ev_capacity, pv_capacity = q.get_facility_capacities(agent_id=0, episode=1, is_train=False)
+    print(battery_capacity)
+    print(ev_capacity)
+    print(pv_capacity)
     
