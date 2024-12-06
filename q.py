@@ -195,7 +195,6 @@ class Q:
                 # battery_sell_avg_values = [np.mean(self.battery_sell_qtb_list[agent_id][:, :, i]) for i in range(self.battery_sell_qtb_list[agent_id].shape[2])]
                 battery_buy_avg_values = compute_avg_values(self.battery_buy_qtb_list[agent_id], exclude_value)
                 battery_sell_avg_values = compute_avg_values(self.battery_sell_qtb_list[agent_id], exclude_value)
-
                 sums = np.array(battery_buy_avg_values) + np.array(battery_sell_avg_values)
                 # Qテーブルの平均値が最大となるindexを取得(nanがあればnanのインデックスを返す→まだ調べていない容量を導入するようにする)
                 battery_capacity_index = np.argmax(sums)
