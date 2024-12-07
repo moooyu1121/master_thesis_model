@@ -35,7 +35,7 @@ class Visualize:
         self.original_pv_supply_df = pd.read_csv(folder_path + '/supply.csv', index_col=0)
 
         # JSON形式のファイルを読み込み
-        file_name = folder_path + "params.json"
+        file_name = folder_path + "/params.json"
         with open(file_name, 'r') as file:
             params = json.load(file)
             self.wheeling_charge = params['wheeling_charge']

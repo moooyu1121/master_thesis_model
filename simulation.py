@@ -1114,7 +1114,7 @@ class SimulationNoP2P:
             self.car_move_consumption_df.to_csv(self.parent_dir + '/car_move_consumption.csv', index=True)
 
             # JSON形式でパラメータを保存
-            file_name = self.parent_dir + "params.json"
+            file_name = self.parent_dir + "/params.json"
             with open(file_name, 'w') as file:
                 json.dump(self.params, file, indent=4)
 
