@@ -1017,7 +1017,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
                     'wo/battery_w/ev_w/pv_w/dr', 'wo/battery_w/ev_w/pv_wo/dr', 'wo/battery_w/ev_wo/pv_w/dr', 'wo/battery_w/ev_wo/pv_wo/dr',
                     'wo/battery_wo/ev_w/pv_w/dr', 'wo/battery_wo/ev_w/pv_wo/dr', 'wo/battery_wo/ev_wo/pv_w/dr', 'wo/battery_wo/ev_wo/pv_wo/dr']
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -1123,22 +1123,14 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
         microgrid_price_file_path_list.append(microgrid_price_sorted_file_paths[-1])  # get the last episode
 
     net_dict = {
-        'w/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []}
+        'w/battery_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []}
     }
 
     buy_composition = ['buy_inelastic', 'buy_elastic', 'buy_shifted', 'buy_battery', 'buy_ev_battery']
@@ -1163,7 +1155,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
             dr_boolean = agent_params_df.loc[j, 'dr_boolean']
             if battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
                 if include_capex_opex:
-                    net_dict['w/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1175,7 +1167,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime
                                                                 + capex_opex.pv_opex_func(pv_capacity))
                 else:
-                    net_dict['w/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1185,7 +1177,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
                 if include_capex_opex:
-                    net_dict['w/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1197,7 +1189,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime
                                                                 + capex_opex.pv_opex_func(pv_capacity))
                 else:
-                    net_dict['w/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1207,7 +1199,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
                 if include_capex_opex:
-                    net_dict['w/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1217,7 +1209,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime)
                 else:
-                    net_dict['w/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1227,7 +1219,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
                 if include_capex_opex:
-                    net_dict['w/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1237,91 +1229,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime)
                 else:
-                    net_dict['w/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                if include_capex_opex:
-                    net_dict['w/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
-                                                                + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime
-                                                                + capex_opex.pv_opex_func(pv_capacity))
-                else:
-                    net_dict['w/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                if include_capex_opex:
-                    net_dict['w/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
-                                                                + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime
-                                                                + capex_opex.pv_opex_func(pv_capacity))
-                else:
-                    net_dict['w/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                if include_capex_opex:
-                    net_dict['w/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime)
-                else:
-                    net_dict['w/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                if include_capex_opex:
-                    net_dict['w/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime)
-                else:
-                    net_dict['w/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['w/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1331,7 +1239,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
                 if include_capex_opex:
-                    net_dict['wo/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1342,7 +1250,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
                                                                 + capex_opex.pv_opex_func(pv_capacity))
                 else:
-                    net_dict['wo/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1352,7 +1260,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
                 if include_capex_opex:
-                    net_dict['wo/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1363,7 +1271,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
                                                                 + capex_opex.pv_opex_func(pv_capacity))
                 else:
-                    net_dict['wo/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1373,7 +1281,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
                 if include_capex_opex:
-                    net_dict['wo/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1382,7 +1290,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
                 else:
-                    net_dict['wo/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1392,7 +1300,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
                 if include_capex_opex:
-                    net_dict['wo/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1401,7 +1309,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
                 else:
-                    net_dict['wo/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                    net_dict['wo/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
@@ -1409,89 +1317,9 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                                 - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                                 - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                if include_capex_opex:
-                    net_dict['wo/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
-                                                                + capex_opex.pv_opex_func(pv_capacity))
-                else:
-                    net_dict['wo/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                if include_capex_opex:
-                    net_dict['wo/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + capex_opex.pv_capex_func(pv_capacity) / pv_lifetime
-                                                                + capex_opex.pv_opex_func(pv_capacity))
-                else:
-                    net_dict['wo/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                if include_capex_opex:
-                    net_dict['wo/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-                else:
-                    net_dict['wo/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                if include_capex_opex:
-                    net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-                else:
-                    net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
-                
+            
             if battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['w/battery_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1501,7 +1329,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
                                                                             
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['w/battery_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1510,7 +1338,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['w/battery_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1519,43 +1347,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['w/battery_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1564,7 +1356,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['wo/battery_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1573,7 +1365,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['wo/battery_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1582,7 +1374,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['wo/battery_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1591,7 +1383,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
             elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+                net_dict['wo/battery_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
@@ -1599,42 +1391,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                                                             - sell_pv.loc[:, f'{j}'].sum()
                                                             - sell_battery.loc[:, f'{j}'].sum()
                                                             - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            - sell_pv.loc[:, f'{j}'].sum()
-                                                            - sell_battery.loc[:, f'{j}'].sum()
-                                                            - sell_ev_battery.loc[:, f'{j}'].sum())
+
                 
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
@@ -1642,12 +1399,10 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
     med_costs = [np.median(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
-    categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
-                    'w/battery_wo/ev_w/pv_w/dr', 'w/battery_wo/ev_w/pv_wo/dr', 'w/battery_wo/ev_wo/pv_w/dr', 'w/battery_wo/ev_wo/pv_wo/dr',
-                    'wo/battery_w/ev_w/pv_w/dr', 'wo/battery_w/ev_w/pv_wo/dr', 'wo/battery_w/ev_wo/pv_w/dr', 'wo/battery_w/ev_wo/pv_wo/dr',
-                    'wo/battery_wo/ev_w/pv_w/dr', 'wo/battery_wo/ev_w/pv_wo/dr', 'wo/battery_wo/ev_wo/pv_w/dr', 'wo/battery_wo/ev_wo/pv_wo/dr']
+    categories = ['w/battery_w/pv_w/dr', 'w/battery_w/pv_wo/dr', 'w/battery_wo/pv_w/dr', 'w/battery_wo/pv_wo/dr',
+                    'wo/battery_w/pv_w/dr', 'wo/battery_w/pv_wo/dr', 'wo/battery_wo/pv_w/dr', 'wo/battery_wo/pv_wo/dr']
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -1663,10 +1418,8 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
         patch.set_facecolor(gray_color)
 
     # Add labels, title, and grid
-    ax.set_xticklabels(['w/ BES, w/ EV, w/ PV, w/ DR', 'w/ BES, w/ EV, w/ PV, w/o DR', 'w/ BES, w/ EV, w/o PV, w/ DR', 'w/ BES, w/ EV, w/o PV, w/o DR',
-                        'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
-                        'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
-                        'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
+    ax.set_xticklabels(['w/ BES, w/ PV, w/ DR', 'w/ BES, w/ PV, w/o DR', 'w/ BES, w/o PV, w/ DR', 'w/ BES, w/o PV, w/o DR',
+                        'w/o BES, w/ PV, w/ DR', 'w/o BES, w/ PV, w/o DR', 'w/o BES, w/o PV, w/ DR', 'w/o BES, w/o PV, w/o DR'],
                     rotation=45)
     ax.set_ylabel('Net Electricity Cost [$]')
     ax.set_title('Net Electricity Cost Distribution')
@@ -1676,11 +1429,11 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
     plt.tight_layout()
 
     if include_capex_opex:
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex.svg')
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_include_capex_opex.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_include_capex_opex.svg')
     else:
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr.svg')
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr.svg')
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
@@ -1688,14 +1441,14 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
                 bbox=dict(facecolor='white', alpha=0.5))
 
     if include_capex_opex:
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex_with_values.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_include_capex_opex_with_values.svg')
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_include_capex_opex_with_values.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_include_capex_opex_with_values.svg')
     else:
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_with_values.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_by_battery_ev_pv_dr_with_values.svg')
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_with_values.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_by_battery_pv_dr_with_values.svg')
     # plt.show()
 
-    print('Net cost by battery, EV, PV, and DR plot saved.')
+    print('Net cost by battery, PV, and DR plot saved.')
     plt.close()
 
     # Calculate cost per kWh for each category
@@ -1705,8 +1458,9 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
+    med_costs = [np.median(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -1722,32 +1476,30 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
         patch.set_facecolor(gray_color)
 
     # Add labels, title, and grid
-    ax.set_xticklabels(['w/ BES, w/ EV, w/ PV, w/ DR', 'w/ BES, w/ EV, w/ PV, w/o DR', 'w/ BES, w/ EV, w/o PV, w/ DR', 'w/ BES, w/ EV, w/o PV, w/o DR',
-                        'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
-                        'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
-                        'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
+    ax.set_xticklabels(['w/ BES, w/ PV, w/ DR', 'w/ BES, w/ PV, w/o DR', 'w/ BES, w/o PV, w/ DR', 'w/ BES, w/o PV, w/o DR',
+                        'w/o BES, w/ PV, w/ DR', 'w/o BES, w/ PV, w/o DR', 'w/o BES, w/o PV, w/ DR', 'w/o BES, w/o PV, w/o DR'],
                     rotation=45)
     ax.set_ylabel('Net Electricity Unit Cost [$/kWh]')
     ax.set_title('Net Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-    # ax.set_ylim(-10, 10)
+    ax.set_ylim(-10, 10)
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
-        ax.text(i + 1, mean_costs[i], f'Mean: ${mean_costs[i]:.2f}\nStd: ${std_costs[i]:.2f}', ha='center', va='center',
+        ax.text(i + 1, med_costs[i], f'Mean: ${mean_costs[i]:.2f}\nStd: ${std_costs[i]:.2f}\nMed: ${med_costs[i]:.2f}', ha='center', va='center',
                 bbox=dict(facecolor='white', alpha=0.5))
 
     plt.tight_layout()
     if include_capex_opex:
-        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_ev_pv_dr_include_capex_opex.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_ev_pv_dr_include_capex_opex.svg')
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_pv_dr_include_capex_opex.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_pv_dr_include_capex_opex.svg')
     else:
-        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_ev_pv_dr.png', dpi=600)
-        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_ev_pv_dr.svg')
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_pv_dr.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_by_battery_pv_dr.svg')
     # plt.show()
 
-    print('Net unit cost by battery, EV, PV, and DR plot saved.')
+    print('Net unit cost by battery, PV, and DR plot saved.')
     plt.close()
 
 
@@ -1893,7 +1645,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num, folder_path, include_c
     print(heat_map_net_total_cost_df)
     print(heat_map_net_cost_per_kWh_df)
 
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(heat_map_net_total_cost_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
     ax.set_title('Net Total Cost Heatmap by Battery and PV Capacity')
     ax.set_xlabel('PV Capacity [kW]')
@@ -1902,7 +1654,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num, folder_path, include_c
     plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
     plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.svg')
 
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(heat_map_net_cost_per_kWh_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
     ax.set_title('Net Cost per kWh Heatmap by Battery and PV Capacity')
     ax.set_xlabel('PV Capacity [kW]')
@@ -1978,22 +1730,14 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
         microgrid_price_file_path_list.append(microgrid_price_sorted_file_paths[-1])  # get the last episode
 
     net_dict = {
-        'w/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'w/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_w/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
-        'wo/battery_wo/ev_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []}
+        'w/battery_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'w/battery_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_w/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_w/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_wo/pv_w/dr': {'amount': [], 'cost': [], 'cost/kWh': []},
+        'wo/battery_wo/pv_wo/dr': {'amount': [], 'cost': [], 'cost/kWh': []}
     }
 
     buy_composition = ['buy_inelastic', 'buy_elastic', 'buy_shifted', 'buy_battery', 'buy_ev_battery']
@@ -2016,232 +1760,121 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
             ev_capacity = agent_params_df.loc[j, 'ev_capacity']
             pv_capacity = agent_params_df.loc[j, 'pv_capacity']
             dr_boolean = agent_params_df.loc[j, 'dr_boolean']
-            if battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            if battery_capacity > 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['w/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity > 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['w/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity > 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['w/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity > 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['w/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity == 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['wo/battery_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity == 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['wo/battery_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity == 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['wo/battery_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_w/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+            elif battery_capacity == 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['wo/battery_wo/pv_wo/dr']['cost'].append((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
                                                             )
                 
-            if battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            if battery_capacity > 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['w/battery_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
                                                                             
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity > 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['w/battery_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity > 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['w/battery_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_w/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity > 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['w/battery_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity == 0 and pv_capacity > 0 and dr_boolean:
+                net_dict['wo/battery_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity == 0 and pv_capacity > 0 and not dr_boolean:
+                net_dict['wo/battery_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity == 0 and pv_capacity == 0 and dr_boolean:
+                net_dict['wo/battery_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity > 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['w/battery_wo/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
+            elif battery_capacity == 0 and pv_capacity == 0 and not dr_boolean:
+                net_dict['wo/battery_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
                                                             + buy_elastic.loc[:, f'{j}'].sum()
                                                             + buy_shifted.loc[:, f'{j}'].sum()
                                                             + buy_battery.loc[:, f'{j}'].sum()
                                                             + buy_ev_battery.loc[:, f'{j}'].sum()
                                                             )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity > 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_w/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity > 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_w/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_w/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
-            elif battery_capacity == 0 and ev_capacity == 0 and pv_capacity == 0 and not dr_boolean:
-                net_dict['wo/battery_wo/ev_wo/pv_wo/dr']['amount'].append(buy_inelastic.loc[:, f'{j}'].sum()
-                                                            + buy_elastic.loc[:, f'{j}'].sum()
-                                                            + buy_shifted.loc[:, f'{j}'].sum()
-                                                            + buy_battery.loc[:, f'{j}'].sum()
-                                                            + buy_ev_battery.loc[:, f'{j}'].sum()
-                                                            )
+
                 
     # Calculate mean and standard deviation of costs for each category
     mean_costs = [np.mean(net_dict[key]['cost']) for key in net_dict.keys()]
@@ -2249,12 +1882,10 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     med_costs = [np.median(net_dict[key]['cost']) for key in net_dict.keys()]
 
     # Plotting
-    categories = ['w/battery_w/ev_w/pv_w/dr', 'w/battery_w/ev_w/pv_wo/dr', 'w/battery_w/ev_wo/pv_w/dr', 'w/battery_w/ev_wo/pv_wo/dr',
-                    'w/battery_wo/ev_w/pv_w/dr', 'w/battery_wo/ev_w/pv_wo/dr', 'w/battery_wo/ev_wo/pv_w/dr', 'w/battery_wo/ev_wo/pv_wo/dr',
-                    'wo/battery_w/ev_w/pv_w/dr', 'wo/battery_w/ev_w/pv_wo/dr', 'wo/battery_w/ev_wo/pv_w/dr', 'wo/battery_w/ev_wo/pv_wo/dr',
-                    'wo/battery_wo/ev_w/pv_w/dr', 'wo/battery_wo/ev_w/pv_wo/dr', 'wo/battery_wo/ev_wo/pv_w/dr', 'wo/battery_wo/ev_wo/pv_wo/dr']
+    categories = ['w/battery_w/pv_w/dr', 'w/battery_w/pv_wo/dr', 'w/battery_wo/pv_w/dr', 'w/battery_wo/pv_wo/dr',
+                    'wo/battery_w/pv_w/dr', 'wo/battery_w/pv_wo/dr', 'wo/battery_wo/pv_w/dr', 'wo/battery_wo/pv_wo/dr']
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -2270,10 +1901,8 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
         patch.set_facecolor(gray_color)
 
     # Add labels, title, and grid
-    ax.set_xticklabels(['w/ BES, w/ EV, w/ PV, w/ DR', 'w/ BES, w/ EV, w/ PV, w/o DR', 'w/ BES, w/ EV, w/o PV, w/ DR', 'w/ BES, w/ EV, w/o PV, w/o DR',
-                        'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
-                        'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
-                        'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
+    ax.set_xticklabels(['w/ BES, w/ PV, w/ DR', 'w/ BES, w/ PV, w/o DR', 'w/ BES, w/o PV, w/ DR', 'w/ BES, w/o PV, w/o DR',
+                        'w/o BES, w/ PV, w/ DR', 'w/o BES, w/ PV, w/o DR', 'w/o BES, w/o PV, w/ DR', 'w/o BES, w/o PV, w/o DR'],
                     rotation=45)
     ax.set_ylabel('Buy Electricity Cost [$]')
     ax.set_title('Buy Electricity Cost Distribution')
@@ -2286,11 +1915,11 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
                 bbox=dict(facecolor='white', alpha=0.5))
 
     plt.tight_layout()
-    plt.savefig(folder_path + '/insight/buy_cost_by_battery_ev_pv_dr_2.png', dpi=600)
-    plt.savefig(folder_path + '/insight/buy_cost_by_battery_ev_pv_dr_2.svg')
+    plt.savefig(folder_path + '/insight/buy_cost_by_battery_pv_dr_2.png', dpi=600)
+    plt.savefig(folder_path + '/insight/buy_cost_by_battery_pv_dr_2.svg')
     # plt.show()
 
-    print('Net cost by battery, EV, PV, and DR plot saved.')
+    print('Net cost by battery, PV, and DR plot saved.')
     plt.close()
 
     # Calculate cost per kWh for each category
@@ -2301,7 +1930,7 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     mean_costs = [np.mean(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -2317,31 +1946,29 @@ def buy_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
         patch.set_facecolor(gray_color)
 
     # Add labels, title, and grid
-    ax.set_xticklabels(['w/ BES, w/ EV, w/ PV, w/ DR', 'w/ BES, w/ EV, w/ PV, w/o DR', 'w/ BES, w/ EV, w/o PV, w/ DR', 'w/ BES, w/ EV, w/o PV, w/o DR',
-                        'w/ BES, w/o EV, w/ PV, w/ DR', 'w/ BES, w/o EV, w/ PV, w/o DR', 'w/ BES, w/o EV, w/o PV, w/ DR', 'w/ BES, w/o EV, w/o PV, w/o DR',
-                        'w/o BES, w/ EV, w/ PV, w/ DR', 'w/o BES, w/ EV, w/ PV, w/o DR', 'w/o BES, w/ EV, w/o PV, w/ DR', 'w/o BES, w/ EV, w/o PV, w/o DR',
-                        'w/o BES, w/o EV, w/ PV, w/ DR', 'w/o BES, w/o EV, w/ PV, w/o DR', 'w/o BES, w/o EV, w/o PV, w/ DR', 'w/o BES, w/o EV, w/o PV, w/o DR'],
+    ax.set_xticklabels(['w/ BES, w/ PV, w/ DR', 'w/ BES, w/ PV, w/o DR', 'w/ BES, w/o PV, w/ DR', 'w/ BES, w/o PV, w/o DR',
+                        'w/o BES, w/ PV, w/ DR', 'w/o BES, w/ PV, w/o DR', 'w/o BES, w/o PV, w/ DR', 'w/o BES, w/o PV, w/o DR'],
                     rotation=45)
     ax.set_ylabel('Buy Electricity Unit Cost [$/kWh]')
     ax.set_title('Buy Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-    ax.set_ylim(-10, 10)
+    # ax.set_ylim(-10, 10)
     plt.tight_layout()
 
-    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_ev_pv_dr.png', dpi=600)
-    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_ev_pv_dr.svg')
+    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_pv_dr.png', dpi=600)
+    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_pv_dr.svg')
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
         ax.text(i + 1, mean_costs[i], f'Mean: ${mean_costs[i]:.2f}\nStd: ${std_costs[i]:.2f}', ha='center', va='center',
                 bbox=dict(facecolor='white', alpha=0.5))
 
-    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_ev_pv_dr_with_values.png', dpi=600)
-    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_ev_pv_dr_with_values.svg')
+    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_pv_dr_with_values.png', dpi=600)
+    plt.savefig(folder_path + '/insight/buy_cost_per_kWh_by_battery_pv_dr_with_values.svg')
     # plt.show()
 
-    print('Net unit cost by battery, EV, PV, and DR plot saved.')
+    print('Net unit cost by battery, PV, and DR plot saved.')
     plt.close()
 
 
@@ -2601,7 +2228,7 @@ def sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
                     'wo/battery_w/ev_w/pv_w/dr', 'wo/battery_w/ev_w/pv_wo/dr', 'wo/battery_w/ev_wo/pv_w/dr', 'wo/battery_w/ev_wo/pv_wo/dr',
                     'wo/battery_wo/ev_w/pv_w/dr', 'wo/battery_wo/ev_w/pv_wo/dr', 'wo/battery_wo/ev_wo/pv_w/dr', 'wo/battery_wo/ev_wo/pv_wo/dr']
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -2651,7 +2278,7 @@ def sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     mean_costs = [np.mean(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
     std_costs = [np.std(net_dict[key]['cost/kWh']) for key in net_dict.keys()]
 
-    fig, ax = plt.subplots(figsize=(20, 16))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     # Create a boxplot for each category
     boxprops = dict(color='black', linewidth=1.5)
@@ -2676,7 +2303,7 @@ def sell_cost_per_kwh_by_battery_ev_pv_dr_exist_plot(thread_num, folder_path):
     ax.set_title('Net Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-    ax.set_ylim(-10, 10)
+    # ax.set_ylim(-10, 10)
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
