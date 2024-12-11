@@ -1953,8 +1953,12 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
     ax.set_xlabel('PV Capacity [kW]')
     ax.set_ylabel('Battery Capacity [kWh]')
     plt.tight_layout()
-    plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
-    plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.svg')
+    if include_capex_opex:
+        plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.svg')
+    else:
+        plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv.svg')
 
     fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(heat_map_net_cost_per_kWh_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Cost per kWh [$]'})
@@ -1962,8 +1966,12 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
     ax.set_xlabel('PV Capacity [kW]')
     ax.set_ylabel('Battery Capacity [kWh]')
     plt.tight_layout()
-    plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
-    plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.svg')
+    if include_capex_opex:
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.svg')
+    else:
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv.png', dpi=600)
+        plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv.svg')
 
     print('Net cost by battery, PV capacity heatmap saved.')
 
@@ -3110,6 +3118,7 @@ if __name__ == '__main__':
         print(f'BES installed capacity: {bes_capacity_avg:.2f} kWh')
         print(f'PV installed capacity: {pv_capacity_avg:.2f} kW')
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=True)
+        net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=False)
         # net_consumption_vs_bes_pv_size_scatter(thread_num=max_workers, folder_path='output/no_p2p')
 
 # ==================================================================================================
@@ -3157,5 +3166,6 @@ if __name__ == '__main__':
         print(f'BES installed capacity: {bes_capacity_avg:.2f} kWh')
         print(f'PV installed capacity: {pv_capacity_avg:.2f} kW')
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
+        net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=False)
         # net_consumption_vs_bes_pv_size_scatter(thread_num=max_workers, folder_path='output/p2p')
         
