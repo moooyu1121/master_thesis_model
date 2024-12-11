@@ -2978,6 +2978,126 @@ def bes_pv_installed_capacity(thread_num, folder_path):
     return bes_capacity_avg, pv_capacity_avg
 
 
+def get_master_df(thread_num, folder_path, include_capex_opex=True):
+    pv_lifetime = 17
+    bes_lifetime = 6
+    buy_inelastic_file_path_list = []
+    for i in range(thread_num):
+        buy_inelastic_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_inelastic_record.csv')
+        buy_inelastic_sorted_file_paths = sorted(buy_inelastic_file_paths, key=numerical_sort)
+        buy_inelastic_file_path_list.append(buy_inelastic_sorted_file_paths[-1])  # get the last episode
+    buy_elastic_file_path_list = []
+    for i in range(thread_num):
+        buy_elastic_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_elastic_record.csv')
+        buy_elastic_sorted_file_paths = sorted(buy_elastic_file_paths, key=numerical_sort)
+        buy_elastic_file_path_list.append(buy_elastic_sorted_file_paths[-1])  # get the last episode
+    buy_shifted_file_path_list = []
+    for i in range(thread_num):
+        buy_shifted_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_shifted_record.csv')
+        buy_shifted_sorted_file_paths = sorted(buy_shifted_file_paths, key=numerical_sort)
+        buy_shifted_file_path_list.append(buy_shifted_sorted_file_paths[-1])  # get the last episode
+    buy_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_battery_record.csv')
+        buy_battery_sorted_file_paths = sorted(buy_battery_file_paths, key=numerical_sort)
+        buy_battery_file_path_list.append(buy_battery_sorted_file_paths[-1])  # get the last episode
+    buy_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        buy_ev_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/buy_ev_battery_record.csv')
+        buy_ev_battery_sorted_file_paths = sorted(buy_ev_battery_file_paths, key=numerical_sort)
+        buy_ev_battery_file_path_list.append(buy_ev_battery_sorted_file_paths[-1])  # get the last episode
+
+    sell_pv_file_path_list = []
+    for i in range(thread_num):
+        sell_pv_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_pv_record.csv')
+        sell_pv_sorted_file_paths = sorted(sell_pv_file_paths, key=numerical_sort)
+        sell_pv_file_path_list.append(sell_pv_sorted_file_paths[-1])  # get the last episode
+    sell_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_battery_record.csv')
+        sell_battery_sorted_file_paths = sorted(sell_battery_file_paths, key=numerical_sort)
+        sell_battery_file_path_list.append(sell_battery_sorted_file_paths[-1])  # get the last episode
+    sell_ev_battery_file_path_list = []
+    for i in range(thread_num):
+        sell_ev_battery_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/sell_ev_battery_record.csv')
+        sell_ev_battery_sorted_file_paths = sorted(sell_ev_battery_file_paths, key=numerical_sort)
+        sell_ev_battery_file_path_list.append(sell_ev_battery_sorted_file_paths[-1])  # get the last episode
+
+    agent_params_file_path_list = []
+    for i in range(thread_num):
+        agent_params_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/agent_params.csv')
+        agent_params_sorted_file_paths = sorted(agent_params_file_paths, key=numerical_sort)
+        agent_params_file_path_list.append(agent_params_sorted_file_paths[-1])  # get the last episode
+
+    microgrid_price_file_path_list = []
+    for i in range(thread_num):
+        microgrid_price_file_paths = glob.glob(folder_path + f'/test/thread{i}/episode*/price_record.csv')
+        microgrid_price_sorted_file_paths = sorted(microgrid_price_file_paths, key=numerical_sort)
+        microgrid_price_file_path_list.append(microgrid_price_sorted_file_paths[-1])  # get the last episode
+
+    master_list = []
+
+    for i in range(len(agent_params_file_path_list)):
+        agent_params_file_path = agent_params_file_path_list[i]
+        agent_params_df = pd.read_csv(agent_params_file_path, index_col=0)
+        microgrid_price = pd.read_csv(microgrid_price_file_path_list[i], index_col=0)
+        buy_inelastic = pd.read_csv(buy_inelastic_file_path_list[i], index_col=0)
+        buy_elastic = pd.read_csv(buy_elastic_file_path_list[i], index_col=0)
+        buy_shifted = pd.read_csv(buy_shifted_file_path_list[i], index_col=0)
+        buy_battery = pd.read_csv(buy_battery_file_path_list[i], index_col=0)
+        buy_ev_battery = pd.read_csv(buy_ev_battery_file_path_list[i], index_col=0)
+        sell_pv = pd.read_csv(sell_pv_file_path_list[i], index_col=0)
+        sell_battery = pd.read_csv(sell_battery_file_path_list[i], index_col=0)
+        sell_ev_battery = pd.read_csv(sell_ev_battery_file_path_list[i], index_col=0)
+        for j in range(agent_params_df.shape[0]):
+            battery_capacity = agent_params_df.loc[j, 'battery_capacity']
+            ev_capacity = agent_params_df.loc[j, 'ev_capacity']
+            pv_capacity = agent_params_df.loc[j, 'pv_capacity']
+            dr_boolean = agent_params_df.loc[j, 'dr_boolean']
+            # print(f'battery_capacity: {battery_capacity}, ev_capacity: {ev_capacity}, pv_capacity: {pv_capacity}, dr_boolean: {dr_boolean}')
+
+            if include_capex_opex:
+                cost = ((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100 
+                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (capex_opex.pv_capex_func(pv_capacity) / pv_lifetime)
+                + (capex_opex.battery_capex_func(battery_capacity, pv_capacity) / bes_lifetime)
+                + capex_opex.pv_opex_func(pv_capacity))
+            else:
+                cost = ((buy_inelastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100 
+                + (buy_elastic.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_shifted.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                + (buy_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_pv.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100
+                - (sell_ev_battery.loc[:, f'{j}']*microgrid_price.loc[:, 'Price']).sum()/100)
+            
+            amount = (buy_inelastic.loc[:, f'{j}'].sum()
+            + buy_elastic.loc[:, f'{j}'].sum()
+            + buy_shifted.loc[:, f'{j}'].sum()
+            + buy_battery.loc[:, f'{j}'].sum()
+            + buy_ev_battery.loc[:, f'{j}'].sum()
+            # - sell_pv.loc[:, f'{j}'].sum()
+            - sell_battery.loc[:, f'{j}'].sum()
+            - sell_ev_battery.loc[:, f'{j}'].sum())
+
+            cost_per_kWh = cost / amount
+            # print(f'cost: {cost}, amount: {amount}, cost_per_kWh: {cost_per_kWh}')
+
+            master_list.append({'battery_capacity': battery_capacity, 'ev_capacity': ev_capacity, 'pv_capacity': pv_capacity, 'dr_boolean': dr_boolean,
+                                'cost': cost, 'amount': amount, 'cost_per_kWh': cost_per_kWh})
+
+    master_df = pd.DataFrame(master_list)
+    master_df.to_csv(folder_path + '/insight/master_df.csv')
+    return master_df
+
+
 def net_consumption_vs_bes_pv_size_scatter(thread_num, folder_path):
     """
     Net consumption vs BES and PV size scatter plot
@@ -3120,6 +3240,7 @@ if __name__ == '__main__':
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=True)
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=False)
         # net_consumption_vs_bes_pv_size_scatter(thread_num=max_workers, folder_path='output/no_p2p')
+        get_master_df(thread_num=max_workers, folder_path='output/no_p2p', include_capex_opex=True)
 
 # ==================================================================================================
     if os.path.exists('output/p2p/test/thread0/episode10/agent_params.csv'): 
@@ -3168,4 +3289,5 @@ if __name__ == '__main__':
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
         net_cost_by_battery_ev_pv_size_plot(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=False)
         # net_consumption_vs_bes_pv_size_scatter(thread_num=max_workers, folder_path='output/p2p')
+        get_master_df(thread_num=max_workers, folder_path='output/p2p', include_capex_opex=True)
         
