@@ -1620,12 +1620,12 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num, folder_path, include_c
             + buy_shifted.loc[:, f'{j}'].sum()
             + buy_battery.loc[:, f'{j}'].sum()
             + buy_ev_battery.loc[:, f'{j}'].sum()
-            - sell_pv.loc[:, f'{j}'].sum()
+            # - sell_pv.loc[:, f'{j}'].sum()
             - sell_battery.loc[:, f'{j}'].sum()
             - sell_ev_battery.loc[:, f'{j}'].sum())
 
             cost_per_kWh = cost / amount
-            print(f'cost: {cost}, amount: {amount}, cost_per_kWh: {cost_per_kWh}')
+            # print(f'cost: {cost}, amount: {amount}, cost_per_kWh: {cost_per_kWh}')
 
             master_list.append({'battery_capacity': battery_capacity, 'ev_capacity': ev_capacity, 'pv_capacity': pv_capacity, 'dr_boolean': dr_boolean,
                                 'cost': cost, 'amount': amount, 'cost_per_kWh': cost_per_kWh})
@@ -1918,12 +1918,12 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
             + buy_shifted.loc[:, f'{j}'].sum()
             + buy_battery.loc[:, f'{j}'].sum()
             + buy_ev_battery.loc[:, f'{j}'].sum()
-            - sell_pv.loc[:, f'{j}'].sum()
+            # - sell_pv.loc[:, f'{j}'].sum()
             - sell_battery.loc[:, f'{j}'].sum()
             - sell_ev_battery.loc[:, f'{j}'].sum())
 
             cost_per_kWh = cost / amount
-            print(f'cost: {cost}, amount: {amount}, cost_per_kWh: {cost_per_kWh}')
+            # print(f'cost: {cost}, amount: {amount}, cost_per_kWh: {cost_per_kWh}')
 
             master_list.append({'battery_capacity': battery_capacity, 'ev_capacity': ev_capacity, 'pv_capacity': pv_capacity, 'dr_boolean': dr_boolean,
                                 'cost': cost, 'amount': amount, 'cost_per_kWh': cost_per_kWh})
