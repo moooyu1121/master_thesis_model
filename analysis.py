@@ -1489,7 +1489,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_2(thread_num, folder_path, include_c
         ax.set_title('Net Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-    ax.set_ylim(-10, 10)
+    # ax.set_ylim(-10, 10)
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
@@ -1784,7 +1784,7 @@ def net_cost_by_battery_ev_pv_dr_exist_plot_3(thread_num, folder_path, include_c
         ax.set_title('Net Electricity Unit Cost Distribution')
     ax.yaxis.grid(True)
     ax.set_axisbelow(True)
-    ax.set_ylim(-10, 10)
+    # ax.set_ylim(-10, 10)
 
     # Adding mean and standard deviation text
     for i in range(len(categories)):
