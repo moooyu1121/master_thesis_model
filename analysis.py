@@ -1944,8 +1944,8 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
 
     heat_map_net_total_cost_df = heat_map_net_total_cost_df.apply(pd.to_numeric, errors='coerce')
     heat_map_net_cost_per_kWh_df = heat_map_net_cost_per_kWh_df.apply(pd.to_numeric, errors='coerce')
-    print(heat_map_net_total_cost_df)
-    print(heat_map_net_cost_per_kWh_df)
+    # print(heat_map_net_total_cost_df)
+    # print(heat_map_net_cost_per_kWh_df)
 
     fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(heat_map_net_total_cost_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Total Cost [$]'})
@@ -2702,7 +2702,12 @@ def sor_per_month_plot(thread_num, folder_path):
     plt.savefig(folder_path + '/insight/sor_per_month.svg')
     # plt.show()
 
+    # calculate annual average of SOR
+    yearly_avg = all_ratios_df.groupby(all_ratios_df.index.year).mean().mean().mean()
+    print('Annual average SOR:' + str(yearly_avg))
+    
     print('SOR per month plot with error bars saved.')
+    return yearly_avg
 
 
 def ssr_per_month_plot(thread_num, folder_path):
@@ -2785,7 +2790,13 @@ def ssr_per_month_plot(thread_num, folder_path):
     plt.savefig(folder_path + '/insight/ssr_per_month.svg')
     # plt.show()
 
+    # calculate annual average of SOR
+    yearly_avg = all_ratios_df.groupby(all_ratios_df.index.year).mean()
+    print('Annual average SSR:' + str(yearly_avg))
+
     print('SSR per month plot with error bars saved.')
+
+    return yearly_avg
 
 
 def supply_demand_margin_plot(thread_num, folder_path):
@@ -2911,6 +2922,9 @@ def supply_demand_margin_plot(thread_num, folder_path):
     plt.savefig(folder_path + '/insight/surplus_demand_by_hour_with_values.png', dpi=600)
     plt.savefig(folder_path + '/insight/surplus_demand_by_hour_with_values.svg')
     # plt.show()
+    # calculate annual average of surplus demand
+    yearly_avg_demand = surplus_demand_average.groupby(surplus_demand_average.index.year).mean()
+    print('Annual average surplus demand:' + str(yearly_avg_demand))
     print('Surplus Demand by Hour plot saved.')
     plt.close()
 
@@ -2940,6 +2954,9 @@ def supply_demand_margin_plot(thread_num, folder_path):
     plt.savefig(folder_path + '/insight/surplus_supply_by_hour_with_values.png', dpi=600)
     plt.savefig(folder_path + '/insight/surplus_supply_by_hour_with_values.svg')
     # plt.show()
+    # calculate annual average of surplus supply
+    yearly_avg_supply = surplus_supply_average.groupby(surplus_supply_average.index.year).mean()
+    print('Annual average surplus supply:' + str(yearly_avg_supply))
     print('Surplus Supply by Hour plot saved.')
     plt.close()
 
