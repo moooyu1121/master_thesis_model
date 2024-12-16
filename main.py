@@ -13,8 +13,11 @@ def main(num_agent, parent_dir, episode, load_q=False, train=True, **kwargs):
     params.update(kwargs)  # get the actual thread_num
     thread_num = params['thread_num']
     world = simulation.Simulation(num_agent, parent_dir, episode, train, **kwargs)
-    if load_q:
+    if load_q and train:
         world.load_existing_q_table(folder_path=f'output/p2p/thread{thread_num}/episode{episode-1}/q_table')
+    elif load_q and not train:
+        # test simulation
+        world.load_existing_q_table(folder_path=f'output/p2p/thread{thread_num}/episode{episode}/q_table')
     world.preprocess()
     world.run()
     world.save()
@@ -27,8 +30,11 @@ def main_no_p2p(num_agent, parent_dir, episode, load_q=False, train=True, **kwar
     params = {'thread_num': -1}
     params.update(kwargs)
     thread_num = params['thread_num']
-    if load_q:        
+    if load_q and train:        
         world.load_existing_q_table(folder_path=f'output/no_p2p/thread{thread_num}/episode{episode-1}/q_table')
+    elif load_q and not train:
+        # test simulation
+        world.load_existing_q_table(folder_path=f'output/no_p2p/thread{thread_num}/episode{episode}/q_table')
     world.preprocess()
     world.run()
     world.save()
@@ -45,7 +51,7 @@ def main_no_p2p_wrapper(args):
 
 
 if __name__ == "__main__":
-    max_workers = 16
+    max_workers = 1
     simulation_p2p = True
     simulation_no_p2p = True
 
@@ -119,7 +125,7 @@ if __name__ == "__main__":
             for folder in glob.glob('output/p2p/thread*/episode*'):
                 episode = int(folder.split('episode')[-1])
                 existing_episodes.add(episode)
-            # remove the last episode, because it has not finished yet.
+            # remove the last episode, because it has not finished yet. 
             max_number = max(existing_episodes)
             existing_episodes.remove(max_number)
             print('Existing episodes:')
@@ -227,4 +233,3 @@ if __name__ == "__main__":
             print('All episodes finished.')
 
         print('No-P2P scenario finished.')
-

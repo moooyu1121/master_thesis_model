@@ -149,28 +149,26 @@ class Q:
                 pv_sell_price = np.argmax(sliced_pv_sell_qtb[int(self.pv_states[agent_id])]) + int(self.params['price_min'])
                 next_action_list.append(pv_sell_price)
             else:
-                dr_buy_price = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1))
-                next_action_list.append(dr_buy_price)
+                # print("random")
+                dr_buy_price = np.random.choice(range(0, self.cols_num))
+                next_action_list.append(dr_buy_price + int(self.params['price_min']))
+                
                 # battery
-                random_prices = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1), size=2, replace=False)
-                buy_price, sell_price = sorted(random_prices)
-                next_action_list.append(buy_price)
-                next_action_list.append(sell_price)
-                # battery_buy_price = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1))
-                # next_action_list.append(battery_buy_price)
-                # battery_sell_price = np.random.choice(range(battery_buy_price, self.cols_num + 1))
-                # next_action_list.append(battery_sell_price)
+                random_prices = np.random.choice(range(0, self.cols_num), size=2, replace=False)
+                # buy_price, sell_price = sorted(random_prices)
+                buy_price, sell_price = random_prices
+                next_action_list.append(buy_price + int(self.params['price_min']))
+                next_action_list.append(int(self.params['price_min']) + buy_price + sell_price)
+                
                 # ev
-                random_prices = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1), size=2, replace=False)
-                buy_price, sell_price = sorted(random_prices)
-                next_action_list.append(buy_price)
-                next_action_list.append(sell_price)
-                # ev_battery_buy_price = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1))
-                # next_action_list.append(ev_battery_buy_price)
-                # ev_battery_sell_price = np.random.choice(range(ev_battery_buy_price, self.cols_num + 1))
-                # next_action_list.append(ev_battery_sell_price)
-                pv_sell_price = np.random.choice(range(int(self.params['price_min']), self.cols_num + 1))
-                next_action_list.append(pv_sell_price)
+                random_prices = np.random.choice(range(0, self.cols_num), size=2, replace=False)
+                # buy_price, sell_price = sorted(random_prices)
+                buy_price, sell_price = random_prices
+                next_action_list.append(buy_price + int(self.params['price_min']))
+                next_action_list.append(int(self.params['price_min']) + buy_price + sell_price)
+                
+                pv_sell_price = np.random.choice(range(0, self.cols_num))
+                next_action_list.append(pv_sell_price + int(self.params['price_min']))
             self.next_actions[agent_id] = next_action_list
             return next_action_list
         # テスト時は最適行動のみをとる
@@ -205,6 +203,7 @@ class Q:
             sliced_pv_sell_qtb = self.pv_sell_qtb_list[agent_id][:, :, int(self.pv_patterns[agent_id])]
             pv_sell_price = np.argmax(sliced_pv_sell_qtb[int(self.pv_states[agent_id])]) + int(self.params['price_min'])
             next_action_list.append(pv_sell_price)
+            self.next_actions[agent_id] = next_action_list
             return next_action_list
 
     def get_facility_capacities(self, agent_id, episode, is_train):
@@ -284,26 +283,27 @@ class Q:
         # the action index for sell Q table is the difference between sell and buy price
         gamma = self.discount_rate
         alpha = self.learning_rate
-        actions[2] = actions[2] - actions[1]
-        actions[4] = actions[4] - actions[3]
+        # actions[2] = actions[2] - actions[1]
+        # actions[4] = actions[4] - actions[3]
+        # print(f'actions: {actions}')
         dr_buy_td_error = rewards[0] + gamma * np.max(self.dr_buy_qtb_list[agent_id][next_states[0], :]) - self.dr_buy_qtb_list[agent_id][states[0], 
-                                                                                                            int(actions[0]-self.params['price_min'])]
+                                                                                                            int(actions[0] - self.params['price_min'])]
         battery_buy_td_error = rewards[1] + gamma * np.max(self.battery_buy_qtb_list[agent_id][next_states[1], :, int(self.battery_patterns[agent_id])]) - self.battery_buy_qtb_list[agent_id][states[1], 
-                                                                                                                           int(actions[1]-self.params['price_min']), int(self.battery_patterns[agent_id])]
+                                                                                                                           int(actions[1] - self.params['price_min']), int(self.battery_patterns[agent_id])]
         battery_sell_td_error = rewards[2] + gamma * np.max(self.battery_sell_qtb_list[agent_id][next_states[2], :, int(self.battery_patterns[agent_id])]) - self.battery_sell_qtb_list[agent_id][states[2], 
-                                                                                                                              int(actions[2]-self.params['price_min']), int(self.battery_patterns[agent_id])]
+                                                                                                                              int(actions[2] - actions[1]), int(self.battery_patterns[agent_id])]
         ev_battery_buy_td_error = rewards[3] + gamma * np.max(self.ev_battery_buy_qtb_list[agent_id][next_states[3], :, int(self.ev_battery_patterns[agent_id])]) - self.ev_battery_buy_qtb_list[agent_id][states[3], 
-                                                                                                                                    int(actions[3]-self.params['price_min']), int(self.ev_battery_patterns[agent_id])]
+                                                                                                                                    int(actions[3] - self.params['price_min']), int(self.ev_battery_patterns[agent_id])]
         ev_battery_sell_td_error = rewards[4] + gamma * np.max(self.ev_battery_sell_qtb_list[agent_id][next_states[4], :, int(self.ev_battery_patterns[agent_id])]) - self.ev_battery_sell_qtb_list[agent_id][states[4], 
-                                                                                                                                       int(actions[4]-self.params['price_min']), int(self.ev_battery_patterns[agent_id])]
+                                                                                                                                       int(actions[4] - actions[3]), int(self.ev_battery_patterns[agent_id])]
         pv_sell_td_error = rewards[5] + gamma * np.max(self.pv_sell_qtb_list[agent_id][next_states[5], :, int(self.pv_patterns[agent_id])]) - self.pv_sell_qtb_list[agent_id][states[5], 
-                                                                                                                              int(actions[5]-self.params['price_min']), int(self.pv_patterns[agent_id])]
+                                                                                                                              int(actions[5] - self.params['price_min']), int(self.pv_patterns[agent_id])]
 
         self.dr_buy_qtb_list[agent_id][states[0], int(actions[0] - self.params['price_min'])] += alpha * dr_buy_td_error
         self.battery_buy_qtb_list[agent_id][states[1], int(actions[1] - self.params['price_min']), int(self.battery_patterns[agent_id])] += alpha * battery_buy_td_error
-        self.battery_sell_qtb_list[agent_id][states[2], int(actions[2] - self.params['price_min']), int(self.battery_patterns[agent_id])] += alpha * battery_sell_td_error
+        self.battery_sell_qtb_list[agent_id][states[2], int(actions[2] - actions[1]), int(self.battery_patterns[agent_id])] += alpha * battery_sell_td_error
         self.ev_battery_buy_qtb_list[agent_id][states[3], int(actions[3] - self.params['price_min']), int(self.ev_battery_patterns[agent_id])] += alpha * ev_battery_buy_td_error
-        self.ev_battery_sell_qtb_list[agent_id][states[4], int(actions[4] - self.params['price_min']), int(self.ev_battery_patterns[agent_id])] += alpha * ev_battery_sell_td_error
+        self.ev_battery_sell_qtb_list[agent_id][states[4], int(actions[4] - actions[3]), int(self.ev_battery_patterns[agent_id])] += alpha * ev_battery_sell_td_error
         self.pv_sell_qtb_list[agent_id][states[5], int(actions[5] - self.params['price_min']), int(self.pv_patterns[agent_id])] += alpha * pv_sell_td_error
 
     def save_q_table(self, folder_path, train=True):
