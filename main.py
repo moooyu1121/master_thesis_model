@@ -162,6 +162,7 @@ if __name__ == "__main__":
     # No P2P <--- This is the BAU scenario
     if simulation_no_p2p:
         if not os.path.exists('output/no_p2p'):
+            p = Pool(max_workers)
             values = [{'num_agent': 100, 'episode': 1, 'BID_SAVE': False, 'train': True, 'thread_num': x,  'load_q': False, 'parent_dir': 'output/no_p2p/thread'+str(x)+'/episode1'} for x in range(max_workers)]
             p.map(main_no_p2p_wrapper, values)
 
