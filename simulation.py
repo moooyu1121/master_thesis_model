@@ -728,7 +728,7 @@ class SimulationNoP2P:
                     else:
                         self.ev_battery_soc_record_arr[t+1, i] = 0.0
                 # リアルタイム(inelas, elas)，バッテリー充放電，ev充放電，PV発電供給，シフトリミット時間ステップ分の種類の需要と供給がある
-
+# aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                 # 供給
                 s = self.supply_df.at[t, f'{i}']
                 # price_pv = self.q.get_actions_[i, 5]
