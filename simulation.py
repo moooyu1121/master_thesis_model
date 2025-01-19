@@ -763,6 +763,7 @@ class SimulationNoP2P:
                     discharge_amount = battery_amount * self.battery_discharge_efficiency
                 else:
                     discharge_amount = self.agents[i]['max_battery_discharge_speed']
+                discharge_residue = discharge_amount
 
                 potential_demand += charge_amount
                 potential_supply += discharge_amount
@@ -783,6 +784,7 @@ class SimulationNoP2P:
                 if ~self.car_charge_df.at[t, f'{i}']:
                     ev_charge_amount = 0
                     ev_discharge_amount = 0
+                ev_discharge_residue = ev_discharge_amount
 
                 if price_buy_ev_battery == self.price_min:
                     # To make the same situation as the case with P2P
