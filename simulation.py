@@ -744,6 +744,7 @@ class SimulationNoP2P:
                 if price_elas == self.price_min:
                     # To make the same situation as the case with P2P
                     price_elas += 0.00001
+                
                 potential_demand += d_elas_max
                 # 後ろの時間にシフトさせる需要量の最大値を記録
                 # 実際の取引があった場合，その分shiftする需要量を差し引くことで更新する
@@ -762,9 +763,7 @@ class SimulationNoP2P:
                     discharge_amount = battery_amount * self.battery_discharge_efficiency
                 else:
                     discharge_amount = self.agents[i]['max_battery_discharge_speed']
-                if price_buy_battery == self.price_min:
-                    # To make the same situation as the case with P2P
-                    price_buy_battery += 0.00001
+
                 potential_demand += charge_amount
                 potential_supply += discharge_amount
 
@@ -890,33 +889,31 @@ class SimulationNoP2P:
                     if discharge_amount >= d_inelas_residue:
                         self.buy_inelastic_record_arr[t, i] += d_inelas_residue
                         discharge_residue = discharge_amount - d_inelas_residue
-                        d_inelas_residue = 0
-                        self.sell_battery_record_arr[t, i] += d_inelas_residue
                         if t+1 != len(self.demand_df):
                             self.battery_record_arr[t+1, i] -= d_inelas_residue / self.battery_discharge_efficiency
                             if self.agents[i]['battery_capacity'] != 0:
                                 self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                             else:
                                 self.battery_soc_record_arr[t+1, i] = 0.0
+                        self.sell_battery_record_arr[t, i] += d_inelas_residue
+                        d_inelas_residue = 0
                     else:
                         self.buy_inelastic_record_arr[t, i] += discharge_amount
                         d_inelas_residue -= discharge_amount
-                        discharge_residue = 0
-                        self.sell_battery_record_arr[t, i] += discharge_amount
                         if t+1 != len(self.demand_df):
                             self.battery_record_arr[t+1, i] -= discharge_amount / self.battery_discharge_efficiency
                             if self.agents[i]['battery_capacity'] != 0:
                                 self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                             else:
                                 self.battery_soc_record_arr[t+1, i] = 0.0
+                        self.sell_battery_record_arr[t, i] += discharge_amount
+                        discharge_residue = 0
 
                 # Check if the EV battery discharge is available according to the wholesale price
                 # and discharge amount is enough to supply to residue of the inelastic demand
                 if price_sell_ev_battery < wholesale_price:
                     if ev_discharge_amount >= d_inelas_residue:
                         self.buy_inelastic_record_arr[t, i] += d_inelas_residue
-                        ev_discharge_residue = ev_discharge_amount - d_inelas_residue
-                        d_inelas_residue = 0
                         self.sell_ev_battery_record_arr[t, i] += d_inelas_residue
                         if t+1 != len(self.demand_df):
                             self.ev_battery_record_arr[t+1, i] -= d_inelas_residue / self.ev_discharge_efficiency
@@ -924,10 +921,10 @@ class SimulationNoP2P:
                                 self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                             else:
                                 self.ev_battery_soc_record_arr[t+1, i] = 0.0
+                        ev_discharge_residue = ev_discharge_amount - d_inelas_residue
+                        d_inelas_residue = 0
                     else:
                         self.buy_inelastic_record_arr[t, i] += ev_discharge_amount
-                        d_inelas_residue -= ev_discharge_amount
-                        ev_discharge_residue = 0
                         self.sell_ev_battery_record_arr[t, i] += ev_discharge_amount
                         if t+1 != len(self.demand_df):
                             self.ev_battery_record_arr[t+1, i] -= ev_discharge_amount / self.ev_discharge_efficiency
@@ -935,6 +932,8 @@ class SimulationNoP2P:
                                 self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
                             else:
                                 self.ev_battery_soc_record_arr[t+1, i] = 0.0
+                        d_inelas_residue -= ev_discharge_amount
+                        ev_discharge_residue = 0
 
                 # import the rest of the inelastic demand from the grid
                 self.grid_import_record_arr[t] += d_inelas_residue
@@ -942,19 +941,76 @@ class SimulationNoP2P:
                 cost[i] += d_inelas_residue * wholesale_price
                 reward[i] -= d_inelas_residue * wholesale_price / 100  # reward cost in dollar, not cents
 
+                # Check if the battery discharge is available for elastic demand
                 # Check if the DR is available according to the wholesale price
-                if price_elas >= wholesale_price:
+                if discharge_residue >= d_elas_residue:
                     self.buy_elastic_record_arr[t, i] += d_elas_residue
-                    self.grid_import_record_arr[t] += d_elas_residue
-                    cost[i] += d_elas_residue * wholesale_price
-                    reward[i] -= d_elas_residue * wholesale_price / 100  # reward cost in dollar, not cents
+                    discharge_residue -= d_elas_residue
+                    self.sell_battery_record_arr[t, i] += d_elas_residue
+                    if t+1 != len(self.demand_df):
+                        self.battery_record_arr[t+1, i] -= d_elas_residue / self.battery_discharge_efficiency
+                        if self.agents[i]['battery_capacity'] != 0:
+                            self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                        else:
+                            self.battery_soc_record_arr[t+1, i] = 0.0
                     d_elas_residue = 0
-                    self.shift_arr[t, i] = 0
                 else:
-                    reward[i] -= (self.agents[int(i)]['alpha']/2 * (d_elas_max - d_elas_residue)**2 + 
-                                        self.agents[int(i)]['beta']*(d_elas_max - d_elas_residue))
+                    self.buy_elastic_record_arr[t, i] += discharge_residue
+                    d_elas_residue -= discharge_residue
+                    self.sell_battery_record_arr[t, i] += discharge_residue
+                    if t+1 != len(self.demand_df):
+                        self.battery_record_arr[t+1, i] -= discharge_residue / self.battery_discharge_efficiency
+                        if self.agents[i]['battery_capacity'] != 0:
+                            self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                        else:
+                            self.battery_soc_record_arr[t+1, i] = 0.0
+                    discharge_residue = 0
+
+                if price_elas >= wholesale_price:
+                    if t+1 != len(self.demand_df):
+                        self.grid_import_record_arr[t] += d_elas_residue
+                        cost[i] += d_elas_residue * wholesale_price
+                        reward[i] -= d_elas_residue * wholesale_price / 100  # reward cost in dollar, not cents
+                        d_elas_residue = 0
+                        self.shift_arr[t, i] = 0
+                        reward[i] -= (self.agents[int(i)]['alpha']/2 * (d_elas_max - d_elas_residue)**2 + 
+                                            self.agents[int(i)]['beta']*(d_elas_max - d_elas_residue))
                 
+                # Check if the battery discharge is available for EV battery charge
                 # Check if the EV battery charge is available according to the wholesale price
+                if discharge_residue >= ev_charge_residue:
+                    self.buy_ev_battery_record_arr[t, i] += ev_charge_residue
+                    discharge_residue -= ev_charge_residue
+                    self.sell_battery_record_arr[t, i] += ev_charge_residue
+                    if t+1 != len(self.demand_df):
+                        self.ev_battery_record_arr[t+1, i] += ev_charge_residue * self.ev_charge_efficiency
+                        if self.agents[i]['ev_capacity'] != 0:
+                            self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
+                        else:
+                            self.ev_battery_soc_record_arr[t+1, i] = 0.0
+                        self.battery_record_arr[t+1, i] -= ev_charge_residue / self.battery_discharge_efficiency
+                        if self.agents[i]['battery_capacity'] != 0:
+                            self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                        else:
+                            self.battery_soc_record_arr[t+1, i] = 0.0
+                    ev_charge_residue = 0
+                else:
+                    self.buy_ev_battery_record_arr[t, i] += discharge_residue
+                    ev_charge_residue -= discharge_residue
+                    self.sell_battery_record_arr[t, i] += discharge_residue
+                    if t+1 != len(self.demand_df):
+                        self.ev_battery_record_arr[t+1, i] += discharge_residue * self.ev_charge_efficiency
+                        if self.agents[i]['ev_capacity'] != 0:
+                            self.ev_battery_soc_record_arr[t+1, i] = self.ev_battery_record_arr[t+1, i] / self.agents[i]['ev_capacity']
+                        else:
+                            self.ev_battery_soc_record_arr[t+1, i] = 0.0
+                        self.battery_record_arr[t+1, i] -= discharge_residue / self.battery_discharge_efficiency
+                        if self.agents[i]['battery_capacity'] != 0:
+                            self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
+                        else:
+                            self.battery_soc_record_arr[t+1, i] = 0.0
+                    discharge_residue = 0
+
                 if price_buy_ev_battery >= wholesale_price:
                     self.grid_import_record_arr[t] += ev_charge_residue
                     cost[i] += ev_charge_residue * wholesale_price
@@ -972,6 +1028,7 @@ class SimulationNoP2P:
                 if price_buy_battery >= wholesale_price:
                     self.grid_import_record_arr[t] += charge_residue
                     cost[i] += charge_residue * wholesale_price
+                    reward[i] -= charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
                     self.buy_battery_record_arr[t, i] += charge_residue
                     if t+1 != len(self.demand_df):
                         self.battery_record_arr[t+1, i] += charge_residue * self.battery_charge_efficiency
@@ -979,7 +1036,6 @@ class SimulationNoP2P:
                             self.battery_soc_record_arr[t+1, i] = self.battery_record_arr[t+1, i] / self.agents[i]['battery_capacity']
                         else:
                             self.battery_soc_record_arr[t+1, i] = 0.0
-                        reward[i] -= charge_residue * wholesale_price / 100  # reward cost in dollar, not cents
                     charge_residue = 0
                 
                 # Add reward for the battery and EV battery SOC
