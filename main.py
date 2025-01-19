@@ -52,7 +52,7 @@ def main_no_p2p_wrapper(args):
 
 if __name__ == "__main__":
     max_workers = 16
-    simulation_p2p = True
+    simulation_p2p = False
     simulation_no_p2p = True
 
     # params = {'thread_num': -1,
