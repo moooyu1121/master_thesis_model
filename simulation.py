@@ -52,8 +52,8 @@ class Simulation:
                   'max_ev_charge_speed': [6.0],  # kW
                   'max_ev_discharge_speed': [3.0],  # kW
                   'dr_boolean_list': [True, False],
-                  'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                  'alpha_list': [0],
+                  'beta_list': [0]
                 #   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                 #   'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                 #   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
@@ -578,8 +578,8 @@ class SimulationNoP2P:
                   'max_ev_charge_speed': [6.0],  # kW
                   'max_ev_discharge_speed': [3.0],  # kW
                   'dr_boolean_list': [True, False],
-                  'alpha_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
-                  'beta_list': [1, 1.5, 2, 2.5, 3, 3.5, 4]
+                  'alpha_list': [0],
+                  'beta_list': [0]
                 #   'gamma_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                 #   'epsilon_list': [1, 1.5, 2, 2.5, 3, 3.5, 4],
                 #   'psi_list': [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8],
