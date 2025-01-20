@@ -570,8 +570,8 @@ class SimulationNoP2P:
                   'battery_capacity_list': [0, 10, 15, 20],
                   'ev_capacity_list': [40],
                   'pv_capacity_list': [0, 5, 10],
-                  'discount_rate': 1.0,
-                  'learning_rate': 0.01,
+                  'discount_rate': 0.99,
+                  'learning_rate': 0.1,
                   'shift_limit_list': [6.0, 12.0, 18.0, 24.0],  # hours
                   'max_battery_charge_speed': [3.0],  # kW
                   'max_battery_discharge_speed': [3.0],  # kW
