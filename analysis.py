@@ -635,32 +635,34 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
     # print(heat_map_net_cost_per_kWh_df)
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(heat_map_net_total_cost_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Total Cost [$]'})
+    if include_capex_opex:
+        sns.heatmap(heat_map_net_total_cost_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Total Cost [$]'}, vmin=2000, vmax=8000)
+    else:
+        sns.heatmap(heat_map_net_total_cost_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Total Cost [$]'}, vmin=0, vmax=5000)
     ax.set_title('Net Total Cost Heatmap by Battery and PV Capacity')
     ax.set_xlabel('PV Capacity [kW]')
     ax.set_ylabel('Battery Capacity [kWh]')
     plt.tight_layout()
     if include_capex_opex:
-        ax.set_ylim(2000, 8000)
         plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
         plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv_include_capex_opex.svg')
     else:
-        ax.set_ylim(0, 5000)
         plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv.png', dpi=600)
         plt.savefig(folder_path + '/insight/net_total_cost_heatmap_by_battery_pv.svg')
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(heat_map_net_cost_per_kWh_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Cost per kWh [$]'})
+    if include_capex_opex:
+        sns.heatmap(heat_map_net_cost_per_kWh_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Cost per kWh [$]'}, vmin=0.2, vmax=0.8)
+    else:
+        sns.heatmap(heat_map_net_cost_per_kWh_df, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Net Cost per kWh [$]'}, vmin=0, vmax=0.4)
     ax.set_title('Net Cost per kWh Heatmap by Battery and PV Capacity')
     ax.set_xlabel('PV Capacity [kW]')
     ax.set_ylabel('Battery Capacity [kWh]')
     plt.tight_layout()
     if include_capex_opex:
-        ax.set_ylim(0.2, 0.8)
         plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.png', dpi=600)
         plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv_include_capex_opex.svg')
     else:
-        ax.set_ylim(0, 0.4)
         plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv.png', dpi=600)
         plt.savefig(folder_path + '/insight/net_cost_per_kWh_heatmap_by_battery_pv.svg')
 
@@ -673,11 +675,10 @@ def net_cost_by_battery_ev_pv_size_plot(thread_num, folder_path, include_capex_o
         for pv_capacity in pv_capacity_list:
             heat_map_agent_count_df.loc[battery_capacity, pv_capacity] = master_df[(master_df['battery_capacity'] == battery_capacity) & (master_df['pv_capacity'] == pv_capacity)].shape[0]
     heat_map_agent_count_df = heat_map_agent_count_df.apply(pd.to_numeric, errors='coerce')
-    sns.heatmap(heat_map_agent_count_df, annot=True, fmt=".0f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Prosumer Count'})
+    sns.heatmap(heat_map_agent_count_df, annot=True, fmt=".0f", cmap="coolwarm", cbar=True, cbar_kws={'label': 'Prosumer Count'}, vmin=0, vmax=400)
     ax.set_title('Prosumer Count Heatmap by Battery and PV Capacity')
     ax.set_xlabel('PV Capacity [kW]')
     ax.set_ylabel('Battery Capacity [kWh]')
-    ax.set_ylim(0, 400)
     plt.tight_layout()
     plt.savefig(folder_path + '/insight/prosumer_count_heatmap_by_battery_pv.png', dpi=600)
     plt.savefig(folder_path + '/insight/prosumer_count_heatmap_by_battery_pv.svg')
