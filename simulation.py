@@ -149,6 +149,14 @@ class Simulation:
                 self.ev_battery_soc_record_arr[0, i] = self.ev_battery_record_arr[0, i] / self.agents[i]['ev_capacity']
             else:
                 self.ev_battery_soc_record_arr[0, i] = 0.0
+
+        # set initial battery state to 50% of its capacity
+        for i in range(self.num_agent):
+            self.battery_record_arr[0, i] = self.agents[i]['battery_capacity'] / 2
+            if self.agents[i]['battery_capacity'] != 0:
+                self.battery_soc_record_arr[0, i] = self.battery_record_arr[0, i] / self.agents[i]['battery_capacity']
+            else:
+                self.battery_soc_record_arr[0, i] = 0.0
         
         # Generate elastic and inelastic demand according to the elastic ratio of each agent
         self.demand_elastic_arr = self.demand_df.values.copy()
@@ -674,6 +682,14 @@ class SimulationNoP2P:
                 self.ev_battery_soc_record_arr[0, i] = self.ev_battery_record_arr[0, i] / self.agents[i]['ev_capacity']
             else:
                 self.ev_battery_soc_record_arr[0, i] = 0.0
+
+        # set initial battery state to 50% of its capacity
+        for i in range(self.num_agent):
+            self.battery_record_arr[0, i] = self.agents[i]['battery_capacity'] / 2
+            if self.agents[i]['battery_capacity'] != 0:
+                self.battery_soc_record_arr[0, i] = self.battery_record_arr[0, i] / self.agents[i]['battery_capacity']
+            else:
+                self.battery_soc_record_arr[0, i] = 0.0
         
         # Generate elastic and inelastic demand according to the elastic ratio of each agent
         self.demand_elastic_arr = self.demand_df.values.copy()
